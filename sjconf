@@ -24,12 +24,14 @@ sys.path.insert(1, conf["conf:plugins_path"])
 import decoder, dvb, iptables, \
        network, openvpn, postgresql, \
        proftpd, rxtxmanager, shaping, \
-       sjfsd, snmpd, test, toolbox
+       sjfsd, snmpd, test, toolbox, \
+       passwd
 
 PLUGINS = [decoder, dvb, iptables, \
            network, openvpn, postgresql, \
            proftpd, rxtxmanager, shaping, \
-           sjfsd, snmpd, test, toolbox]
+           sjfsd, snmpd, test, toolbox, \
+           passwd ]
 
 base   = load_conf(BASE_FILE)
 local  = load_conf(LOCAL_FILE)
