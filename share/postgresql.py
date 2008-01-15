@@ -1,5 +1,5 @@
 #!/usr/bin/python
 
-def init(base, local, conf):
+def init(sjconf, base, local, conf):
     pass
 
