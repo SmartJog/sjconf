@@ -1,0 +1,13 @@
+Source: sjconf
+Priority: optional
+Section: smartjog
+Maintainer: Philippe BRIDANT <philippe.bridant@smartjog.com>
+Build-Depends-Indep: cdbs (>= 0.4.43), debhelper (>= 5.0.38), python-all-dev
+Standards-Version: 3.7.2
+
+Package: sjconf
+Architecture: all
+Depends: ${python:Depends}
+Provides: ${python:Provides}
+Description: SmartJog RxTx configuration system
+ SmartJog RxTx configuration system
