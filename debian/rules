@@ -31,8 +31,8 @@ install: build
 	dh_listpackages sjconf 
 	dh_install
 	dh_install -XCVS -X.svn share/* usr/share/sjconf/
-	dh_install -XCVS -X.svn default etc/
-	dh_install -XCVS -X.svn etc/* etc/smartjog/
+	dh_install -XCVS -X.svn etc/default etc/
+	dh_install -XCVS -X.svn etc/smartog/* etc/smartjog/
 	dh_install -XCVS sjconf usr/bin/
 
 # Build architecture-independent files here.
