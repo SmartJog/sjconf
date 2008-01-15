@@ -13,20 +13,17 @@ def load_conf(filename):
         sys.exit(1)
     cp = ConfigParser.RawConfigParser()
     cp.read(filename)
-    dic = {}
-    for section in cp.sections():
-        for key, value in cp.items(section):
-            dic['%s:%s' % (section, key)] = value
-    return dic
+    return dict(map(lambda a, b:  (a , dict(cp.items(a))), cp.sections(), {}))
+    
 
 sjconf     = load_conf("/etc/default/sjconf")
-BASE_FILE  = os.path.realpath(sjconf["conf:base_path"] + "/base.conf")
-LOCAL_FILE = os.path.realpath(sjconf["conf:base_path"] + "/local.conf")
+BASE_FILE  = os.path.realpath(sjconf["conf"]["base_path"] + "/base.conf")
+LOCAL_FILE = os.path.realpath(sjconf["conf"]["base_path"] + "/local.conf")
 
 print "Using base configuration file: %s" % BASE_FILE
 print "Using local configuration file: %s" % LOCAL_FILE
 
-sys.path.insert(1, sjconf["conf:plugins_path"])
+sys.path.insert(1, sjconf["conf"]["plugins_path"])
 
 import decoder, dvb, iptables, \
        network, openvpn, postgresql, \
@@ -42,13 +39,16 @@ PLUGINS = [decoder, dvb, iptables, \
 
 base   = load_conf(BASE_FILE)
 local  = load_conf(LOCAL_FILE)
+config = {}
 
-config = dict(base)
-config.update(local)
+for dic_key in base:
+    for key in base[dic_key]:
+        config["%s:%s" % (dic_key, key)] = base[dic_key][key]
+
+for dic_key in local:
+    for key in local[dic_key]:
+        config["%s:%s" % (dic_key, key)] = local[dic_key][key]
 
 
 for plugin in PLUGINS:
     plugin.init(sjconf, base, local, config)
-
-
-pprint(config)
