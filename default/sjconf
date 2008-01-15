@@ -1,0 +1,3 @@
+[conf]
+base_path=/etc/smartjog
+plugins_path=/usr/share/sjconf/

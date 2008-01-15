@@ -1,12 +1,12 @@
 #!/usr/bin/python
 
+import sys
 import ConfigParser
 from pprint import pprint
 
-LOCAL_FILE="/etc/smartjog/local.ini"
-BASE_FILE="/etc/smartjog/base.ini"
 
-def load_init(filename):
+
+def load_conf(filename):
     cp = ConfigParser.RawConfigParser()
     cp.read(filename)
     dic = {}
@@ -15,11 +15,30 @@ def load_init(filename):
             dic['%s:%s' % (section, key)] = value
     return dic
 
-base = load_init(BASE_FILE)
-local = load_init(LOCAL_FILE)
+conf = load_conf("/etc/default/sjconf")
+LOCAL_FILE=conf["conf:base_path"] + "/local.ini"
+BASE_FILE=conf["conf:base_path"] + "/base.ini"
 
-config=dict(base)
+sys.path.insert(1, conf["conf:plugins_path"])
+
+import decoder, dvb, iptables, \
+       network, openvpn, postgresql, \
+       proftpd, rxtxmanager, shaping, \
+       sjfsd, snmpd, test, toolbox
+
+PLUGINS = [decoder, dvb, iptables, \
+           network, openvpn, postgresql, \
+           proftpd, rxtxmanager, shaping, \
+           sjfsd, snmpd, test, toolbox]
+
+base   = load_conf(BASE_FILE)
+local  = load_conf(LOCAL_FILE)
+config = dict(base)
+
 config.update(local)
+
+for plugin in PLUGINS:
+    plugin.init(base, local, config)
 
 pprint(config)
 
