@@ -14,18 +14,20 @@ def init(sjconf, base, local, config):
     new_confs = [{
         'service'  : SERVICE_NAME,
         'restart'  : INITD,
-        'filename' : '%s/%s.conf' % (OPENVPN_CONFDIR, local['rxtx']['hostname']),
+        'path'     : os.path.realpath('%s/%s.conf' % (OPENVPN_CONFDIR, local['rxtx']['hostname'])),
         'content'  : open(sjconf['conf']['base_path'] + '/' + config['vpn:template'], 'r').read() % config
         }]
 
-    for i in config['network:inter_vpns'].split(','):
+    for i in config['network:intervpns'].split(','):
+        if i == '':
+            continue
         intervpn = dict(base['intervpn'])
         intervpn.update(local[i])
         new_confs += [{
             'service'  : SERVICE_NAME,
             'restart'  : INITD,
-            'filename' : '%s/%s.conf' % (OPENVPN_CONFDIR, i), \
-            'content' : open(sjconf['conf']['base_path'] + '/' + intervpn['template'], 'r').read() % 
+            'path'     : os.path.realpath('%s/%s.conf' % (OPENVPN_CONFDIR, i)), \
+            'content'  : open(sjconf['conf']['base_path'] + '/' + intervpn['template'], 'r').read() % 
                 dict(map(lambda key: ('intervpn:' + key, intervpn[key]) , intervpn.keys()))}]
     return new_confs
 
@@ -59,9 +61,10 @@ def apply_confs():
 def rollback_confs():
     pass
 
-def restart_service(to_restart, already_restarted):
+def restart_service(already_restarted):
     iptables.restart_service(already_restarted)
     if SERVICE_NAME not in already_restarted:
         already_restarted += [SERVICE_NAME]
+        print "Restarting service: %s" % (SERVICE_NAME)
         return os.system('%s restart' % INITD)
     return 0

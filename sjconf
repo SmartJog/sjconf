@@ -1,11 +1,7 @@
 #!/usr/bin/python
 
-import time
-import os
-import sys
-import ConfigParser
+import traceback, time, os, sys, popen2, ConfigParser
 from pprint import pprint
-import popen2
 
 def load_conf(filename):
     if not os.path.isfile(filename):
@@ -15,10 +11,21 @@ def load_conf(filename):
     cp.read(filename)
     return dict(map(lambda a, b:  (a , dict(cp.items(a))), cp.sections(), {}))
     
+sjconf     = load_conf('/etc/default/sjconf')
+sys.path   += [sjconf['conf']['plugins_path']]
+
+import openvpn, iptables
+
+
+
+def print_traceback():
+    traceback.print_exc(file=sys.stdout)
+
 
 def backup_files():
     global files_to_backup
 
+    print "Backup folder : %s" % BACKUP_DIR
     os.makedirs(BACKUP_DIR)
 
     for plugin in PLUGINS:
@@ -30,26 +37,40 @@ def backup_files():
         file['backup_path'] = BACKUP_DIR + '/' + file['service'] + '/' + os.path.basename(file['path'])
         os.rename(file['path'], file['backup_path'])
 
+
 def archive_backup():
-    archive_path = "%s/sjconf_backup_%s.tgz" % (os.path.dirname(BACKUP_DIR), os.path.basename(BACKUP_DIR))
-    tar = popen2.Popen3( "tar zcvf %s %s" % (archive_path, BACKUP_DIR) , True)
-    fdout  = tar.fromchild.fileno()
-    fderr  = tar.childerr.fileno()
-    datout = tar.fromchild.read()
-    daterr = tar.childerr.read()
-    ret = tar.wait()
+    path    = "%s/sjconf_backup_%s.tgz" % (os.path.dirname(BACKUP_DIR), os.path.basename(BACKUP_DIR))
+    print "Backup file : %s" % path
 
-    if ret:
-        print "Cannot archive backup dir %s/ to %s, please do it manually" % (BACKUP_DIR, archive_path)
+    tar     = popen2.Popen3( "tar zcvf %s %s" % (path, BACKUP_DIR) , True)
+    fdout   = tar.fromchild.fileno()
+    fderr   = tar.childerr.fileno()
+    datout  = tar.fromchild.read()
+    daterr  = tar.childerr.read()
+
+    if tar.wait():
+        print "Cannot archive backup dir %s/ to %s, please do it manually" % (BACKUP_DIR, path)
         print "tar output:\n\n" + daterr
-    else:
-        print "Backup file : %s" % (archive_path)
+
+def delete_backup_dir(dir=None):
+    if dir == None:
+        dir = BACKUP_DIR
+        print "Deleting folder %s" % dir
+
+    for entry in os.listdir(dir):
+        path = dir + '/' + entry
+        if os.path.isdir(path):
+            delete_backup_dir(path)
+        elif os.path.isfile(path):
+            os.unlink(path)
+    os.rmdir(dir)
     
-
-
 def restore_files():
     global new_confs
+    global new_confs
     global files_to_backup
+
+    print "Restoring files from %s" % BACKUP_DIR
     
     for file in new_confs:
         os.unlink(file['path'])
@@ -57,15 +78,19 @@ def restore_files():
     for file in files_to_backup:
         os.rename(file['backup_path'], file['path'])
 
-    for dir in os.listdir(BACKUP_DIR):
-        if os.path.isdir(BACKUP_DIR + '/' + dir):
-            os.rmdir(BACKUP_DIR + '/' + dir)
-    os.rmdir(BACKUP_DIR)
 
-sjconf     = load_conf('/etc/default/sjconf')
-sys.path   += [sjconf['conf']['plugins_path']]
+def restart_services():
+    already_restart = []
+    for plugin in PLUGINS:
+        plugin.restart_service(already_restart)
 
-import openvpn, iptables
+
+def deploy_confs():
+    global new_confs
+    for conf in new_confs:
+        print "Writing configuration file %(path)s (%(service)s)" % conf
+        open(conf['path'], "w").write(conf['content'])
+    print ''
 
 BASE_FILE  = os.path.realpath(sjconf['conf']['base_path'] + '/base.conf')
 LOCAL_FILE = os.path.realpath(sjconf['conf']['base_path'] + '/local.conf')
@@ -74,6 +99,7 @@ PLUGINS    = [openvpn, iptables]
 
 print 'Using base configuration file: %s' % BASE_FILE
 print 'Using local configuration file: %s' % LOCAL_FILE
+print ''
 
 base            = load_conf(BASE_FILE)
 local           = load_conf(LOCAL_FILE)
@@ -90,8 +116,24 @@ for dic_key in local:
         config['%s:%s' % (dic_key, key)] = local[dic_key][key]
 
 for plugin in PLUGINS:
-    plugin.init(sjconf, base, local, config)
+    new_confs += plugin.init(sjconf, base, local, config)
 
 backup_files()
-archive_backup()
-restore_files()
+
+try:
+    archive_backup()
+    print ''
+    deploy_confs()
+    restart_services()
+    print ''
+except:
+    print_traceback()
+    restore_files()
+    delete_backup_dir()
+    sys.exit(0)
+
+#FIXME TO remove
+#restore_files()
+
+
+delete_backup_dir()
