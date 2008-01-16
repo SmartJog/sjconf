@@ -1,54 +1,97 @@
 #!/usr/bin/python
 
+import time
 import os
 import sys
 import ConfigParser
 from pprint import pprint
-
-
+import popen2
 
 def load_conf(filename):
     if not os.path.isfile(filename):
-        sys.stderr.write("Cannot open file %s\n" % filename)
+        sys.stderr.write('Cannot open file %s\n' % filename)
         sys.exit(1)
     cp = ConfigParser.RawConfigParser()
     cp.read(filename)
     return dict(map(lambda a, b:  (a , dict(cp.items(a))), cp.sections(), {}))
     
 
-sjconf     = load_conf("/etc/default/sjconf")
-BASE_FILE  = os.path.realpath(sjconf["conf"]["base_path"] + "/base.conf")
-LOCAL_FILE = os.path.realpath(sjconf["conf"]["base_path"] + "/local.conf")
+def backup_files():
+    global files_to_backup
 
-print "Using base configuration file: %s" % BASE_FILE
-print "Using local configuration file: %s" % LOCAL_FILE
+    os.makedirs(BACKUP_DIR)
 
-sys.path.insert(1, sjconf["conf"]["plugins_path"])
+    for plugin in PLUGINS:
+        files_to_backup += plugin.get_files_to_backup()
 
-import decoder, dvb, iptables, \
-       network, openvpn, postgresql, \
-       proftpd, rxtxmanager, shaping, \
-       sjfsd, snmpd, toolbox, \
-       passwd, hosts
+    for file in files_to_backup:
+        if not os.path.isdir( BACKUP_DIR + '/' + file['service']):
+            os.makedirs(BACKUP_DIR + '/' + file['service'])
+        file['backup_path'] = BACKUP_DIR + '/' + file['service'] + '/' + os.path.basename(file['path'])
+        os.rename(file['path'], file['backup_path'])
 
-PLUGINS = [decoder, dvb, iptables, \
-           network, openvpn, postgresql, \
-           proftpd, rxtxmanager, shaping, \
-           sjfsd, snmpd, toolbox, \
-           passwd, hosts ]
+def archive_backup():
+    archive_path = "%s/sjconf_backup_%s.tgz" % (os.path.dirname(BACKUP_DIR), os.path.basename(BACKUP_DIR))
+    tar = popen2.Popen3( "tar zcvf %s %s" % (archive_path, BACKUP_DIR) , True)
+    fdout  = tar.fromchild.fileno()
+    fderr  = tar.childerr.fileno()
+    datout = tar.fromchild.read()
+    daterr = tar.childerr.read()
+    ret = tar.wait()
 
-base   = load_conf(BASE_FILE)
-local  = load_conf(LOCAL_FILE)
-config = {}
+    if ret:
+        print "Cannot archive backup dir %s/ to %s, please do it manually" % (BACKUP_DIR, archive_path)
+        print "tar output:\n\n" + daterr
+    else:
+        print "Backup file : %s" % (archive_path)
+    
+
+
+def restore_files():
+    global new_confs
+    global files_to_backup
+    
+    for file in new_confs:
+        os.unlink(file['path'])
+
+    for file in files_to_backup:
+        os.rename(file['backup_path'], file['path'])
+
+    for dir in os.listdir(BACKUP_DIR):
+        if os.path.isdir(BACKUP_DIR + '/' + dir):
+            os.rmdir(BACKUP_DIR + '/' + dir)
+    os.rmdir(BACKUP_DIR)
+
+sjconf     = load_conf('/etc/default/sjconf')
+sys.path   += [sjconf['conf']['plugins_path']]
+
+import openvpn, iptables
+
+BASE_FILE  = os.path.realpath(sjconf['conf']['base_path'] + '/base.conf')
+LOCAL_FILE = os.path.realpath(sjconf['conf']['base_path'] + '/local.conf')
+BACKUP_DIR = os.path.realpath(sjconf['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()) )
+PLUGINS    = [openvpn, iptables]
+
+print 'Using base configuration file: %s' % BASE_FILE
+print 'Using local configuration file: %s' % LOCAL_FILE
+
+base            = load_conf(BASE_FILE)
+local           = load_conf(LOCAL_FILE)
+config          = {}
+new_confs       = []
+files_to_backup = []
 
 for dic_key in base:
     for key in base[dic_key]:
-        config["%s:%s" % (dic_key, key)] = base[dic_key][key]
+        config['%s:%s' % (dic_key, key)] = base[dic_key][key]
 
 for dic_key in local:
     for key in local[dic_key]:
-        config["%s:%s" % (dic_key, key)] = local[dic_key][key]
-
+        config['%s:%s' % (dic_key, key)] = local[dic_key][key]
 
 for plugin in PLUGINS:
     plugin.init(sjconf, base, local, config)
+
+backup_files()
+archive_backup()
+restore_files()
