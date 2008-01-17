@@ -1,29 +1,26 @@
-%(itables:bin)s -P INPUT DROP
-%(itables:bin)s -P FORWARD DROP
-%(itables:bin)s -P OUTPUT ACCEPT
+%(iptables:bin)s -P INPUT DROP
+%(iptables:bin)s -P FORWARD DROP
+%(iptables:bin)s -P OUTPUT ACCEPT
 
-%(itables:bin)s -F INPUT
-%(itables:bin)s -F FORWARD
-%(itables:bin)s -F OUTPUT
+%(iptables:bin)s -F INPUT
+%(iptables:bin)s -F FORWARD
+%(iptables:bin)s -F OUTPUT
 
-%(itables:bin)s -A INPUT -i tun+ -j ACCEPT
-%(itables:bin)s -A INPUT -i ppp+ -j ACCEPT
-%(itables:bin)s -A INPUT -i lo -j ACCEPT
+%(iptables:bin)s -A INPUT -i tun+ -j ACCEPT
+%(iptables:bin)s -A INPUT -i ppp+ -j ACCEPT
+%(iptables:bin)s -A INPUT -i lo -j ACCEPT
 
-%(itables:bin)s -A INPUT -i dvb0_0 -d %(dvb:mcast)s -p udp -m multiport --dports %(dvb:udp_ports)s -j ACCEPT
+%(iptables:bin)s -A INPUT -i dvb0_0 -d %(dvb:mcast)s -p udp -m multiport --dports %(dvb:udp_ports)s -j ACCEPT
 
-%(itables:bin)s -A INPUT -i eth+ -p icmp -m limit --limit 5/second -j ACCEPT
+%(iptables:bin)s -A INPUT -i eth+ -p icmp -m limit --limit 5/second -j ACCEPT
 
-%(itables:bin)s -A INPUT -i eth+ -p tcp -m multiport --dports %(network:tcp_ports)s -j ACCEPT
-%(itables:bin)s -A INPUT -i eth+ -p tcp --dport %(network:pasv_ftp_ports)s -j ACCEPT
+%(iptables:bin)s -A INPUT -i eth+ -p tcp -m multiport --dports %(network:tcp_ports)s -j ACCEPT
+%(iptables:bin)s -A INPUT -i eth+ -p tcp --dport %(network:pasv_ftp_ports)s -j ACCEPT
 
-%(itables:bin)s -A INPUT -i eth+ -p udp -m multiport --dports %(network:udp_ports)s -j ACCEPT
+%(iptables:bin)s -A INPUT -i eth+ -p udp -m multiport --dports %(network:udp_ports)s -j ACCEPT
 
 # hack for windows XP web server search
-%(itables:bin)s -A INPUT -i eth+ -p tcp --dport 80 -j REJECT --reject-with tcp-reset
+%(iptables:bin)s -A INPUT -i eth+ -p tcp --dport 80 -j REJECT --reject-with tcp-reset
 
-%(itables:bin)s -A INPUT -i eth+ -m state --state ESTABLISHED,RELATED -j ACCEPT
-%(itables:bin)s -A INPUT -i eth+ -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-
-
-[ -f /usr/local/sbin/ip_rules_local.sh ] &&  . /usr/local/sbin/ip_rules_local.sh
+%(iptables:bin)s -A INPUT -i eth+ -m state --state ESTABLISHED,RELATED -j ACCEPT
+%(iptables:bin)s -A INPUT -i eth+ -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT

@@ -66,13 +66,12 @@ def delete_backup_dir(dir=None):
     os.rmdir(dir)
     
 def restore_files():
-    global new_confs
-    global new_confs
+    global conf_files
     global files_to_backup
 
     print "Restoring files from %s" % BACKUP_DIR
     
-    for file in new_confs:
+    for file in conf_files:
         os.unlink(file['path'])
 
     for file in files_to_backup:
@@ -86,8 +85,8 @@ def restart_services():
 
 
 def deploy_confs():
-    global new_confs
-    for conf in new_confs:
+    global conf_files
+    for conf in conf_files:
         print "Writing configuration file %(path)s (%(service)s)" % conf
         open(conf['path'], "w").write(conf['content'])
     print ''
@@ -104,7 +103,7 @@ print ''
 base            = load_conf(BASE_FILE)
 local           = load_conf(LOCAL_FILE)
 config          = {}
-new_confs       = []
+conf_files       = []
 files_to_backup = []
 
 for dic_key in base:
@@ -116,7 +115,10 @@ for dic_key in local:
         config['%s:%s' % (dic_key, key)] = local[dic_key][key]
 
 for plugin in PLUGINS:
-    new_confs += plugin.init(sjconf, base, local, config)
+    plugin.init(sjconf, base, local, config)
+
+for plugin in PLUGINS:
+    conf_files += plugin.get_conf_files()
 
 backup_files()
 

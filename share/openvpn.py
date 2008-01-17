@@ -10,26 +10,41 @@ OPENVPN_CONFDIR='/etc/openvpn/'
 
 INITD='/etc/init.d/openvpn'
 
+conf_files = []
+
 def init(sjconf, base, local, config):
-    new_confs = [{
+    global conf_files
+
+    conf_files = [{
         'service'  : SERVICE_NAME,
         'restart'  : INITD,
         'path'     : os.path.realpath('%s/%s.conf' % (OPENVPN_CONFDIR, local['rxtx']['hostname'])),
         'content'  : open(sjconf['conf']['base_path'] + '/' + config['vpn:template'], 'r').read() % config
         }]
 
+    if not config['network:intervpns'].strip():
+        return
+
     for i in config['network:intervpns'].split(','):
-        if i == '':
-            continue
-        intervpn = dict(base['intervpn'])
-        intervpn.update(local[i])
-        new_confs += [{
+
+        base_conf = dict(base['intervpn-%s' % local[i]['mode']])
+        base_conf.update(local[i])
+        intervpn = dict(config)
+        intervpn.update(dict(map(lambda key: ('intervpn:' + key, base_conf[key]) , base_conf.keys())))
+
+        conf_files += [{
             'service'  : SERVICE_NAME,
             'restart'  : INITD,
             'path'     : os.path.realpath('%s/%s.conf' % (OPENVPN_CONFDIR, i)), \
-            'content'  : open(sjconf['conf']['base_path'] + '/' + intervpn['template'], 'r').read() % 
-                dict(map(lambda key: ('intervpn:' + key, intervpn[key]) , intervpn.keys()))}]
-    return new_confs
+            'content'  : open(sjconf['conf']['base_path'] + '/' + intervpn['intervpn:template'], 'r').read() % intervpn}]
+
+        if local[i]['mode'] == 'server':
+            iptables.custom_rule(open(sjconf['conf']['base_path'] + '/' + intervpn['intervpn:iptables_template'], 'r').read() % intervpn)
+
+def get_conf_files():
+    global conf_files
+    return conf_files
+
 
 def get_files_to_backup():
     to_backup = []
