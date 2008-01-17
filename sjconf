@@ -3,6 +3,7 @@
 import traceback, time, os, sys, popen2, ConfigParser
 from pprint import pprint
 
+
 def load_conf(filename):
     if not os.path.isfile(filename):
         sys.stderr.write('Cannot open file %s\n' % filename)
@@ -20,6 +21,7 @@ BASE_FILE  = os.path.realpath(sjconf['conf']['base_path'] + '/base.conf')
 LOCAL_FILE = os.path.realpath(sjconf['conf']['base_path'] + '/local.conf')
 BACKUP_DIR = os.path.realpath(sjconf['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()) )
 PLUGINS    = [openvpn, iptables, shaping, hosts]
+TEMP_FILE  = "/tmp/sjconf_tempfile.conf"
 
 base            = load_conf(BASE_FILE)
 local           = load_conf(LOCAL_FILE)
@@ -142,11 +144,12 @@ global delete_keys
 global sets
 
 
-deploy=True
-restart=True
+deploy=False
+restart=False
 sets=[]
 delete_keys=[]
 delete_sections=[]
+save=False
 
 def usage(exit_code):
     print '''sjconf usage:
@@ -161,30 +164,42 @@ No modification done on configuration
     sys.exit(exit_code)
 
 
-def apply_conf_modifications():
+def apply_conf_modifications(out_file, show):
     global local
     global delete_sections
     global delete_keys
     global sets
 
-    print sets
-    print delete_keys
-    print delete_sections
+    if sets or delete_keys or delete_sections:
+        print "######## Configuration modifications ############"
 
-    for section in delete_sections:
-        if section in local:
-            del(local[section])
-        print 'delete section %s' % (section)
+        for section in delete_sections:
+            if section in local:
+                del(local[section])
+            print 'delete section : %s' % (section)
 
-    for section, key in delete_keys:
-        if section in local:
-            del(local[section][key])
-        print 'delete key %s:%s' % (section, key)
+        for section, key in delete_keys:
+            if section in local:
+                if key in local[section]:
+                    del(local[section][key])
+            print 'delete key     : %s:%s' % (section, key)
 
-    for section, key, value in sets:
-        local.setdefault(section, {})
-        local[section][key] = value
-        print 'set %s:%s=%s' % (section, key, value)
+        for section, key, value in sets:
+            local.setdefault(section, {})
+            local[section][key] = value
+            print 'set            : %s:%s=%s' % (section, key, value)
+
+        cp = ConfigParser.RawConfigParser()
+        for section in local:
+            cp.add_section(section)
+            for key in local[section]:
+                cp.set(section, key, local[section][key])
+        print "#################################################\n"
+
+    cp.write(open(out_file, "w"))
+    if show:
+        cp.write(sys.stdout)
+
 
 
 argv = list(sys.argv)
@@ -202,21 +217,23 @@ def get_params(argv, nb):
     ret = argv[0:nb]
     for i in range(0, nb):
         argv.pop(0)
-    return [ret]
+    return ret
 
 while len(argv):
     cmd, argv = argv[0], argv[1:]
     try:
         if cmd == '--deploy':
             deploy = True
+        elif cmd == '--save':
+            save = True
         elif cmd == '--restart':
             restart = True
         elif cmd == '--set':
-            sets += get_params(argv, 3)
+            sets += [get_params(argv, 3)]
         elif cmd == '--delete-section':
             delete_sections += get_params(argv, 1)
         elif cmd == '--delete-key':
-            delete_keys += get_params(argv, 2)
+            delete_keys += [get_params(argv, 2)]
         else:
             print 'Incorrect command : %s\n' % cmd
             usage(1)
@@ -230,4 +247,17 @@ print 'Using base configuration file: %s' % BASE_FILE
 print 'Using local configuration file: %s' % LOCAL_FILE
 print ''
 
-apply_conf_modifications()
+if (sets or delete_sections or delete_keys) and deploy and not (save):
+    print 'You should add the --save parameter to save configuration before deploying it'
+    sys.exit(1)
+
+if sets or delete_sections or delete_keys:
+    if save:
+        apply_conf_modifications(LOCAL_FILE, False)
+        print 'Configuration saved\n'
+    else:
+        apply_conf_modifications(TEMP_FILE, True)
+        print "Configuration not saved (use --save)\n"
+        sys.exit(1)
+        
+
