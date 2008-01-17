@@ -3,8 +3,8 @@
 import os, pprint
 
 SERVICE_NAME="iptables"
-INITD="/etc/init.d/iptables"
 IPTABLES_CONFFILE="/etc/default/sjiptables"
+INITD="/etc/init.d/sjnetworking iptables-"
 
 custom_rules = []
 conf_file = {}
@@ -56,5 +56,5 @@ def restore_files(to_restore):
 def restart_service(already_restarted):
     if SERVICE_NAME not in already_restarted:
         already_restarted += [SERVICE_NAME]
-        return os.system("%s restart" % INITD)
+        return os.system(INITD + "restart")
     return 0
