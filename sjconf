@@ -26,6 +26,28 @@ TEMP_FILE  = "/tmp/sjconf_tempfile.conf"
 base            = load_conf(BASE_FILE)
 local           = load_conf(LOCAL_FILE)
 
+global files_to_backup
+global delete_sections
+global delete_keys
+global sets
+global deploy
+global restart
+global save
+global diff
+global verbose
+
+config          = {}
+config_files      = []
+files_to_backup = []
+sets            = []
+delete_keys     = []
+delete_sections = []
+deploy          = False
+restart         = False
+save            = False
+diff            = False
+verbose         = False
+
 def print_traceback():
     traceback.print_exc(file=sys.stdout)
 
@@ -74,12 +96,12 @@ def delete_backup_dir(dir=None):
     os.rmdir(dir)
     
 def restore_files():
-    global conf_files
+    global config_files
     global files_to_backup
 
     print "Restoring files from %s" % BACKUP_DIR
     
-    for file in conf_files:
+    for file in config_files:
         os.unlink(file['path'])
 
     for file in files_to_backup:
@@ -93,17 +115,16 @@ def restart_services():
 
 
 def apply_confs():
-    global conf_files
-    for conf in conf_files:
+    global config_files
+    for conf in config_files:
         print "Writing configuration file %(path)s (%(service)s)" % conf
         open(conf['path'], "w").write(conf['content'])
     print ''
 
 def deploy_conf():
-
-    config          = {}
-    conf_files       = []
-    files_to_backup = []
+    global files_to_backup
+    global config_files
+    global config
 
     for dic_key in base:
         for key in base[dic_key]:
@@ -117,7 +138,7 @@ def deploy_conf():
         plugin.init(sjconf, base, local, config)
 
     for plugin in PLUGINS:
-        conf_files += plugin.get_conf_files()
+        config_files += plugin.get_conf_files()
 
     backup_files()
 
@@ -125,7 +146,8 @@ def deploy_conf():
         archive_backup()
         print ''
         apply_confs()
-        restart_services()
+        if restart:
+            restart_services()
         print ''
     except:
         print_traceback()
@@ -138,24 +160,6 @@ def deploy_conf():
 
 
     delete_backup_dir()
-
-global delete_sections
-global delete_keys
-global sets
-global deploy
-global restart
-global save
-global diff
-global verbose
-
-deploy=False
-restart=False
-sets=[]
-delete_keys=[]
-delete_sections=[]
-save=False
-diff=False
-verbose=False
 
 def usage(exit_code):
     print '''sjconf usage:
@@ -285,6 +289,8 @@ else:
     apply_conf_modifications(TEMP_FILE, diff)
     if changes:
         print "No configuration saved (use --save)\n"
-    sys.exit(1)
+        sys.exit(1)
     
+if deploy:
+    deploy_conf()
 
