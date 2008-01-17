@@ -14,7 +14,7 @@ def load_conf(filename):
 sjconf     = load_conf('/etc/default/sjconf')
 sys.path   += [sjconf['conf']['plugins_path']]
 
-import openvpn, iptables, shaping
+import openvpn, iptables, shaping, hosts
 
 
 
@@ -94,7 +94,7 @@ def deploy_confs():
 BASE_FILE  = os.path.realpath(sjconf['conf']['base_path'] + '/base.conf')
 LOCAL_FILE = os.path.realpath(sjconf['conf']['base_path'] + '/local.conf')
 BACKUP_DIR = os.path.realpath(sjconf['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()) )
-PLUGINS    = [openvpn, iptables, shaping]
+PLUGINS    = [openvpn, iptables, shaping, hosts]
 
 print 'Using base configuration file: %s' % BASE_FILE
 print 'Using local configuration file: %s' % LOCAL_FILE

@@ -3,7 +3,9 @@
 from pprint import pprint
 
 import os
+import time
 import iptables
+import hosts
 
 SERVICE_NAME='openvpn'
 OPENVPN_CONFDIR='/etc/openvpn/'
@@ -40,6 +42,7 @@ def init(sjconf, base, local, config):
 
         if local[i]['mode'] == 'server':
             iptables.custom_rule(open(sjconf['conf']['base_path'] + '/' + intervpn['intervpn:iptables_template'], 'r').read() % intervpn)
+            hosts.custom_host(intervpn['intervpn:remote_peer_hostname'], intervpn['intervpn:remote_peer'])
 
 def get_conf_files():
     global conf_files
@@ -81,5 +84,8 @@ def restart_service(already_restarted):
     if SERVICE_NAME not in already_restarted:
         already_restarted += [SERVICE_NAME]
         print "Restarting service: %s" % (SERVICE_NAME)
-        return os.system('%s restart' % INITD)
+        ret = os.system('%s restart' % INITD)
+        time.sleep(5)
+        hosts.restart_service(already_restarted)
+        return ret
     return 0
