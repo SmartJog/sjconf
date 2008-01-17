@@ -30,6 +30,7 @@ global files_to_backup
 global delete_sections
 global delete_keys
 global sets
+global get
 global deploy
 global restart
 global save
@@ -37,13 +38,14 @@ global diff
 global verbose
 
 config          = {}
-config_files      = []
+config_files     = []
 files_to_backup = []
+get             = []
 sets            = []
 delete_keys     = []
 delete_sections = []
+restart         = []
 deploy          = False
-restart         = False
 save            = False
 diff            = False
 verbose         = False
@@ -109,9 +111,11 @@ def restore_files():
 
 
 def restart_services():
+    global restart
     already_restart = []
     for plugin in PLUGINS:
-        plugin.restart_service(already_restart)
+        if plugin.SERVICE_NAME in restart or 'all' in restart:
+            plugin.restart_service(already_restart)
 
 
 def apply_confs():
@@ -255,7 +259,9 @@ while len(argv):
         elif cmd == '--save':
             save = True
         elif cmd == '--restart':
-            restart = True
+            restart += get_params(argv, 1)
+        elif cmd == '--get':
+            get = get_params(argv, 2)
         elif cmd == '--set':
             sets += [get_params(argv, 3)]
         elif cmd == '--delete-section':
@@ -270,13 +276,23 @@ while len(argv):
         usage(1)
 
 
+changes = (sets or delete_sections or delete_keys)
 
+
+if get:
+    if changes or deploy or save or restart:
+        print 'Cannot mix get command and other command'
+        sys.exit(0)
+    if get[0] in local and get[1] in local[get[0]]:
+        print local[get[0]][get[1]]
+        sys.exit(0)
+    else:
+        sys.exit(1)
+        
 if verbose:
     print 'Using base configuration file: %s' % BASE_FILE
     print 'Using local configuration file: %s' % LOCAL_FILE
     print ''
-
-changes = sets or delete_sections or delete_keys
 
 if changes and deploy and not (save):
     print 'You should add the --save parameter to save configuration before deploying it'
@@ -290,6 +306,9 @@ else:
     if changes:
         print "No configuration saved (use --save)\n"
         sys.exit(1)
+
+if not deploy and restart:
+    restart_services()
     
 if deploy:
     deploy_conf()
