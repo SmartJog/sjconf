@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import os, pprint
+import os
 
 SERVICE_NAME="iptables"
 IPTABLES_CONFFILE="/etc/default/sjiptables"
@@ -28,15 +28,6 @@ def get_conf_files():
     conf_file['content'] += '\n' + '#Custom tules\n'  + '\n'.join(custom_rules)
     return [conf_file]
 
-def save_confs():
-    pass
-
-def apply_confs():
-    pass
-
-def rollback_confs():
-    pass
-
 def get_files_to_backup():
     if os.path.isfile(IPTABLES_CONFFILE):
         return [{'service' : SERVICE_NAME,
@@ -44,17 +35,14 @@ def get_files_to_backup():
     return []
 
 def restore_files(to_restore):
-    pprint(to_restore)
     for file in list(to_restore):
         if file['service'] == SERVICE_NAME:
             if os.path.isfile(file['path']):
                 os.unlink(file['path'])
             os.rename(file['backup_path'], file['path'])
             to_restore.remove(file)
-    pprint(to_restore)
 
 def restart_service(already_restarted):
     if SERVICE_NAME not in already_restarted:
         already_restarted += [SERVICE_NAME]
-        return os.system(INITD + "restart")
-    return 0
+        os.system(INITD + "restart")
