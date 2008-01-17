@@ -9,7 +9,7 @@ SHAPING_CONFFILE='/etc/default/sjshaping'
 
 INITD='/etc/init.d/sjnetworking shaping-'
 
-conf_file = {}
+conf_file = None
 shapes = []
 
 def init(sjconf, base, local, config):
@@ -18,7 +18,6 @@ def init(sjconf, base, local, config):
 
     if not config['network:shaping'].strip():
         return
-
 
     conf_file = {
         'service'  : SERVICE_NAME,
@@ -36,6 +35,8 @@ def init(sjconf, base, local, config):
 
 def get_conf_files():
     global conf_file
+    if not conf_file:
+        return []
     conf_file['content'] += '\n\n'.join(shapes)
     return [conf_file]
 

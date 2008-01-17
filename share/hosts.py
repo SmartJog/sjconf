@@ -4,7 +4,7 @@ from pprint import pprint
 
 import os
 
-SERVICE_NAME='shaping'
+SERVICE_NAME='hosts'
 HOSTS_CONFFILE='/etc/hosts'
 
 conf_file = {}
@@ -13,10 +13,6 @@ hosts = []
 def init(sjconf, base, local, config):
     global conf_file
     global hosts
-
-    if not config['network:shaping'].strip():
-        return
-
 
     conf_file = {
         'service'  : SERVICE_NAME,

@@ -16,7 +16,13 @@ sys.path   += [sjconf['conf']['plugins_path']]
 
 import openvpn, iptables, shaping, hosts
 
+BASE_FILE  = os.path.realpath(sjconf['conf']['base_path'] + '/base.conf')
+LOCAL_FILE = os.path.realpath(sjconf['conf']['base_path'] + '/local.conf')
+BACKUP_DIR = os.path.realpath(sjconf['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()) )
+PLUGINS    = [openvpn, iptables, shaping, hosts]
 
+base            = load_conf(BASE_FILE)
+local           = load_conf(LOCAL_FILE)
 
 def print_traceback():
     traceback.print_exc(file=sys.stdout)
@@ -91,51 +97,137 @@ def deploy_confs():
         open(conf['path'], "w").write(conf['content'])
     print ''
 
-BASE_FILE  = os.path.realpath(sjconf['conf']['base_path'] + '/base.conf')
-LOCAL_FILE = os.path.realpath(sjconf['conf']['base_path'] + '/local.conf')
-BACKUP_DIR = os.path.realpath(sjconf['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()) )
-PLUGINS    = [openvpn, iptables, shaping, hosts]
+def deploy():
+
+    config          = {}
+    conf_files       = []
+    files_to_backup = []
+
+    for dic_key in base:
+        for key in base[dic_key]:
+            config['%s:%s' % (dic_key, key)] = base[dic_key][key]
+
+    for dic_key in local:
+        for key in local[dic_key]:
+            config['%s:%s' % (dic_key, key)] = local[dic_key][key]
+
+    for plugin in PLUGINS:
+        plugin.init(sjconf, base, local, config)
+
+    for plugin in PLUGINS:
+        conf_files += plugin.get_conf_files()
+
+    backup_files()
+
+    try:
+        archive_backup()
+        print ''
+        deploy_confs()
+        restart_services()
+        print ''
+    except:
+        print_traceback()
+        restore_files()
+        delete_backup_dir()
+        sys.exit(0)
+
+    #FIXME TO remove
+    #restore_files()
+
+
+    delete_backup_dir()
+
+global delete_sections
+global delete_keys
+global sets
+
+
+deploy=True
+restart=True
+sets=[]
+delete_keys=[]
+delete_sections=[]
+
+def usage(exit_code):
+    print '''sjconf usage:
+    --deploy                 : deploy configuration
+    --restart                : restart all services 
+    --set section key value  : set a configuration key
+    --delete-key section key : delete a key within a section
+    --delete-section section : delete a complete section
+
+No modification done on configuration
+    '''
+    sys.exit(exit_code)
+
+
+def apply_conf_modifications():
+    global local
+    global delete_sections
+    global delete_keys
+    global sets
+
+    print sets
+    print delete_keys
+    print delete_sections
+
+    for section in delete_sections:
+        if section in local:
+            del(local[section])
+        print 'delete section %s' % (section)
+
+    for section, key in delete_keys:
+        if section in local:
+            del(local[section][key])
+        print 'delete key %s:%s' % (section, key)
+
+    for section, key, value in sets:
+        local.setdefault(section, {})
+        local[section][key] = value
+        print 'set %s:%s=%s' % (section, key, value)
+
+
+argv = list(sys.argv)
+bin, argv = argv[0], argv[1:]
+if not argv:
+    usage(1)
+
+class BadParam:
+    def __init__(self, name):
+        self.name = name
+
+def get_params(argv, nb):
+    if len(argv) < nb:
+        raise BadParam("nb")
+    ret = argv[0:nb]
+    for i in range(0, nb):
+        argv.pop(0)
+    return [ret]
+
+while len(argv):
+    cmd, argv = argv[0], argv[1:]
+    try:
+        if cmd == '--deploy':
+            deploy = True
+        elif cmd == '--restart':
+            restart = True
+        elif cmd == '--set':
+            sets += get_params(argv, 3)
+        elif cmd == '--delete-section':
+            delete_sections += get_params(argv, 1)
+        elif cmd == '--delete-key':
+            delete_keys += get_params(argv, 2)
+        else:
+            print 'Incorrect command : %s\n' % cmd
+            usage(1)
+    except BadParam, param:
+        print 'Incorrect %s command\n' % param
+        usage(1)
+
+
 
 print 'Using base configuration file: %s' % BASE_FILE
 print 'Using local configuration file: %s' % LOCAL_FILE
 print ''
 
-base            = load_conf(BASE_FILE)
-local           = load_conf(LOCAL_FILE)
-config          = {}
-conf_files       = []
-files_to_backup = []
-
-for dic_key in base:
-    for key in base[dic_key]:
-        config['%s:%s' % (dic_key, key)] = base[dic_key][key]
-
-for dic_key in local:
-    for key in local[dic_key]:
-        config['%s:%s' % (dic_key, key)] = local[dic_key][key]
-
-for plugin in PLUGINS:
-    plugin.init(sjconf, base, local, config)
-
-for plugin in PLUGINS:
-    conf_files += plugin.get_conf_files()
-
-backup_files()
-
-try:
-    archive_backup()
-    print ''
-    deploy_confs()
-    restart_services()
-    print ''
-except:
-    print_traceback()
-    restore_files()
-    delete_backup_dir()
-    sys.exit(0)
-
-#FIXME TO remove
-#restore_files()
-
-
-delete_backup_dir()
+apply_conf_modifications()
