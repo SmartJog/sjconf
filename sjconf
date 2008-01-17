@@ -92,14 +92,14 @@ def restart_services():
         plugin.restart_service(already_restart)
 
 
-def deploy_confs():
+def apply_confs():
     global conf_files
     for conf in conf_files:
         print "Writing configuration file %(path)s (%(service)s)" % conf
         open(conf['path'], "w").write(conf['content'])
     print ''
 
-def deploy():
+def deploy_conf():
 
     config          = {}
     conf_files       = []
@@ -124,7 +124,7 @@ def deploy():
     try:
         archive_backup()
         print ''
-        deploy_confs()
+        apply_confs()
         restart_services()
         print ''
     except:
@@ -142,7 +142,11 @@ def deploy():
 global delete_sections
 global delete_keys
 global sets
-
+global deploy
+global restart
+global save
+global diff
+global verbose
 
 deploy=False
 restart=False
@@ -150,17 +154,23 @@ sets=[]
 delete_keys=[]
 delete_sections=[]
 save=False
+diff=False
+verbose=False
 
 def usage(exit_code):
     print '''sjconf usage:
+    --diff                   : show 'diff -u' between old and new configuration files
+    --save                   : save modification (mandatory to deploy)
     --deploy                 : deploy configuration
     --restart                : restart all services 
     --set section key value  : set a configuration key
     --delete-key section key : delete a key within a section
     --delete-section section : delete a complete section
+'''
 
-No modification done on configuration
-    '''
+    if exit_code:
+        print "No modification done on configuration"
+
     sys.exit(exit_code)
 
 
@@ -171,7 +181,7 @@ def apply_conf_modifications(out_file, show):
     global sets
 
     if sets or delete_keys or delete_sections:
-        print "######## Configuration modifications ############"
+        print "########## Scheduled modifications ##############"
 
         for section in delete_sections:
             if section in local:
@@ -188,24 +198,32 @@ def apply_conf_modifications(out_file, show):
             local.setdefault(section, {})
             local[section][key] = value
             print 'set            : %s:%s=%s' % (section, key, value)
-
-        cp = ConfigParser.RawConfigParser()
-        for section in local:
-            cp.add_section(section)
-            for key in local[section]:
-                cp.set(section, key, local[section][key])
         print "#################################################\n"
+
+    cp = ConfigParser.RawConfigParser()
+    for section in local:
+        cp.add_section(section)
+        for key in local[section]:
+            cp.set(section, key, local[section][key])
 
     cp.write(open(out_file, "w"))
     if show:
-        cp.write(sys.stdout)
+        print "############### local.conf diffs ################"
+        os.system("diff -U -1 %s %s" % (LOCAL_FILE, TEMP_FILE))
+        print "#################################################\n"
 
 
 
 argv = list(sys.argv)
 bin, argv = argv[0], argv[1:]
 if not argv:
-    usage(1)
+    if verbose:
+        print 'Using base configuration file: %s' % BASE_FILE
+        print 'Using local configuration file: %s' % LOCAL_FILE
+        print ''
+
+    print open(LOCAL_FILE, "r").read()
+    sys.exit(0)
 
 class BadParam:
     def __init__(self, name):
@@ -224,6 +242,12 @@ while len(argv):
     try:
         if cmd == '--deploy':
             deploy = True
+        elif cmd == '-h' or cmd == '--help':
+             usage(0)
+        elif cmd == '-v' or cmd == '--verbose':
+            verbose = True
+        elif cmd == '--diff':
+            diff = True
         elif cmd == '--save':
             save = True
         elif cmd == '--restart':
@@ -243,21 +267,24 @@ while len(argv):
 
 
 
-print 'Using base configuration file: %s' % BASE_FILE
-print 'Using local configuration file: %s' % LOCAL_FILE
-print ''
+if verbose:
+    print 'Using base configuration file: %s' % BASE_FILE
+    print 'Using local configuration file: %s' % LOCAL_FILE
+    print ''
 
-if (sets or delete_sections or delete_keys) and deploy and not (save):
+changes = sets or delete_sections or delete_keys
+
+if changes and deploy and not (save):
     print 'You should add the --save parameter to save configuration before deploying it'
     sys.exit(1)
 
-if sets or delete_sections or delete_keys:
-    if save:
-        apply_conf_modifications(LOCAL_FILE, False)
-        print 'Configuration saved\n'
-    else:
-        apply_conf_modifications(TEMP_FILE, True)
-        print "Configuration not saved (use --save)\n"
-        sys.exit(1)
-        
+if save:
+    apply_conf_modifications(LOCAL_FILE, False)
+    print 'Configuration saved\n'
+else:
+    apply_conf_modifications(TEMP_FILE, diff)
+    if changes:
+        print "No configuration saved (use --save)\n"
+    sys.exit(1)
+    
 
