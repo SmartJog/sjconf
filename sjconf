@@ -5,6 +5,7 @@ from pprint import pprint
 
 
 def load_conf(filename):
+    # Configuration file loader
     if not os.path.isfile(filename):
         sys.stderr.write('Cannot open file %s\n' % filename)
         sys.exit(1)
@@ -13,10 +14,14 @@ def load_conf(filename):
     return dict(map(lambda a, b:  (a , dict(cp.items(a))), cp.sections(), {}))
     
 sjconf     = load_conf('/etc/default/sjconf')
+
+# Adding plugin folder to sys path
 sys.path   += [sjconf['conf']['plugins_path']]
 
+# and import known plugins
 import openvpn, iptables, shaping, hosts
 
+# Defining usefull variables
 BASE_FILE  = os.path.realpath(sjconf['conf']['base_path'] + '/base.conf')
 LOCAL_FILE = os.path.realpath(sjconf['conf']['base_path'] + '/local.conf')
 BACKUP_DIR = os.path.realpath(sjconf['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()) )
@@ -26,6 +31,7 @@ TEMP_FILE  = "/tmp/sjconf_tempfile.conf"
 base            = load_conf(BASE_FILE)
 local           = load_conf(LOCAL_FILE)
 
+# Global variables used on functions
 global files_to_backup
 global delete_sections
 global delete_keys
@@ -38,7 +44,7 @@ global diff
 global verbose
 
 config          = {}
-config_files     = []
+config_files    = []
 files_to_backup = []
 get             = []
 sets            = []
@@ -60,9 +66,11 @@ def backup_files():
     print "Backup folder : %s" % BACKUP_DIR
     os.makedirs(BACKUP_DIR)
 
+    # Ask all plugins a list of files that I should backup for them
     for plugin in PLUGINS:
         files_to_backup += plugin.get_files_to_backup()
 
+    # Store all files into a service dedicated folder
     for file in files_to_backup:
         if not os.path.isdir( BACKUP_DIR + '/' + file['service']):
             os.makedirs(BACKUP_DIR + '/' + file['service'])
@@ -71,9 +79,12 @@ def backup_files():
 
 
 def archive_backup():
+    # Once configuration is saved, we can archive backup into a tgz
+
     path    = "%s/sjconf_backup_%s.tgz" % (os.path.dirname(BACKUP_DIR), os.path.basename(BACKUP_DIR))
     print "Backup file : %s" % path
 
+    # Using popen to know program output
     tar     = popen2.Popen3( "tar zcvf %s %s" % (path, BACKUP_DIR) , True)
     fdout   = tar.fromchild.fileno()
     fderr   = tar.childerr.fileno()
@@ -85,6 +96,7 @@ def archive_backup():
         print "tar output:\n\n" + daterr
 
 def delete_backup_dir(dir=None):
+    # Once backup has been archived, delete it
     if dir == None:
         dir = BACKUP_DIR
         print "Deleting folder %s" % dir
@@ -98,14 +110,17 @@ def delete_backup_dir(dir=None):
     os.rmdir(dir)
     
 def restore_files():
+    # Something went wrong
     global config_files
     global files_to_backup
 
     print "Restoring files from %s" % BACKUP_DIR
     
+    # Unlink all conf files just created
     for file in config_files:
         os.unlink(file['path'])
 
+    # Restore backup files
     for file in files_to_backup:
         os.rename(file['backup_path'], file['path'])
 
@@ -120,6 +135,7 @@ def restart_services():
 
 def apply_confs():
     global config_files
+    # Open and write all configuration files
     for conf in config_files:
         print "Writing configuration file %(path)s (%(service)s)" % conf
         open(conf['path'], "w").write(conf['content'])
@@ -130,39 +146,48 @@ def deploy_conf():
     global config_files
     global config
 
+    # Creating a dict with list of base conf dicts
     for dic_key in base:
         for key in base[dic_key]:
             config['%s:%s' % (dic_key, key)] = base[dic_key][key]
 
+    # Updating this dict with list of local conf dicts
     for dic_key in local:
         for key in local[dic_key]:
             config['%s:%s' % (dic_key, key)] = local[dic_key][key]
 
+    # Init all plugins (they will create their file internaly and communicate with other plugins)
     for plugin in PLUGINS:
         plugin.init(sjconf, base, local, config)
 
+    # Once each plugin has finished, get conf files
     for plugin in PLUGINS:
         config_files += plugin.get_conf_files()
 
+    # Backup all files
     backup_files()
 
     try:
-        archive_backup()
-        print ''
+        # Write all configuration files
         apply_confs()
-        if restart:
+
+        # restart services if asked (--restart)
+        if restart: 
             restart_services()
         print ''
     except:
         print_traceback()
+        # Something when wrong, restoring backup files
         restore_files()
+        # And delete backup folder
         delete_backup_dir()
         sys.exit(0)
 
-    #FIXME TO remove
-    #restore_files()
+    # Only archive once everything is OK
+    archive_backup()
+    print ''
 
-
+    # Delete backup, everything is cool
     delete_backup_dir()
 
 def usage(exit_code):
