@@ -51,4 +51,6 @@ def restart_service(sjconf, already_restarted):
 
     if SERVICE_NAME not in already_restarted:
         already_restarted += [SERVICE_NAME]
-        os.system(INITD + "restart")
+        if os.system(INITD + "restart"):
+            return False
+    return True

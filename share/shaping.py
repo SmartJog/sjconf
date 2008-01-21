@@ -59,7 +59,10 @@ def restore_files(to_restore):
 def restart_service(sjconf, already_restarted):
     global INITD
     INITD = sjconf['conf']['etc_dir'] + INITD
+
     # Restart sjnetworking shaping if not already done
     if SERVICE_NAME not in already_restarted:
         already_restarted += [SERVICE_NAME]
-        os.system(INITD + "restart")
+        if os.system(INITD + "restart"):
+            return False
+    return True

@@ -131,8 +131,9 @@ def restart_services():
     already_restart = []
     for plugin in PLUGINS:
         if plugin.SERVICE_NAME in restart or 'all' in restart:
-            plugin.restart_service(sjconf, already_restart)
-
+            if not plugin.restart_service(sjconf, already_restart):
+                restore_files()
+                break
 
 def apply_confs():
     global config_files

@@ -85,17 +85,23 @@ def restore_files(to_restore):
 def restart_service(sjconf, already_restarted):
     global INITD
     INITD = sjconf['conf']['etc_dir'] + INITD
-    iptables.restart_service(sjconf, already_restarted)
+    if not iptables.restart_service(sjconf, already_restarted):
+        return False
+
     if SERVICE_NAME not in already_restarted:
         already_restarted += [SERVICE_NAME]
         print "Restarting service: %s" % (SERVICE_NAME)
-        ret = os.system('%s restart' % (INITD))
+        if os.system('%s restart' % (INITD)):
+            return False
         # Sleep 5 seconds to let openvpn some time to create tun devices (for shaping)
         time.sleep(5)
         # A vpn tun device may be shaped, restasrting shaping service
-        shaping.restart_service(sjconf, already_restarted)
+        if not shaping.restart_service(sjconf, already_restarted):
+            return False
         # We need to update hosts as some garbage may remain or host be missing
-        hosts.restart_service(sjconf, already_restarted)
+        if not hosts.restart_service(sjconf, already_restarted):
+            return False
+    return True
 
 def get_conf_files():
     global conf_files

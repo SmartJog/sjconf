@@ -53,4 +53,4 @@ def restore_files(to_restore):
 
 def restart_service(sjconf, already_restarted):
     # No need to restart anything with etc/hosts
-    pass
+    return True
