@@ -51,6 +51,6 @@ def restore_files(to_restore):
             os.rename(file['backup_path'], file['path'])
             to_restore.remove(file)
 
-def restart_service(already_restarted):
+def restart_service(sjconf, already_restarted):
     # No need to restart anything with etc/hosts
     pass

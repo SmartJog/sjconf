@@ -4,7 +4,7 @@ import os
 
 SERVICE_NAME='shaping'
 SHAPING_CONFFILE='/default/sjshaping'
-INITD='/etc/init.d/sjnetworking shaping-'
+INITD='/init.d/sjnetworking shaping-'
 
 conf_file = None
 shapes = []
@@ -12,9 +12,10 @@ shapes = []
 def init(sjconf, base, local, config):
     global conf_file
     global shapes
-    global SHAPING_CONFFILE
+    global SHAPING_CONFFILE, INITD
 
     SHAPING_CONFFILE = sjconf['conf']['etc_dir'] + SHAPING_CONFFILE
+    INITD = sjconf['conf']['etc_dir'] + INITD
 
     conf_file = {
         'service'  : SERVICE_NAME,
@@ -55,7 +56,9 @@ def restore_files(to_restore):
             os.rename(file['backup_path'], file['path'])
             to_restore.remove(file)
 
-def restart_service(already_restarted):
+def restart_service(sjconf, already_restarted):
+    global INITD
+    INITD = sjconf['conf']['etc_dir'] + INITD
     # Restart sjnetworking shaping if not already done
     if SERVICE_NAME not in already_restarted:
         already_restarted += [SERVICE_NAME]

@@ -4,15 +4,16 @@ import os
 
 SERVICE_NAME="iptables"
 IPTABLES_CONFFILE="/default/sjiptables"
-INITD="/etc/init.d/sjnetworking iptables-"
+INITD="/init.d/sjnetworking iptables-"
 
 custom_rules = []
 conf_file = {}
 
 def init(sjconf, base, local, config):
-    global conf_file, IPTABLES_CONFFILE
+    global conf_file, IPTABLES_CONFFILE, INITD
 
     IPTABLES_CONFFILE = sjconf['conf']['etc_dir'] + IPTABLES_CONFFILE
+    INITD = sjconf['conf']['etc_dir'] + INITD
 
     conf_file = {
         'service'  : SERVICE_NAME,
@@ -44,7 +45,10 @@ def restore_files(to_restore):
             os.rename(file['backup_path'], file['path'])
             to_restore.remove(file)
 
-def restart_service(already_restarted):
+def restart_service(sjconf, already_restarted):
+    global INITD
+    INITD = sjconf['conf']['etc_dir'] + INITD
+
     if SERVICE_NAME not in already_restarted:
         already_restarted += [SERVICE_NAME]
         os.system(INITD + "restart")

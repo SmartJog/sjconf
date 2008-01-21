@@ -76,8 +76,7 @@ def backup_files():
         if not os.path.isdir( BACKUP_DIR + '/' + file['service']):
             os.makedirs(BACKUP_DIR + '/' + file['service'])
         file['backup_path'] = BACKUP_DIR + '/' + file['service'] + '/' + os.path.basename(file['path'])
-        print file['path'], file['backup_path']
-        #os.rename(file['path'], file['backup_path'])
+        os.rename(file['path'], file['backup_path'])
 
 
 def archive_backup():
@@ -132,7 +131,7 @@ def restart_services():
     already_restart = []
     for plugin in PLUGINS:
         if plugin.SERVICE_NAME in restart or 'all' in restart:
-            plugin.restart_service(already_restart)
+            plugin.restart_service(sjconf, already_restart)
 
 
 def apply_confs():
