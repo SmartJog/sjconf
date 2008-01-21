@@ -3,7 +3,7 @@
 import os
 
 SERVICE_NAME='hosts'
-HOSTS_CONFFILE='/etc/hosts'
+HOSTS_CONFFILE='/hosts'
 
 conf_file = {}
 hosts = []
@@ -11,6 +11,9 @@ hosts = []
 def init(sjconf, base, local, config):
     global conf_file
     global hosts
+    global HOSTS_CONFFILE
+
+    HOSTS_CONFFILE  = sjconf['conf']['etc_dir'] + HOSTS_CONFFILE
 
     # We take the basic template and will update it later on demand
     conf_file = {

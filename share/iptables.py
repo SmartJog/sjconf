@@ -3,14 +3,16 @@
 import os
 
 SERVICE_NAME="iptables"
-IPTABLES_CONFFILE="/etc/default/sjiptables"
+IPTABLES_CONFFILE="/default/sjiptables"
 INITD="/etc/init.d/sjnetworking iptables-"
 
 custom_rules = []
 conf_file = {}
 
 def init(sjconf, base, local, config):
-    global conf_file
+    global conf_file, IPTABLES_CONFFILE
+
+    IPTABLES_CONFFILE = sjconf['conf']['etc_dir'] + IPTABLES_CONFFILE
 
     conf_file = {
         'service'  : SERVICE_NAME,

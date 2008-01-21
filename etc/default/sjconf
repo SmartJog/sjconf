@@ -2,3 +2,4 @@
 base_path=/etc/smartjog
 plugins_path=/usr/share/sjconf/
 backup_dir=/tmp/backup
+etc_dir=/etc

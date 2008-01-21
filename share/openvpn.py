@@ -8,7 +8,7 @@ import iptables
 import hosts
 
 SERVICE_NAME='openvpn'
-OPENVPN_CONFDIR='/etc/openvpn/'
+OPENVPN_CONFDIR='/openvpn/'
 
 INITD='/etc/init.d/openvpn'
 
@@ -16,7 +16,9 @@ INITD='/etc/init.d/openvpn'
 conf_files = []
 
 def init(sjconf, base, local, config):
-    global conf_files
+    global conf_files, OPENVPN_CONFDIR
+
+    OPENVPN_CONFDIR = sjconf['conf']['etc_dir'] + OPENVPN_CONFDIR
 
     # main openvpn configuration file
     conf_files = [{
@@ -43,7 +45,7 @@ def init(sjconf, base, local, config):
         conf_files += [{
             'service'  : SERVICE_NAME,
             'restart'  : INITD,
-            'path'     : os.path.realpath('%s/%s.conf' % (OPENVPN_CONFDIR, i)), \
+            'path'     : os.path.realpath('%s/%s.conf' % (OPENVPN_CONFDIR, i)),
             'content'  : open(sjconf['conf']['base_path'] + '/' + intervpn['intervpn:template'], 'r').read() % intervpn}]
 
         if local[i]['mode'] == 'server':

@@ -25,6 +25,7 @@ import openvpn, iptables, shaping, hosts
 BASE_FILE  = os.path.realpath(sjconf['conf']['base_path'] + '/base.conf')
 LOCAL_FILE = os.path.realpath(sjconf['conf']['base_path'] + '/local.conf')
 BACKUP_DIR = os.path.realpath(sjconf['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()) )
+ETC_DIR    = os.path.realpath(sjconf['conf']['etc_dir'])
 PLUGINS    = [openvpn, iptables, shaping, hosts]
 TEMP_FILE  = "/tmp/sjconf_tempfile.conf"
 
@@ -75,7 +76,8 @@ def backup_files():
         if not os.path.isdir( BACKUP_DIR + '/' + file['service']):
             os.makedirs(BACKUP_DIR + '/' + file['service'])
         file['backup_path'] = BACKUP_DIR + '/' + file['service'] + '/' + os.path.basename(file['path'])
-        os.rename(file['path'], file['backup_path'])
+        print file['path'], file['backup_path']
+        #os.rename(file['path'], file['backup_path'])
 
 
 def archive_backup():

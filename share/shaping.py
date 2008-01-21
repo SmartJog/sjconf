@@ -3,7 +3,7 @@
 import os
 
 SERVICE_NAME='shaping'
-SHAPING_CONFFILE='/etc/default/sjshaping'
+SHAPING_CONFFILE='/default/sjshaping'
 INITD='/etc/init.d/sjnetworking shaping-'
 
 conf_file = None
@@ -12,11 +12,14 @@ shapes = []
 def init(sjconf, base, local, config):
     global conf_file
     global shapes
+    global SHAPING_CONFFILE
+
+    SHAPING_CONFFILE = sjconf['conf']['etc_dir'] + SHAPING_CONFFILE
 
     conf_file = {
         'service'  : SERVICE_NAME,
         'restart'  : INITD,
-        'path'     : os.path.realpath(SHAPING_CONFFILE), \
+        'path'     : os.path.realpath(SHAPING_CONFFILE),
         'content'  : ''}
 
     # No shaping to do, return
