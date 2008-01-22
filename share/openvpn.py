@@ -93,7 +93,8 @@ def restore_files(to_restore):
     for file in os.listdir(OPENVPN_CONFDIR):
         path = os.path.isfile(OPENVPN_CONFDIR + '/' + file)
         if os.path.isfile(path):
-            if not (file.endswith('.crt') or file.endswith('.key')):
+            if not (file.endswith('.crt') or file.endswith('.key') or
+                    file.endswith('.upd.conf') or file.endswith('.tcp.conf')):
                 os.unlink(path)
 
     # And put back old files that are on the backup directory

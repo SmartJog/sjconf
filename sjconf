@@ -132,8 +132,7 @@ def restart_services():
     for plugin in PLUGINS:
         if plugin.SERVICE_NAME in restart or 'all' in restart:
             if not plugin.restart_service(sjconf, already_restart):
-                restore_files()
-                break
+                raise Exception('Failed to restart all services.')
 
 def apply_confs():
     global config_files
@@ -181,6 +180,8 @@ def deploy_conf():
         print_traceback()
         # Something when wrong, restoring backup files
         restore_files()
+        if restart: 
+            restart_services()
         # And delete backup folder
         delete_backup_dir()
         sys.exit(0)
