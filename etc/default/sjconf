@@ -1,5 +1,5 @@
 [conf]
-base_path=/home/abique/develop/sjconf/etc/smartjog
-plugins_path=/home/abique/develop/sjconf/share
-backup_dir=/home/abique/develop/sjconf/tmp
-etc_dir=/home/abique/develop/sjconf/etc_out
+base_path=/etc/smartjog
+plugins_path=/usr/share/sjconf/
+backup_dir=/tmp/backup
+etc_dir=/etc
