@@ -13,7 +13,7 @@ def load_conf(filename):
     cp.read(filename)
     return dict(map(lambda a, b:  (a , dict(cp.items(a))), cp.sections(), {}))
     
-sjconf     = load_conf('/etc/default/sjconf')
+sjconf     = load_conf('/etc/smartjog/sjconf')
 
 # Adding plugin folder to sys path
 sys.path   += [sjconf['conf']['plugins_path']]
