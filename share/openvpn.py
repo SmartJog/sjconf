@@ -10,6 +10,7 @@ import shaping
 
 SERVICE_NAME='openvpn'
 OPENVPN_CONFDIR='/openvpn/'
+DEFAULT_OPENVPN_CONFDIR='/default/openvpn'
 
 INITD='/init.d/openvpn'
 
@@ -17,21 +18,36 @@ INITD='/init.d/openvpn'
 conf_files = []
 
 def init(sjconf, base, local, config):
-    global conf_files, OPENVPN_CONFDIR, INITD
+    global conf_files, OPENVPN_CONFDIR, DEFAULT_OPENVPN_CONFDIR, INITD
 
     OPENVPN_CONFDIR = sjconf['conf']['etc_dir'] + OPENVPN_CONFDIR
+    DEFAULT_OPENVPN_CONFDIR = sjconf['conf']['etc_dir'] + DEFAULT_OPENVPN_CONFDIR
     INITD = sjconf['conf']['etc_dir'] + INITD
 
+    conf_files = []
+
+    def init_autostart(conf_files):
+        conf_files += [{
+                'service' : SERVICE_NAME,
+                'restart' : INITD,
+                'path'    : DEFAULT_OPENVPN_CONFDIR,
+                'content' : open(sjconf['conf']['base_path'] + '/' + config['vpn:autostart_template'],
+                                 'r').read() % config
+                }]
+
     # main openvpn configuration file
-    conf_files = [{
-        'service'  : SERVICE_NAME,
-        'restart'  : INITD,
-        'path'     : os.path.realpath('%s/%s.conf' % (OPENVPN_CONFDIR, local['rxtx']['hostname'])),
-        'content'  : open(sjconf['conf']['base_path'] + '/' + config['vpn:template'], 'r').read() % config
-        }]
+    for proto in ['upd', 'tcp']:
+        config['vpn:proto'] = proto
+        conf_files += [{
+                'service'  : SERVICE_NAME,
+                'restart'  : INITD,
+                'path'     : os.path.realpath('%s/%s.%s.conf' % (OPENVPN_CONFDIR, local['rxtx']['hostname'], proto)),
+                'content'  : open(sjconf['conf']['base_path'] + '/' + config['vpn:template'], 'r').read() % config
+                }]
 
     # No inter-rxtx vpn, returning
     if not config['network:intervpns'].strip():
+        init_autostart(conf_files)
         return
 
     # Iterate on all inter-rxtx vpns
@@ -56,13 +72,17 @@ def init(sjconf, base, local, config):
 
         # Ask hosts service to add a host to this file
         hosts.custom_host(intervpn['intervpn:remote_peer_hostname'], intervpn['intervpn:remote_peer'])
+        config['vpn:autostart'] += " %s" % i
+
+    init_autostart(conf_files)
 
 # We ask for sjconf to move from the way and backup all files that are not .key or .crt
 def get_files_to_backup():
     to_backup = []
     for file in os.listdir(OPENVPN_CONFDIR):
         if os.path.isfile(OPENVPN_CONFDIR + '/' + file):
-            if not (file.endswith('.crt') or file.endswith('.key')):
+            if not (file.endswith('.crt') or file.endswith('.key') or
+                    file.endswith('.upd.conf') or file.endswith('.tcp.conf')):
                 to_backup += [{'service' : SERVICE_NAME,
                                'path'    : OPENVPN_CONFDIR + '/' + file}]
     return to_backup
