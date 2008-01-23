@@ -3,12 +3,14 @@
 import traceback, time, os, sys, popen2, ConfigParser
 from pprint import pprint
 
+def my_exit():
+    os.execv("/bin/false", ['/bin/false'])
 
 def load_conf(filename):
     # Configuration file loader
     if not os.path.isfile(filename):
         sys.stderr.write('Cannot open file %s\n' % filename)
-        sys.exit(1)
+        my_exit()
     cp = ConfigParser.RawConfigParser()
     cp.read(filename)
     return dict(map(lambda a, b:  (a , dict(cp.items(a))), cp.sections(), {}))
@@ -163,11 +165,17 @@ def restart_services():
 def apply_confs():
     global config_files
     # Open and write all configuration files
-    for conf in config_files:
-        print "Writing configuration file %(path)s (%(service)s)" % conf
-        open(conf['path'], "w").write(conf['content'])
-        conf['written'] = True
-    print ''
+    try:
+        for conf in config_files:
+            print "Writing configuration file %(path)s (%(service)s)" % conf
+            open(conf['path'], "w").write(conf['content'])
+            conf['written'] = True
+        print ''
+    except Exception, e:
+        print "Failed to write configuration: %s.\nRestoring..." % str(e)
+        restore_files()
+        restart_services()
+        my_exit()
 
 def deploy_conf():
     global files_to_backup
