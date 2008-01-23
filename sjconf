@@ -12,7 +12,7 @@ def load_conf(filename):
     cp = ConfigParser.RawConfigParser()
     cp.read(filename)
     return dict(map(lambda a, b:  (a , dict(cp.items(a))), cp.sections(), {}))
-    
+
 sjconf     = load_conf('/etc/smartjog/sjconf')
 
 # Adding plugin folder to sys path
@@ -79,8 +79,12 @@ def backup_files():
     os.makedirs(BACKUP_DIR)
 
     # Ask all plugins a list of files that I should backup for them
-    for plugin in PLUGINS:
-        files_to_backup += plugin.get_files_to_backup()
+    try:
+        for plugin in PLUGINS:
+            files_to_backup += plugin.get_files_to_backup()
+    except Exception, e:
+        print "Fails to get files to backup: " + str(e)
+        sys.exit(1)
 
     os.makedirs(BACKUP_DIR + '/sjconf/')
     ret = exec_command("cp '%s' '%s'" % (LOCAL_FILE, BACKUP_DIR + '/sjconf/local.conf'))
@@ -126,14 +130,14 @@ def delete_backup_dir(dir=None):
         elif os.path.isfile(path):
             os.unlink(path)
     os.rmdir(dir)
-    
+
 def restore_files():
     # Something went wrong
     global config_files
     global files_to_backup
 
     print "Restoring files from %s" % BACKUP_DIR
-    
+
     # Unlink all conf files just created
     for file in config_files:
         if 'written' in file and file['written'] and os.path.isfile(file['path']):
@@ -147,7 +151,7 @@ def restore_files():
                 print ret
                 print "Please restore files manually from %s" % BACKUP_DIR
                 return ret
-            
+
 def restart_services():
     global restart
     already_restart = []
@@ -181,8 +185,12 @@ def deploy_conf():
             config['%s:%s' % (dic_key, key)] = local[dic_key][key]
 
     # Init all plugins (they will create their file internaly and communicate with other plugins)
-    for plugin in PLUGINS:
-        plugin.init(sjconf, base, local, config)
+    try:
+        for plugin in PLUGINS:
+            plugin.init(sjconf, base, local, config)
+    except Exception, e:
+        print "Failed to initialize all plugins: %s\nTerminating." % str(e)
+        return
 
     # Once each plugin has finished, get conf files
     for plugin in PLUGINS:
@@ -192,13 +200,12 @@ def deploy_conf():
     if backup_files():
         sys.exit(0)
 
-
     try:
         # Write all configuration files
         apply_confs()
 
         # restart services if asked (--restart)
-        if restart: 
+        if restart:
             restart_services()
         print ''
     except:
@@ -207,7 +214,7 @@ def deploy_conf():
         if restore_files():
             sys.exit(0)
 
-        if restart: 
+        if restart:
             restart_services()
         # And delete backup folder
         delete_backup_dir()
@@ -225,7 +232,7 @@ def usage(exit_code):
     --diff                   : show 'diff -u' between old and new configuration files
     --save                   : save modification (mandatory to deploy)
     --deploy                 : deploy configuration
-    --restart                : restart all services 
+    --restart                : restart all services
     --set section key value  : set a configuration key
     --delete-key section key : delete a key within a section
     --delete-section section : delete a complete section
@@ -343,7 +350,7 @@ if get:
         sys.exit(0)
     else:
         sys.exit(1)
-        
+
 if verbose:
     print 'Using base configuration file: %s' % BASE_FILE
     print 'Using local configuration file: %s' % LOCAL_FILE
@@ -364,7 +371,7 @@ else:
 
 if not deploy and restart:
     restart_services()
-    
+
 if deploy:
     deploy_conf()
 
