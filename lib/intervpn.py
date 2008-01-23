@@ -59,7 +59,7 @@ def get_files_to_backup():
     to_backup = []
     for file in os.listdir(INTERVPN_CONFDIR):
         if os.path.isfile(INTERVPN_CONFDIR + '/' + file):
-            if not (file.endswith('.crt') or file.endswith('.key'):
+            if not (file.endswith('.crt') or file.endswith('.key')):
                 to_backup += [{'service' : SERVICE_NAME,
                                'path'    : INTERVPN_CONFDIR + '/' + file}]
     return to_backup
@@ -70,7 +70,7 @@ def restore_files(to_restore):
     for file in os.listdir(INTERVPN_CONFDIR):
         path = os.path.isfile(INTERVPN_CONFDIR + '/' + file)
         if os.path.isfile(path):
-            if not (file.endswith('.crt') or file.endswith('.key'):
+            if not (file.endswith('.crt') or file.endswith('.key')):
                 os.unlink(path)
 
     # And put back old files that are on the backup directory
