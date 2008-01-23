@@ -7,7 +7,7 @@ Standards-Version: 3.7.2
 
 Package: sjconf
 Architecture: all
-Depends: ${python:Depends}, intervpn
+Depends: ${python:Depends}, intervpn, sjrtools (>= 0.18.10)
 Provides: ${python:Provides}
 Description: SmartJog RxTx configuration system
  SmartJog RxTx configuration system
