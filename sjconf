@@ -60,6 +60,17 @@ verbose         = False
 def print_traceback():
     traceback.print_exc(file=sys.stdout)
 
+def exec_command(command):
+    # Using popen to know program output
+    cmd     = popen2.Popen3(command, True)
+    fdout   = cmd.fromchild.fileno()
+    fderr   = cmd.childerr.fileno()
+    datout  = cmd.fromchild.read()
+    daterr  = cmd.childerr.read()
+
+    if cmd.wait():
+        return "%s : %s" (cmd, daterr)
+
 
 def backup_files():
     global files_to_backup
@@ -76,8 +87,11 @@ def backup_files():
         if not os.path.isdir( BACKUP_DIR + '/' + file['service']):
             os.makedirs(BACKUP_DIR + '/' + file['service'])
         file['backup_path'] = BACKUP_DIR + '/' + file['service'] + '/' + os.path.basename(file['path'])
-        os.rename(file['path'], file['backup_path'])
-
+        ret = exec_command("mv '%s' '%s'" % (file['path'], file['backup_path']))
+        if False:
+            print ret
+            print "Please restore files manually from %s" % BACKUP_DIR
+            return ret
 
 def archive_backup():
     # Once configuration is saved, we can archive backup into a tgz
@@ -85,16 +99,10 @@ def archive_backup():
     path    = "%s/sjconf_backup_%s.tgz" % (os.path.dirname(BACKUP_DIR), os.path.basename(BACKUP_DIR))
     print "Backup file : %s" % path
 
-    # Using popen to know program output
-    tar     = popen2.Popen3( "tar zcvf %s %s" % (path, BACKUP_DIR) , True)
-    fdout   = tar.fromchild.fileno()
-    fderr   = tar.childerr.fileno()
-    datout  = tar.fromchild.read()
-    daterr  = tar.childerr.read()
-
-    if tar.wait():
+    ret = exec_command("tar zcvf %s %s" % (path, BACKUP_DIR))
+    if ret:
+        print ret
         print "Cannot archive backup dir %s/ to %s, please do it manually" % (BACKUP_DIR, path)
-        print "tar output:\n\n" + daterr
 
 def delete_backup_dir(dir=None):
     # Once backup has been archived, delete it
@@ -123,9 +131,11 @@ def restore_files():
 
     # Restore backup files
     for file in files_to_backup:
-        os.rename(file['backup_path'], file['path'])
-
-
+        ret = exec_command("mv '%s' '%s'" % (file['backup_path'], file['path']))
+        if ret:
+            print ret
+            return ret
+            
 def restart_services():
     global restart
     already_restart = []
@@ -166,7 +176,9 @@ def deploy_conf():
         config_files += plugin.get_conf_files()
 
     # Backup all files
-    backup_files()
+    if backup_files():
+        sys.exit(0)
+
 
     try:
         # Write all configuration files
@@ -179,7 +191,9 @@ def deploy_conf():
     except:
         print_traceback()
         # Something when wrong, restoring backup files
-        restore_files()
+        if restore_files():
+            sys.exit(0)
+
         if restart: 
             restart_services()
         # And delete backup folder
