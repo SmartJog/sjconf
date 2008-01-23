@@ -69,7 +69,7 @@ def exec_command(command):
     daterr  = cmd.childerr.read()
 
     if cmd.wait():
-        return "%s : %s" (cmd, daterr)
+        return "%s" %  (daterr)
 
 
 def backup_files():
@@ -82,16 +82,25 @@ def backup_files():
     for plugin in PLUGINS:
         files_to_backup += plugin.get_files_to_backup()
 
+    os.makedirs(BACKUP_DIR + '/sjconf/')
+    ret = exec_command("cp '%s' '%s'" % (LOCAL_FILE, BACKUP_DIR + '/sjconf/local.conf'))
+    if ret:
+        print ret
+        sys.exit(0)
+
+
     # Store all files into a service dedicated folder
     for file in files_to_backup:
         if not os.path.isdir( BACKUP_DIR + '/' + file['service']):
             os.makedirs(BACKUP_DIR + '/' + file['service'])
         file['backup_path'] = BACKUP_DIR + '/' + file['service'] + '/' + os.path.basename(file['path'])
-        ret = exec_command("mv '%s' '%s'" % (file['path'], file['backup_path']))
+        ret = exec_command("cp '%s' '%s'" % (file['path'], file['backup_path']))
         if False:
             print ret
+            file['backed_up'] = True
             print "Please restore files manually from %s" % BACKUP_DIR
             return ret
+        file['backed_up'] = True
 
 def archive_backup():
     # Once configuration is saved, we can archive backup into a tgz
@@ -127,14 +136,17 @@ def restore_files():
     
     # Unlink all conf files just created
     for file in config_files:
-        os.unlink(file['path'])
+        if 'written' in file and file['written'] and os.path.isfile(file['path']):
+            os.unlink(file['path'])
 
     # Restore backup files
     for file in files_to_backup:
-        ret = exec_command("mv '%s' '%s'" % (file['backup_path'], file['path']))
-        if ret:
-            print ret
-            return ret
+        if file['backed_up']:
+            ret = exec_command("mv '%s' '%s'" % (file['backup_path'], file['path']))
+            if ret:
+                print ret
+                print "Please restore files manually from %s" % BACKUP_DIR
+                return ret
             
 def restart_services():
     global restart
@@ -150,6 +162,7 @@ def apply_confs():
     for conf in config_files:
         print "Writing configuration file %(path)s (%(service)s)" % conf
         open(conf['path'], "w").write(conf['content'])
+        conf['written'] = True
     print ''
 
 def deploy_conf():
