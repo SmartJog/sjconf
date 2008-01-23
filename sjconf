@@ -19,14 +19,14 @@ sjconf     = load_conf('/etc/smartjog/sjconf')
 sys.path   += [sjconf['conf']['plugins_path']]
 
 # and import known plugins
-import openvpn, iptables, shaping, hosts
+import intervpn, iptables, shaping, hosts
 
 # Defining usefull variables
 BASE_FILE  = os.path.realpath(sjconf['conf']['base_path'] + '/base.conf')
 LOCAL_FILE = os.path.realpath(sjconf['conf']['base_path'] + '/local.conf')
 BACKUP_DIR = os.path.realpath(sjconf['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()) )
 ETC_DIR    = os.path.realpath(sjconf['conf']['etc_dir'])
-PLUGINS    = [openvpn, iptables, shaping, hosts]
+PLUGINS    = [intervpn, iptables, shaping, hosts]
 TEMP_FILE  = "/tmp/sjconf_tempfile.conf"
 
 base            = load_conf(BASE_FILE)
