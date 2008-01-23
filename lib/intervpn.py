@@ -81,7 +81,6 @@ def restore_files(to_restore):
 
 def restart_service(sjconf, already_restarted):
     global INITD
-    INITD = sjconf['conf']['etc_dir'] + INITD
     if not iptables.restart_service(sjconf, already_restarted):
         return False
 

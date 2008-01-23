@@ -47,7 +47,6 @@ def restore_files(to_restore):
 
 def restart_service(sjconf, already_restarted):
     global INITD
-    INITD = sjconf['conf']['etc_dir'] + INITD
 
     if SERVICE_NAME not in already_restarted:
         already_restarted += [SERVICE_NAME]
