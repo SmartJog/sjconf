@@ -35,16 +35,6 @@ def init(sjconf, base, local, config):
                                  'r').read() % config
                 }]
 
-    # main openvpn configuration file
-    for proto in ['upd', 'tcp']:
-        config['vpn:proto'] = proto
-        conf_files += [{
-                'service'  : SERVICE_NAME,
-                'restart'  : INITD,
-                'path'     : os.path.realpath('%s/%s.%s.conf' % (OPENVPN_CONFDIR, local['rxtx']['hostname'], proto)),
-                'content'  : open(sjconf['conf']['base_path'] + '/' + config['vpn:template'], 'r').read() % config
-                }]
-
     # No inter-rxtx vpn, returning
     if not config['network:intervpns'].strip():
         init_autostart(conf_files)
@@ -81,8 +71,8 @@ def get_files_to_backup():
     to_backup = []
     for file in os.listdir(OPENVPN_CONFDIR):
         if os.path.isfile(OPENVPN_CONFDIR + '/' + file):
-            if not (file.endswith('.crt') or file.endswith('.key') or
-                    file.endswith('.upd.conf') or file.endswith('.tcp.conf')):
+            if not (file.endswith('.crt') or file.endswith('.key') or file=='default.conf' or
+                    file.endswith('.udp.conf') or file.endswith('.tcp.conf')):
                 to_backup += [{'service' : SERVICE_NAME,
                                'path'    : OPENVPN_CONFDIR + '/' + file}]
     return to_backup
@@ -93,7 +83,7 @@ def restore_files(to_restore):
     for file in os.listdir(OPENVPN_CONFDIR):
         path = os.path.isfile(OPENVPN_CONFDIR + '/' + file)
         if os.path.isfile(path):
-            if not (file.endswith('.crt') or file.endswith('.key') or
+            if not (file.endswith('.crt') or file.endswith('.key') or file == 'default.conf' or 
                     file.endswith('.upd.conf') or file.endswith('.tcp.conf')):
                 os.unlink(path)
 
