@@ -57,6 +57,10 @@ def init(sjconf, base, local, config):
 # We ask for sjconf to move from the way and backup all files that are not .key or .crt
 def get_files_to_backup():
     to_backup = []
+
+    if not os.path.isdir(INTERVPN_CONFDIR):
+        return to_backup
+
     for file in os.listdir(INTERVPN_CONFDIR):
         if os.path.isfile(INTERVPN_CONFDIR + '/' + file):
             if not (file.endswith('.crt') or file.endswith('.key')):
