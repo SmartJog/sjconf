@@ -19,7 +19,7 @@ def init(sjconf, base, local, config):
     conf_file = {
         'service'  : SERVICE_NAME,
         'restart'  : None,
-        'path'     : os.path.realpath(HOSTS_CONFFILE), \
+        'path'     : os.path.realpath(HOSTS_CONFFILE),
         'content'  : open(sjconf['conf']['base_path'] + '/' + config['network:hosts_template'], 'r').read() % config}
 
 def get_conf_files():
