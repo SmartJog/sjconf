@@ -4,7 +4,6 @@ from pprint import pprint
 
 import os
 import time
-import iptables
 import hosts
 import shaping
 
@@ -33,7 +32,7 @@ def init(sjconf, base, local, config):
     for i in config['network:intervpns'].split(','):
 
         # Copying base dict because we are going to modify it
-        base_conf = dict(base['intervpn-%s' % local[i]['mode']])
+        base_conf = dict(base['intervpn'])
         base_conf.update(local[i])
         # Copying config dict because we are going to modify it
         intervpn = dict(config)
@@ -44,10 +43,6 @@ def init(sjconf, base, local, config):
             'restart'  : INITD,
             'path'     : os.path.realpath('%s/%s.conf' % (INTERVPN_CONFDIR, i)),
             'content'  : open(sjconf['conf']['base_path'] + '/' + intervpn['intervpn:template'], 'r').read() % intervpn}]
-
-        if local[i]['mode'] == 'server':
-            # server mode -> must open the approriate port on iptables
-            iptables.custom_rule(open(sjconf['conf']['base_path'] + '/' + intervpn['intervpn:iptables_template'], 'r').read() % intervpn)
 
         # Ask hosts service to add a host to this file
         hosts.custom_host(intervpn['intervpn:remote_peer_hostname'], intervpn['intervpn:remote_peer'])
@@ -84,8 +79,6 @@ def restore_files(to_restore):
 
 def restart_service(sjconf, already_restarted):
     global INITD
-    if not iptables.restart_service(sjconf, already_restarted):
-        return False
 
     if SERVICE_NAME not in already_restarted:
         INITD = sjconf['conf']['etc_dir'] + INITD
