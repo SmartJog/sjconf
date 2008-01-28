@@ -1,3 +1,15 @@
+sjconf (0.1.1-1) unstable; urgency=low
+
+  * removed shaping and iptables
+
+ -- Philippe Bridant <philippe.bridant@smartjog.com>  Mon, 28 Jan 2008 14:29:50 +0100
+
+sjconf (0.1.0-1) unstable; urgency=low
+
+  * First beta for intervpn
+
+ -- Philippe Bridant <philippe.bridant@smartjog.com>  Mon, 28 Jan 2008 14:15:51 +0100
+
 sjconf (0.0.3-1) unstable; urgency=low
 
   * do not cp, use mv

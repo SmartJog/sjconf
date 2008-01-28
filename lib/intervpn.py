@@ -5,7 +5,7 @@ from pprint import pprint
 import os
 import time
 import hosts
-import shaping
+#import shaping
 
 SERVICE_NAME='intervpn'
 INTERVPN_CONFDIR='/intervpn/'
@@ -89,8 +89,8 @@ def restart_service(sjconf, already_restarted):
         # Sleep 5 seconds to let intervpn some time to create tun devices (for shaping)
         time.sleep(5)
         # A vpn tun device may be shaped, restasrting shaping service
-        if not shaping.restart_service(sjconf, already_restarted):
-            return False
+        #if not shaping.restart_service(sjconf, already_restarted):
+        #    return False
         # We need to update hosts as some garbage may remain or host be missing
         if not hosts.restart_service(sjconf, already_restarted):
             return False
