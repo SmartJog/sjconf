@@ -100,7 +100,7 @@ def backup_files():
         if not os.path.isdir( BACKUP_DIR + '/' + file['service']):
             os.makedirs(BACKUP_DIR + '/' + file['service'])
         file['backup_path'] = BACKUP_DIR + '/' + file['service'] + '/' + os.path.basename(file['path'])
-        ret = exec_command("cp '%s' '%s'" % (file['path'], file['backup_path']))
+        ret = exec_command("mv '%s' '%s'" % (file['path'], file['backup_path']))
         if False:
             print ret
             file['backed_up'] = True

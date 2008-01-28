@@ -22,7 +22,6 @@ def init(sjconf, base, local, config):
 
     INTERVPN_CONFDIR = sjconf['conf']['etc_dir'] + INTERVPN_CONFDIR
     DEFAULT_INTERVPN_CONFDIR = sjconf['conf']['etc_dir'] + DEFAULT_INTERVPN_CONFDIR
-    INITD = sjconf['conf']['etc_dir'] + INITD
 
     conf_files = []
 
@@ -89,6 +88,7 @@ def restart_service(sjconf, already_restarted):
         return False
 
     if SERVICE_NAME not in already_restarted:
+        INITD = sjconf['conf']['etc_dir'] + INITD
         already_restarted += [SERVICE_NAME]
         print "Restarting service: %s" % (SERVICE_NAME)
         if os.system('%s restart' % (INITD)):

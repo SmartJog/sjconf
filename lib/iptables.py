@@ -13,7 +13,6 @@ def init(sjconf, base, local, config):
     global conf_file, IPTABLES_CONFFILE, INITD
 
     IPTABLES_CONFFILE = sjconf['conf']['etc_dir'] + IPTABLES_CONFFILE
-    INITD = sjconf['conf']['etc_dir'] + INITD
 
     conf_file = {
         'service'  : SERVICE_NAME,
@@ -49,6 +48,7 @@ def restart_service(sjconf, already_restarted):
     global INITD
 
     if SERVICE_NAME not in already_restarted:
+        INITD = sjconf['conf']['etc_dir'] + INITD
         already_restarted += [SERVICE_NAME]
         if os.system(INITD + "restart"):
             return False

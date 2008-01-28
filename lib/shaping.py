@@ -15,7 +15,6 @@ def init(sjconf, base, local, config):
     global SHAPING_CONFFILE, INITD
 
     SHAPING_CONFFILE = sjconf['conf']['etc_dir'] + SHAPING_CONFFILE
-    INITD = sjconf['conf']['etc_dir'] + INITD
 
     conf_file = {
         'service'  : SERVICE_NAME,
@@ -61,6 +60,7 @@ def restart_service(sjconf, already_restarted):
 
     # Restart sjnetworking shaping if not already done
     if SERVICE_NAME not in already_restarted:
+        INITD = sjconf['conf']['etc_dir'] + INITD
         already_restarted += [SERVICE_NAME]
         if os.system(INITD + "restart"):
             return False
