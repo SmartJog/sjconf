@@ -1,3 +1,9 @@
+sjconf (0.1.2-2) unstable; urgency=low
+
+  * Depends on sjrtool >= 0.18.11
+
+ -- Philippe Bridant <philippe.bridant@smartjog.com>  Wed, 06 Feb 2008 11:02:14 +0100
+
 sjconf (0.1.2-1) unstable; urgency=low
 
   * Do not sleep after intervpn restart, TUN interfaces are not needed right
