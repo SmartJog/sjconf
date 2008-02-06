@@ -87,7 +87,7 @@ def restart_service(sjconf, already_restarted):
         if os.system('%s restart' % (INITD)):
             return False
         # Sleep 5 seconds to let intervpn some time to create tun devices (for shaping)
-        time.sleep(5)
+        #time.sleep(5)
         # A vpn tun device may be shaped, restasrting shaping service
         #if not shaping.restart_service(sjconf, already_restarted):
         #    return False

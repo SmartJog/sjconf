@@ -1,3 +1,10 @@
+sjconf (0.1.2-1) unstable; urgency=low
+
+  * Do not sleep after intervpn restart, TUN interfaces are not needed right
+    after anymore
+
+ -- Philippe Bridant <philippe.bridant@smartjog.com>  Wed, 06 Feb 2008 10:31:19 +0100
+
 sjconf (0.1.1-1) unstable; urgency=low
 
   * removed shaping and iptables

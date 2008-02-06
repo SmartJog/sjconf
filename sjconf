@@ -58,6 +58,10 @@ deploy          = False
 save            = False
 diff            = False
 verbose         = False
+quiet           = False
+
+def my_print(p):
+    if not quiet: print p
 
 def print_traceback():
     traceback.print_exc(file=sys.stdout)
@@ -77,7 +81,7 @@ def exec_command(command):
 def backup_files():
     global files_to_backup
 
-    print "Backup folder : %s" % BACKUP_DIR
+    my_print( "Backup folder : %s" % BACKUP_DIR )
     os.makedirs(BACKUP_DIR)
 
     # Ask all plugins a list of files that I should backup for them
@@ -112,7 +116,7 @@ def archive_backup():
     # Once configuration is saved, we can archive backup into a tgz
 
     path    = "%s/sjconf_backup_%s.tgz" % (os.path.dirname(BACKUP_DIR), os.path.basename(BACKUP_DIR))
-    print "Backup file : %s" % path
+    my_print("Backup file : %s" % path)
 
     ret = exec_command("tar zcvf %s %s" % (path, BACKUP_DIR))
     if ret:
@@ -123,7 +127,7 @@ def delete_backup_dir(dir=None):
     # Once backup has been archived, delete it
     if dir == None:
         dir = BACKUP_DIR
-        print "Deleting folder %s" % dir
+        my_print("Deleting folder %s" % dir)
 
     for entry in os.listdir(dir):
         path = dir + '/' + entry
@@ -167,14 +171,14 @@ def apply_confs():
     # Open and write all configuration files
     try:
         for conf in config_files:
-            print "Writing configuration file %(path)s (%(service)s)" % conf
+            my_print("Writing configuration file %(path)s (%(service)s)" % conf)
             # checking if the dirname exists
             folder = os.path.dirname(conf['path'])
             if not os.path.isdir(folder):
                 os.makedirs(folder)
             open(conf['path'], "w").write(conf['content'])
             conf['written'] = True
-        print ''
+        my_print('')
     except Exception, e:
         print "Failed to write configuration: %s.\nRestoring..." % str(e)
         restore_files()
@@ -219,7 +223,7 @@ def deploy_conf():
         # restart services if asked (--restart)
         if restart:
             restart_services()
-        print ''
+        my_print('')
     except:
         print_traceback()
         # Something when wrong, restoring backup files
@@ -234,7 +238,7 @@ def deploy_conf():
 
     # Only archive once everything is OK
     archive_backup()
-    print ''
+    my_print('')
 
     # Delete backup, everything is cool
     delete_backup_dir()
@@ -251,7 +255,7 @@ def usage(exit_code):
 '''
 
     if exit_code:
-        print "No modification done on configuration"
+        my_print("No modification done on configuration")
 
     sys.exit(exit_code)
 
@@ -263,24 +267,24 @@ def apply_conf_modifications(out_file, show):
     global sets
 
     if sets or delete_keys or delete_sections:
-        print "########## Scheduled modifications ##############"
+        my_print("########## Scheduled modifications ##############")
 
         for section in delete_sections:
             if section in local:
                 del(local[section])
-            print 'delete section : %s' % (section)
+            my_print('delete section : %s' % (section))
 
         for section, key in delete_keys:
             if section in local:
                 if key in local[section]:
                     del(local[section][key])
-            print 'delete key     : %s:%s' % (section, key)
+            my_print('delete key     : %s:%s' % (section, key))
 
         for section, key, value in sets:
             local.setdefault(section, {})
             local[section][key] = value
-            print 'set            : %s:%s=%s' % (section, key, value)
-        print "#################################################\n"
+            my_print('set            : %s:%s=%s' % (section, key, value))
+        my_print("#################################################\n")
 
     cp = ConfigParser.RawConfigParser()
     for section in local:
@@ -300,11 +304,11 @@ argv = list(sys.argv)
 bin, argv = argv[0], argv[1:]
 if not argv:
     if verbose:
-        print 'Using base configuration file: %s' % BASE_FILE
-        print 'Using local configuration file: %s' % LOCAL_FILE
-        print ''
+        my_print('Using base configuration file: %s' % BASE_FILE)
+        my_print('Using local configuration file: %s' % LOCAL_FILE)
+        my_print('')
 
-    print open(LOCAL_FILE, "r").read()
+    my_print( open(LOCAL_FILE, "r").read())
     sys.exit(0)
 
 class BadParam:
@@ -330,6 +334,8 @@ while len(argv):
             verbose = True
         elif cmd == '--diff':
             diff = True
+        elif cmd == '--quiet':
+            quiet = True
         elif cmd == '--save':
             save = True
         elif cmd == '--restart':
@@ -364,9 +370,9 @@ if get:
         sys.exit(1)
 
 if verbose:
-    print 'Using base configuration file: %s' % BASE_FILE
-    print 'Using local configuration file: %s' % LOCAL_FILE
-    print ''
+    my_print('Using base configuration file: %s' % BASE_FILE)
+    my_print('Using local configuration file: %s' % LOCAL_FILE)
+    my_print('')
 
 if changes and deploy and not (save):
     print 'You should add the --save parameter to save configuration before deploying it'
@@ -374,11 +380,11 @@ if changes and deploy and not (save):
 
 if save:
     apply_conf_modifications(LOCAL_FILE, False)
-    print 'Configuration saved\n'
+    my_print('Configuration saved\n')
 else:
     apply_conf_modifications(TEMP_FILE, diff)
     if changes:
-        print "No configuration saved (use --save)\n"
+        my_print("No configuration saved (use --save)\n")
         sys.exit(1)
 
 if not deploy and restart:
