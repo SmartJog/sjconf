@@ -1,3 +1,9 @@
+sjconf (0.1.4-1~cur1) unstable; urgency=low
+
+  * Added -e switch to edit directly local.conf with $EDITOR (default vim)
+
+ -- Philippe Bridant <philippe.bridant@smartjog.com>  Wed, 12 Mar 2008 15:18:50 +0100
+
 sjconf (0.1.3-1) unstable; urgency=low
 
   * Added etc/hosts vpn as a variable

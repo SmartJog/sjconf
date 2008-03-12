@@ -326,6 +326,10 @@ def get_params(argv, nb):
 while len(argv):
     cmd, argv = argv[0], argv[1:]
     try:
+        if cmd == '-e':
+            editor = os.getenv("EDITOR") or "vim"
+            os.system("%s /etc/smartjog/local.conf" % editor)
+            sys.exit(0)
         if cmd == '--deploy':
             deploy = True
         elif cmd == '-h' or cmd == '--help':
