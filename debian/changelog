@@ -1,4 +1,4 @@
-sjconf (0.1.4-1~cur1) unstable; urgency=low
+sjconf (0.1.4-1) unstable; urgency=low
 
   * Added -e switch to edit directly local.conf with $EDITOR (default vim)
 
