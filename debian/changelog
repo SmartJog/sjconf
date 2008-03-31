@@ -1,3 +1,19 @@
+sjconf (1.0.0~dev-1) unstable; urgency=low
+
+  * New release.
+  * Add myself as uploader.
+  * Build package sjconf1 instead of sjconf since plugin as now external
+    packages that depends an sjconf's API.
+  * Fix description in control file.
+  * Remove python-all-dev dependency since no python module are built.
+  * Remove useless dirs file.
+  * Add manual dependency on python since sjconf is an application and not a
+    module.
+  * Use cdbs for rules file.
+  * Add sjconf1.install and sjconf1.lintian-overrides file.
+
+ -- Jean-Philippe Garcia Ballester <jeanphilippe.garciaballester@smartjog.com>  Mon, 31 Mar 2008 15:09:00 +0200
+
 sjconf (0.1.4-1) unstable; urgency=low
 
   * Added -e switch to edit directly local.conf with $EDITOR (default vim)

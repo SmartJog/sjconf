@@ -2,12 +2,15 @@ Source: sjconf
 Priority: optional
 Section: smartjog
 Maintainer: Philippe BRIDANT <philippe.bridant@smartjog.com>
-Build-Depends-Indep: cdbs (>= 0.4.43), debhelper (>= 5.0.38), python-all-dev
-Standards-Version: 3.7.2
+Uploaders: Jean-Philippe Garcia Ballester <jeanphilippe.garciaballester@smartjog.com>
+Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5.0.38)
+Standards-Version: 3.7.3
 
-Package: sjconf
+Package: sjconf1
 Architecture: all
-Depends: ${python:Depends}, intervpn, sjrtools (>= 0.20.0)
-Provides: ${python:Provides}
+Depends: python (<< 3), python (>= 2.3)
+Provides: sjconf
+Conflicts: sjconf
 Description: SmartJog RxTx configuration system
- SmartJog RxTx configuration system
+ sjconf is a configuration wrapper that handles global and server-specific
+ configuration, deployment and service restart.
