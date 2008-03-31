@@ -62,21 +62,6 @@ def get_files_to_backup():
                                'path'    : INTERVPN_CONFDIR + '/' + file}]
     return to_backup
 
-# We restore files ourselves
-def restore_files(to_restore):
-    # Let's first remove any file except .crt and .key ones
-    for file in os.listdir(INTERVPN_CONFDIR):
-        path = os.path.isfile(INTERVPN_CONFDIR + '/' + file)
-        if os.path.isfile(path):
-            if not (file.endswith('.crt') or file.endswith('.key')):
-                os.unlink(path)
-
-    # And put back old files that are on the backup directory
-    for file in list(to_restore):
-        if file['service'] == SERVICE_NAME:
-            os.rename(file['backup_path'], file['path'])
-            to_restore.remove(file)
-
 def restart_service(sjconf, already_restarted):
     global INITD
 
