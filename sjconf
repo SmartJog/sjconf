@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import traceback, time, os, sys, popen2, ConfigParser
+import traceback, time, os, sys, popen2, ConfigParser, shutil, errno
 from pprint import pprint
 
 def my_exit():
@@ -54,6 +54,8 @@ sets            = []
 delete_keys     = []
 delete_sections = []
 restart         = []
+plugins_to_install = []
+plugins_to_uninstall = []
 deploy          = False
 save            = False
 diff            = False
@@ -245,13 +247,15 @@ def deploy_conf():
 
 def usage(exit_code):
     print '''sjconf usage:
-    --diff                   : show 'diff -u' between old and new configuration files
-    --save                   : save modification (mandatory to deploy)
-    --deploy                 : deploy configuration
-    --restart                : restart all services
-    --set section key value  : set a configuration key
-    --delete-key section key : delete a key within a section
-    --delete-section section : delete a complete section
+    --diff                    : show 'diff -u' between old and new configuration files
+    --save                    : save modification (mandatory to deploy)
+    --deploy                  : deploy configuration
+    --restart                 : restart all services
+    --set section key value   : set a configuration key
+    --delete-key section key  : delete a key within a section
+    --delete-section section  : delete a complete section
+    --install-plugin plugin   : install ``plugin'' into the plugins path
+    --uninstall-plugin plugin : uninstall ``plugin'' from the plugins path
 '''
 
     if exit_code:
@@ -298,6 +302,26 @@ def apply_conf_modifications(out_file, show):
         os.system("diff -U -1 %s %s" % (LOCAL_FILE, TEMP_FILE))
         print "#################################################\n"
 
+def plugin_install(plugin_to_install):
+    if verbose:
+        my_print("Installing plugin: %s" % (plugin_to_install))
+    if os.path.exists(PLUGINS_PATH + '/' + plugin_to_install):
+        raise IOError((errno.EEXIST, "plugin %s already installed" % (plugin_to_install)))
+    shutil.copy(plugin_to_install, PLUGINS_PATH)
+    if verbose:
+        my_print("Installed plugin: %s" % (plugin_to_install))
+
+def plugin_uninstall(plugin_to_uninstall):
+    if verbose:
+        my_print("Uninstalling plugin: %s" % (plugin_to_uninstall))
+    plugin_to_uninstall_path = PLUGINS_PATH + '/' + plugin_to_uninstall
+    if not os.path.exists(plugin_to_uninstall_path):
+        plugin_to_uninstall_path += '.py'
+    if not os.path.exists(plugin_to_uninstall_path):
+        raise IOError((errno.ENOENT, "plugin %s not installed" % (plugin_to_uninstall)))
+    os.unlink(plugin_to_uninstall_path)
+    if verbose:
+        my_print("Uninstalled plugin: %s" % (plugin_to_uninstall))
 
 
 argv = list(sys.argv)
@@ -352,6 +376,10 @@ while len(argv):
             delete_sections += get_params(argv, 1)
         elif cmd == '--delete-key':
             delete_keys += [get_params(argv, 2)]
+        elif cmd == '--install-plugin':
+            plugins_to_install += get_params(argv, 1)
+        elif cmd == '--uninstall-plugin':
+            plugins_to_uninstall += get_params(argv, 1)
         else:
             print 'Incorrect command : %s\n' % cmd
             usage(1)
@@ -397,3 +425,10 @@ if not deploy and restart:
 if deploy:
     deploy_conf()
 
+if plugins_to_install:
+    for plugin_to_install in plugins_to_install:
+        plugin_install(plugin_to_install)
+
+if plugins_to_uninstall:
+    for plugin_to_uninstall in plugins_to_uninstall:
+        plugin_uninstall(plugin_to_uninstall)
