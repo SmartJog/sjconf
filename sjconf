@@ -15,7 +15,17 @@ def load_conf(filename):
     cp.read(filename)
     return dict(map(lambda a, b:  (a , dict(cp.items(a))), cp.sections(), {}))
 
-sjconf     = load_conf('/etc/smartjog/sjconf')
+def save_conf(filename, config):
+    cp = ConfigParser.RawConfigParser()
+    for section in config:
+        cp.add_section(section)
+        for key in config[section]:
+            cp.set(section, key, config[section][key])
+    cp.write(open(filename, "w"))
+
+SJCONF_FILE = '/etc/smartjog/sjconf'
+
+sjconf     = load_conf(SJCONF_FILE)
 
 # Defining useful variables
 BASE_FILE    = os.path.realpath(sjconf['conf']['base_path'] + '/base.conf')
@@ -59,6 +69,8 @@ delete_sections = []
 restart         = []
 plugins_to_install = []
 plugins_to_uninstall = []
+plugins_to_enable = []
+plugins_to_disable = []
 deploy          = False
 save            = False
 diff            = False
@@ -251,6 +263,7 @@ def deploy_conf():
 
 def usage(exit_code):
     print '''sjconf usage:
+    -e                        : open local.conf on an EDITOR
     --diff                    : show 'diff -u' between old and new configuration files
     --save                    : save modification (mandatory to deploy)
     --deploy                  : deploy configuration
@@ -260,6 +273,8 @@ def usage(exit_code):
     --delete-section section  : delete a complete section
     --install-plugin plugin   : install ``plugin'' into the plugins path
     --uninstall-plugin plugin : uninstall ``plugin'' from the plugins path
+    --enable-plugin plugin    : add ``plugin'' to the list of plugins to use
+    --disable-plugin plugin   : remove ``plugin'' from the list of plugins to use
 '''
 
     if exit_code:
@@ -294,17 +309,25 @@ def apply_conf_modifications(out_file, show):
             my_print('set            : %s:%s=%s' % (section, key, value))
         my_print("#################################################\n")
 
-    cp = ConfigParser.RawConfigParser()
-    for section in local:
-        cp.add_section(section)
-        for key in local[section]:
-            cp.set(section, key, local[section][key])
+    save_conf(out_file, local)
 
-    cp.write(open(out_file, "w"))
     if show:
         print "############### local.conf diffs ################"
         os.system("diff -U -1 %s %s" % (LOCAL_FILE, TEMP_FILE))
         print "#################################################\n"
+
+def plugin_path(plugin_name):
+    plugin_path = plugin_name
+    if not plugin_path.startswith(PLUGINS_PATH):
+        plugin_path = PLUGINS_PATH + '/' + plugin_path
+    if not os.path.exists(plugin_path):
+        plugin_path += '.py'
+    if not os.path.exists(plugin_path):
+        raise IOError((errno.ENOENT, "plugin %s not installed" % (plugin_name)))
+    return plugin_path
+
+def plugin_set_conf():
+    sjconf['conf']['plugins'] = ', '.join(PLUGIN_NAMES)
 
 def plugin_install(plugin_to_install):
     if verbose:
@@ -318,14 +341,32 @@ def plugin_install(plugin_to_install):
 def plugin_uninstall(plugin_to_uninstall):
     if verbose:
         my_print("Uninstalling plugin: %s" % (plugin_to_uninstall))
-    plugin_to_uninstall_path = PLUGINS_PATH + '/' + plugin_to_uninstall
-    if not os.path.exists(plugin_to_uninstall_path):
-        plugin_to_uninstall_path += '.py'
-    if not os.path.exists(plugin_to_uninstall_path):
-        raise IOError((errno.ENOENT, "plugin %s not installed" % (plugin_to_uninstall)))
-    os.unlink(plugin_to_uninstall_path)
+    os.unlink(plugin_path(plugin_to_uninstall))
     if verbose:
         my_print("Uninstalled plugin: %s" % (plugin_to_uninstall))
+
+def plugin_enable(plugin_to_enable):
+    # ensure the plugin in installed
+    plugin_path(plugin_to_enable)
+    try:
+        PLUGIN_NAMES.index(plugin_to_enable)
+        raise IOError((errno.EEXIST, "plugin %s already enabled" % (plugin_to_enable)))
+    except:
+        pass
+    PLUGIN_NAMES.append(plugin_to_enable)
+    plugin_set_conf()
+    save_conf(SJCONF_FILE, sjconf)
+
+def plugin_disable(plugin_to_disable):
+    # ensure the plugin in installed
+    plugin_path(plugin_to_disable)
+    try:
+        plugin_to_disable_index = PLUGIN_NAMES.index(plugin_to_disable)
+    except:
+        raise IOError((errno.ENOENT, "plugin %s not enabled" % (plugin_to_disable)))
+    PLUGIN_NAMES.pop(plugin_to_disable_index)
+    plugin_set_conf()
+    save_conf(SJCONF_FILE, sjconf)
 
 
 argv = list(sys.argv)
@@ -384,6 +425,10 @@ while len(argv):
             plugins_to_install += get_params(argv, 1)
         elif cmd == '--uninstall-plugin':
             plugins_to_uninstall += get_params(argv, 1)
+        elif cmd == '--enable-plugin':
+            plugins_to_enable += get_params(argv, 1)
+        elif cmd == '--disable-plugin':
+            plugins_to_disable += get_params(argv, 1)
         else:
             print 'Incorrect command : %s\n' % cmd
             usage(1)
@@ -410,6 +455,22 @@ if verbose:
     my_print('Using local configuration file: %s' % LOCAL_FILE)
     my_print('')
 
+if plugins_to_install:
+    for plugin_to_install in plugins_to_install:
+        plugin_install(plugin_to_install)
+
+if plugins_to_uninstall:
+    for plugin_to_uninstall in plugins_to_uninstall:
+        plugin_uninstall(plugin_to_uninstall)
+
+if plugins_to_enable:
+    for plugin_to_enable in plugins_to_enable:
+        plugin_enable(plugin_to_enable)
+
+if plugins_to_disable:
+    for plugin_to_disable in plugins_to_disable:
+        plugin_disable(plugin_to_disable)
+
 if changes and deploy and not (save):
     print 'You should add the --save parameter to save configuration before deploying it'
     sys.exit(1)
@@ -428,11 +489,3 @@ if not deploy and restart:
 
 if deploy:
     deploy_conf()
-
-if plugins_to_install:
-    for plugin_to_install in plugins_to_install:
-        plugin_install(plugin_to_install)
-
-if plugins_to_uninstall:
-    for plugin_to_uninstall in plugins_to_uninstall:
-        plugin_uninstall(plugin_to_uninstall)
