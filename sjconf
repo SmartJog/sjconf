@@ -39,11 +39,6 @@ PLUGINS_PATH = os.path.realpath(sjconf['conf']['plugins_path'])
 # Adding plugin folder to sys path
 sys.path.append(PLUGINS_PATH)
 
-# Load the plugins
-PLUGINS = []
-for plugin in PLUGIN_NAMES:
-    PLUGINS.append(__import__(plugin))
-
 base            = load_conf(BASE_FILE)
 local           = load_conf(LOCAL_FILE)
 
@@ -470,6 +465,11 @@ if plugins_to_enable:
 if plugins_to_disable:
     for plugin_to_disable in plugins_to_disable:
         plugin_disable(plugin_to_disable)
+
+# Load the plugins
+PLUGINS = []
+for plugin in PLUGIN_NAMES:
+    PLUGINS.append(__import__(plugin))
 
 if changes and deploy and not (save):
     print 'You should add the --save parameter to save configuration before deploying it'
