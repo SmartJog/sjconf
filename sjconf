@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import traceback, time, os, sys, popen2, ConfigParser, shutil, errno
+import traceback, time, os, sys, popen2, ConfigParser, shutil, errno, string
 from pprint import pprint
 
 def my_exit():
@@ -17,19 +17,22 @@ def load_conf(filename):
 
 sjconf     = load_conf('/etc/smartjog/sjconf')
 
+# Defining useful variables
+BASE_FILE    = os.path.realpath(sjconf['conf']['base_path'] + '/base.conf')
+LOCAL_FILE   = os.path.realpath(sjconf['conf']['base_path'] + '/local.conf')
+BACKUP_DIR   = os.path.realpath(sjconf['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()) )
+ETC_DIR      = os.path.realpath(sjconf['conf']['etc_dir'])
+PLUGIN_NAMES = map(string.strip, sjconf['conf']['plugins'].split(','))
+TEMP_FILE    = "/tmp/sjconf_tempfile.conf"
+PLUGINS_PATH = os.path.realpath(sjconf['conf']['plugins_path'])
+
 # Adding plugin folder to sys path
-sys.path   += [sjconf['conf']['plugins_path']]
+sys.path.append(PLUGINS_PATH)
 
-# and import known plugins
-import intervpn,  hosts
-
-# Defining usefull variables
-BASE_FILE  = os.path.realpath(sjconf['conf']['base_path'] + '/base.conf')
-LOCAL_FILE = os.path.realpath(sjconf['conf']['base_path'] + '/local.conf')
-BACKUP_DIR = os.path.realpath(sjconf['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()) )
-ETC_DIR    = os.path.realpath(sjconf['conf']['etc_dir'])
-PLUGINS    = [intervpn,  hosts]
-TEMP_FILE  = "/tmp/sjconf_tempfile.conf"
+# Load the plugins
+PLUGINS = []
+for plugin in PLUGIN_NAMES:
+    PLUGINS.append(__import__(plugin))
 
 base            = load_conf(BASE_FILE)
 local           = load_conf(LOCAL_FILE)
@@ -208,6 +211,7 @@ def deploy_conf():
             plugin.init(sjconf, base, local, config)
     except Exception, e:
         print "Failed to initialize all plugins: %s\nTerminating." % str(e)
+        print_traceback()
         return
 
     # Once each plugin has finished, get conf files
