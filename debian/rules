@@ -30,7 +30,7 @@ install: build
 	# rules for www
 	dh_listpackages sjconf 
 	dh_install
-	dh_install -XCVS -X.svn lib/* usr/lib/sjconf/
+	dh_install -XCVS -X.svn lib/* usr/lib/sjconf/plugins/
 	dh_install -XCVS -X.svn etc/smartjog/* etc/smartjog/
 	dh_install -XCVS sjconf usr/bin/
 
