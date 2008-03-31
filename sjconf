@@ -309,7 +309,7 @@ def apply_conf_modifications(out_file, show):
 def plugin_install(plugin_to_install):
     if verbose:
         my_print("Installing plugin: %s" % (plugin_to_install))
-    if os.path.exists(PLUGINS_PATH + '/' + plugin_to_install):
+    if os.path.exists(PLUGINS_PATH + '/' + os.path.basename(plugin_to_install)):
         raise IOError((errno.EEXIST, "plugin %s already installed" % (plugin_to_install)))
     shutil.copy(plugin_to_install, PLUGINS_PATH)
     if verbose:
