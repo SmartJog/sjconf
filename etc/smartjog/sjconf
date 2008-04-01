@@ -1,6 +1,6 @@
 [conf]
-base_path=/etc/smartjog
+etc_dir=/etc
+base_path=%(etc_dir)s/smartjog
 plugins_path=/usr/lib/sjconf/plugins/
 backup_dir=/var/backups/sjconf/
-etc_dir=/etc
 plugins=

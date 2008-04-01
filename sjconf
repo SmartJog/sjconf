@@ -11,12 +11,12 @@ def load_conf(filename):
     if not os.path.isfile(filename):
         sys.stderr.write('Cannot open file %s\n' % filename)
         my_exit()
-    cp = ConfigParser.RawConfigParser()
+    cp = ConfigParser.ConfigParser()
     cp.read(filename)
     return dict(map(lambda a, b:  (a , dict(cp.items(a))), cp.sections(), {}))
 
 def save_conf(filename, config):
-    cp = ConfigParser.RawConfigParser()
+    cp = ConfigParser.ConfigParser()
     for section in config:
         cp.add_section(section)
         for key in config[section]:
