@@ -3,7 +3,7 @@ Priority: optional
 Section: smartjog
 Maintainer: Philippe BRIDANT <philippe.bridant@smartjog.com>
 Uploaders: Jean-Philippe Garcia Ballester <jeanphilippe.garciaballester@smartjog.com>
-Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5.0.38)
+Build-Depends: cdbs (>= 0.4.43), debhelper (>= 6.0.7)
 Standards-Version: 3.7.3
 
 Package: sjconf1

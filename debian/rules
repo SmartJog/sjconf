@@ -8,5 +8,8 @@ DEB_MAKE_INSTALL_TARGET = install DESTDIR=$(CURDIR)/debian/tmp/ PREFIX=/usr
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/makefile.mk
 
+# Remove this when cdbs 0.4.52 is released
 install/sjconf1::
-	install -D -m 644 debian/sjconf1.lintian-overrides debian/sjconf1/usr/share/lintian/overrides/sjconf1
+	dh_lintian -psjconf1
+	# Comment previous line and uncomment next one if debhelper 6.0.7 is unavailable
+	#install -D -m 644 debian/sjconf1.lintian-overrides debian/sjconf1/usr/share/lintian/overrides/sjconf1
