@@ -17,7 +17,7 @@ distclean:
 dist: distclean
 	mkdir -p sjconf-$(V)
 	cp -a ChangeLog Makefile sjconf etc sjconf-$(V)
-	for dir in `find sjpackd-$(V) -name '\.svn'`; do rm -rf "$$dir" ; done
+	for dir in `find sjconf-$(V) -name '\.svn'`; do rm -rf "$$dir" ; done
 	tar czf sjconf-$(V).tar.gz sjconf-$(V)
 
 install:
