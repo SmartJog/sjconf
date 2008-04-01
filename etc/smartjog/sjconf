@@ -2,5 +2,6 @@
 etc_dir=/etc
 base_path=%(etc_dir)s/smartjog
 plugins_path=/usr/lib/sjconf/plugins/
+templates_path=%(base_path)s/templates/
 backup_dir=/var/backups/sjconf/
 plugins=

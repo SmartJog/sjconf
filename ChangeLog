@@ -2,3 +2,5 @@ Version 1.0.0~dev
 
 	* Add plugin installation and enabling facilities: --install-plugin, --uninstall-plugin, --enable-plugin, --disable-plugin.
 	* sjconf plugins are now provided by package being configured.
+	* Add template installation facilities: --install-template, --uninstall-template.
+	* Installation command can take a ``--link'' argument so that the installed file is a symbolic link to the original file.

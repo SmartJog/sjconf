@@ -28,16 +28,23 @@ SJCONF_FILE = '/etc/smartjog/sjconf'
 sjconf     = load_conf(SJCONF_FILE)
 
 # Defining useful variables
-BASE_FILE    = os.path.realpath(sjconf['conf']['base_path'] + '/base.conf')
-LOCAL_FILE   = os.path.realpath(sjconf['conf']['base_path'] + '/local.conf')
-BACKUP_DIR   = os.path.realpath(sjconf['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()) )
-ETC_DIR      = os.path.realpath(sjconf['conf']['etc_dir'])
-PLUGIN_NAMES = map(string.strip, sjconf['conf']['plugins'].split(','))
-TEMP_FILE    = "/tmp/sjconf_tempfile.conf"
-PLUGINS_PATH = os.path.realpath(sjconf['conf']['plugins_path'])
+BASE_FILE              = os.path.realpath(sjconf['conf']['base_path'] + '/base.conf')
+LOCAL_FILE             = os.path.realpath(sjconf['conf']['base_path'] + '/local.conf')
+BACKUP_DIR             = os.path.realpath(sjconf['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()) )
+ETC_DIR                = os.path.realpath(sjconf['conf']['etc_dir'])
+PLUGIN_NAMES           = map(string.strip, sjconf['conf']['plugins'].split(','))
+try:
+    PLUGIN_NAMES.remove('')
+except ValueError:
+    pass
+TEMP_FILE              = "/tmp/sjconf_tempfile.conf"
+FILES_PATH             = {}
+FILES_PATH['plugin']   = os.path.realpath(sjconf['conf']['plugins_path'])
+FILES_PATH['template'] = os.path.realpath(sjconf['conf']['templates_path'])
+FILES_EXTENSION        = {'plugin' : '.py', 'template' : '.conf'}
 
 # Adding plugin folder to sys path
-sys.path.append(PLUGINS_PATH)
+sys.path.append(FILES_PATH['plugin'])
 
 base            = load_conf(BASE_FILE)
 local           = load_conf(LOCAL_FILE)
@@ -62,8 +69,8 @@ sets            = []
 delete_keys     = []
 delete_sections = []
 restart         = []
-plugins_to_install = []
-plugins_to_uninstall = []
+files_to_install = []
+files_to_uninstall = []
 plugins_to_enable = []
 plugins_to_disable = []
 deploy          = False
@@ -258,18 +265,20 @@ def deploy_conf():
 
 def usage(exit_code):
     print '''sjconf usage:
-    -e                        : open local.conf on an EDITOR
-    --diff                    : show 'diff -u' between old and new configuration files
-    --save                    : save modification (mandatory to deploy)
-    --deploy                  : deploy configuration
-    --restart                 : restart all services
-    --set section key value   : set a configuration key
-    --delete-key section key  : delete a key within a section
-    --delete-section section  : delete a complete section
-    --install-plugin plugin   : install ``plugin'' into the plugins path
-    --uninstall-plugin plugin : uninstall ``plugin'' from the plugins path
-    --enable-plugin plugin    : add ``plugin'' to the list of plugins to use
-    --disable-plugin plugin   : remove ``plugin'' from the list of plugins to use
+    -e                                   : open local.conf on an EDITOR
+    --diff                               : show 'diff -u' between old and new configuration files
+    --save                               : save modification (mandatory to deploy)
+    --deploy                             : deploy configuration
+    --restart                            : restart all services
+    --set section key value              : set a configuration key
+    --delete-key section key             : delete a key within a section
+    --delete-section section             : delete a complete section
+    --install-plugin [--link] plugin     : install ``plugin'' into the plugins path; if --link is given, use symbolic links
+    --uninstall-plugin  plugin           : uninstall ``plugin'' from the plugins path
+    --install-template [--link] template : install ``template'' into the templates path; if --link is given, use symbolic links
+    --uninstall-template template        : uninstall ``plugin'' from the templates path
+    --enable-plugin plugin               : add ``plugin'' to the list of plugins to use
+    --disable-plugin plugin              : remove ``plugin'' from the list of plugins to use
 '''
 
     if exit_code:
@@ -311,38 +320,49 @@ def apply_conf_modifications(out_file, show):
         os.system("diff -U -1 %s %s" % (LOCAL_FILE, TEMP_FILE))
         print "#################################################\n"
 
-def plugin_path(plugin_name):
-    plugin_path = plugin_name
-    if not plugin_path.startswith(PLUGINS_PATH):
-        plugin_path = PLUGINS_PATH + '/' + plugin_path
-    if not os.path.exists(plugin_path):
-        plugin_path += '.py'
-    if not os.path.exists(plugin_path):
-        raise IOError((errno.ENOENT, "plugin %s not installed" % (plugin_name)))
-    return plugin_path
+def file_path(file_type, file_name):
+    file_path = file_name
+    if not file_path.startswith(FILES_PATH[file_type]):
+        file_path = FILES_PATH[file_type] + '/' + file_path
+    if not os.path.exists(file_path):
+        file_path += FILES_EXTENSION[file_type]
+    if not os.path.exists(file_path):
+        raise IOError((errno.ENOENT, "file %s not installed, path: %s" % (file_name, file_path)))
+    return file_path
 
 def plugin_set_conf():
     sjconf['conf']['plugins'] = ', '.join(PLUGIN_NAMES)
 
-def plugin_install(plugin_to_install):
+def file_install(file_type, file_to_install, link=False):
     if verbose:
-        my_print("Installing plugin: %s" % (plugin_to_install))
-    if os.path.exists(PLUGINS_PATH + '/' + os.path.basename(plugin_to_install)):
-        raise IOError((errno.EEXIST, "plugin %s already installed" % (plugin_to_install)))
-    shutil.copy(plugin_to_install, PLUGINS_PATH)
+        my_print("Installing file: %s" % (file_to_install))
+    if os.path.exists(FILES_PATH[file_type] + '/' + os.path.basename(file_to_install)):
+        raise IOError((errno.EEXIST, "file %s already installed" % (file_to_install)))
+    file_destination_path = FILES_PATH[file_type] + '/' + os.path.basename(file_to_install)
+    if not link:
+        if os.path.isdir(file_to_install):
+            shutil.copytree(file_to_install, file_destination_path)
+        else:
+            shutil.copy(file_to_install, file_destination_path)
+    else:
+        os.symlink(os.path.realpath(file_to_install), file_destination_path)
     if verbose:
-        my_print("Installed plugin: %s" % (plugin_to_install))
+        my_print("Installed file: %s" % (file_to_install))
 
-def plugin_uninstall(plugin_to_uninstall):
+def file_uninstall(file_type, file_to_uninstall):
     if verbose:
-        my_print("Uninstalling plugin: %s" % (plugin_to_uninstall))
-    os.unlink(plugin_path(plugin_to_uninstall))
+        my_print("Uninstalling file: %s" % (file_to_uninstall))
+    file_to_uninstall_path = file_path(file_type, file_to_uninstall)
+    if os.path.isdir(file_to_uninstall_path):
+        shutil.rmtree(file_to_uninstall)
+    else:
+        os.unlink(file_to_uninstall_path)
     if verbose:
-        my_print("Uninstalled plugin: %s" % (plugin_to_uninstall))
+        my_print("Uninstalled file: %s" % (file_to_uninstall))
 
 def plugin_enable(plugin_to_enable):
     # ensure the plugin in installed
-    plugin_path(plugin_to_enable)
+    file_path('plugin', plugin_to_enable)
     try:
         PLUGIN_NAMES.index(plugin_to_enable)
         raise IOError((errno.EEXIST, "plugin %s already enabled" % (plugin_to_enable)))
@@ -354,7 +374,7 @@ def plugin_enable(plugin_to_enable):
 
 def plugin_disable(plugin_to_disable):
     # ensure the plugin in installed
-    plugin_path(plugin_to_disable)
+    file_path('plugin', plugin_to_disable)
     try:
         plugin_to_disable_index = PLUGIN_NAMES.index(plugin_to_disable)
     except:
@@ -416,10 +436,13 @@ while len(argv):
             delete_sections += get_params(argv, 1)
         elif cmd == '--delete-key':
             delete_keys += [get_params(argv, 2)]
-        elif cmd == '--install-plugin':
-            plugins_to_install += get_params(argv, 1)
-        elif cmd == '--uninstall-plugin':
-            plugins_to_uninstall += get_params(argv, 1)
+        elif cmd == '--install-plugin' or cmd == '--install-template':
+            if len(argv) < 1:
+                raise BadParam(cmd)
+            link = (argv[0] == '--link' and argv.pop(0) and True) or False
+            files_to_install.append([cmd.replace('--install-', ''), get_params(argv, 1)[0], link])
+        elif cmd == '--uninstall-plugin' or cmd == '--uninstall-template':
+            files_to_uninstall.append([cmd.replace('--uninstall-', ''), get_params(argv, 1)[0]])
         elif cmd == '--enable-plugin':
             plugins_to_enable += get_params(argv, 1)
         elif cmd == '--disable-plugin':
@@ -450,13 +473,13 @@ if verbose:
     my_print('Using local configuration file: %s' % LOCAL_FILE)
     my_print('')
 
-if plugins_to_install:
-    for plugin_to_install in plugins_to_install:
-        plugin_install(plugin_to_install)
+if files_to_install:
+    for file_to_install in files_to_install:
+        file_install(*file_to_install)
 
-if plugins_to_uninstall:
-    for plugin_to_uninstall in plugins_to_uninstall:
-        plugin_uninstall(plugin_to_uninstall)
+if files_to_uninstall:
+    for file_to_uninstall in files_to_uninstall:
+        file_uninstall(*file_to_uninstall)
 
 if plugins_to_enable:
     for plugin_to_enable in plugins_to_enable:
