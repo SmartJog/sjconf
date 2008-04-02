@@ -327,7 +327,7 @@ def file_path(file_type, file_name):
     if not os.path.exists(file_path):
         file_path += FILES_EXTENSION[file_type]
     if not os.path.exists(file_path):
-        raise IOError((errno.ENOENT, "file %s not installed, path: %s" % (file_name, file_path)))
+        raise IOError(errno.ENOENT, "file %s not installed, path: %s" % (file_name, file_path))
     return file_path
 
 def plugin_set_conf():
@@ -337,7 +337,7 @@ def file_install(file_type, file_to_install, link=False):
     if verbose:
         my_print("Installing file: %s" % (file_to_install))
     if os.path.exists(FILES_PATH[file_type] + '/' + os.path.basename(file_to_install)):
-        raise IOError((errno.EEXIST, "file %s already installed" % (file_to_install)))
+        raise IOError(errno.EEXIST, "file %s already installed" % (file_to_install))
     file_destination_path = FILES_PATH[file_type] + '/' + os.path.basename(file_to_install)
     if not link:
         if os.path.isdir(file_to_install):
@@ -363,11 +363,8 @@ def file_uninstall(file_type, file_to_uninstall):
 def plugin_enable(plugin_to_enable):
     # ensure the plugin in installed
     file_path('plugin', plugin_to_enable)
-    try:
-        PLUGIN_NAMES.index(plugin_to_enable)
-        raise IOError((errno.EEXIST, "plugin %s already enabled" % (plugin_to_enable)))
-    except:
-        pass
+    if plugin_to_enable in PLUGIN_NAMES:
+        raise IOError(errno.EEXIST, "plugin %s already enabled" % (plugin_to_enable))
     PLUGIN_NAMES.append(plugin_to_enable)
     plugin_set_conf()
     save_conf(SJCONF_FILE, sjconf)
@@ -376,10 +373,9 @@ def plugin_disable(plugin_to_disable):
     # ensure the plugin in installed
     file_path('plugin', plugin_to_disable)
     try:
-        plugin_to_disable_index = PLUGIN_NAMES.index(plugin_to_disable)
-    except:
-        raise IOError((errno.ENOENT, "plugin %s not enabled" % (plugin_to_disable)))
-    PLUGIN_NAMES.pop(plugin_to_disable_index)
+        PLUGIN_NAMES.remove(plugin_to_disable)
+    except ValueError:
+        raise IOError(errno.ENOENT, "plugin %s not enabled" % (plugin_to_disable))
     plugin_set_conf()
     save_conf(SJCONF_FILE, sjconf)
 
