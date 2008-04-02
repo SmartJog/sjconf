@@ -11,6 +11,7 @@ Architecture: all
 Depends: python (<< 3), python (>= 2.3)
 Provides: sjconf
 Conflicts: sjconf
+Replaces: sjconf
 Description: SmartJog RxTx configuration system
  sjconf is a configuration wrapper that handles global and server-specific
  configuration, deployment and service restart.
