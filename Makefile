@@ -13,6 +13,7 @@ V=$(MAJOR).$(MINOR).$(REV)
 clean:
 
 distclean:
+	rm -rf sjconf-$(V).tar.gz sjconf-$(V)
 
 dist: distclean
 	mkdir -p sjconf-$(V)
