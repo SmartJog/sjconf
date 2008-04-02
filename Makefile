@@ -4,6 +4,7 @@ LIB_DIR=$(DESTDIR)/$(PREFIX)/lib
 CONF_DIR=$(DESTDIR)/etc/smartjog
 PLUGINS_DIR=$(LIB_DIR)/sjconf/plugins
 TEMPLATES_DIR=$(CONF_DIR)/templates
+CONF_INTERNAL_DIR=$(DESTDIR)/var/lib/sjconf
 
 MAJOR=1
 MINOR=0
@@ -28,3 +29,4 @@ install:
 	cd conf; find . -type f -exec install -D -m 644 {} $(CONF_DIR)/{} \;
 	install -d $(PLUGINS_DIR)
 	install -d $(TEMPLATES_DIR)
+	install -d $(CONF_INTERNAL_DIR)
