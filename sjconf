@@ -353,8 +353,8 @@ def file_uninstall(file_type, file_to_uninstall):
     if verbose:
         my_print("Uninstalling file: %s" % (file_to_uninstall))
     file_to_uninstall_path = file_path(file_type, file_to_uninstall)
-    if os.path.isdir(file_to_uninstall_path):
-        shutil.rmtree(file_to_uninstall)
+    if not os.path.islink(file_to_uninstall_path) and os.path.isdir(file_to_uninstall_path):
+        shutil.rmtree(file_to_uninstall_path)
     else:
         os.unlink(file_to_uninstall_path)
     if verbose:
