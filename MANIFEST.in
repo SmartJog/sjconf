@@ -1,0 +1,4 @@
+include setup.py
+include sjconf
+include sjconf.py
+recursive-include conf *

@@ -3,15 +3,18 @@ Priority: optional
 Section: smartjog
 Maintainer: Philippe BRIDANT <philippe.bridant@smartjog.com>
 Uploaders: Jean-Philippe Garcia Ballester <jeanphilippe.garciaballester@smartjog.com>
-Build-Depends: cdbs (>= 0.4.43), debhelper (>= 6.0.7)
+Build-Depends: cdbs (>= 0.4.43), debhelper (>= 6.0.7), python-central, python-all
 Standards-Version: 3.7.3
+XS-Python-Version: all
 
 Package: sjconf1
-Architecture: all
-Depends: python (<< 3), python (>= 2.3)
-Provides: sjconf
 Conflicts: sjconf
 Replaces: sjconf
-Description: SmartJog RxTx configuration system
+Provides: sjconf
+Architecture: all
+Depends: ${python:Depends}
+XB-Python-Version: ${python:Versions}
+Description: Configuration wrapper
  sjconf is a configuration wrapper that handles global and server-specific
  configuration, deployment and service restart.
+ It can be accessed through a command-line utility or through a Python module.

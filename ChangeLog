@@ -5,3 +5,4 @@ Version 1.0.0~dev
 	* Installation command can take a ``--link'' argument so that the installed file is a symbolic link to the original file.
 	* Add template installation facilities: --install-template, --uninstall-template.
 	* Add config installation facilities: --install-config, --uninstall-config.
+	* A Python module to allow access to all sjconf operations is now provided.

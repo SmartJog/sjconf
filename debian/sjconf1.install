@@ -1,4 +1,5 @@
 debian/tmp/usr/bin
 debian/tmp/etc/smartjog
+debian/tmp/usr/lib/python*
 debian/tmp/usr/lib/sjconf
 debian/tmp/var/lib/sjconf
