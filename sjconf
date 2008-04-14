@@ -139,7 +139,7 @@ class SJConfCLI:
             self.__my_print('')
 
         if self.show_local_conf:
-            self.__my_print(open(self.sjconf.confs['local'].file_name).read())
+            self.__my_print(open(self.sjconf.confs['local'].file_path).read())
 
         if self.files_to_install:
             for self.file_to_install in self.files_to_install:
@@ -176,7 +176,7 @@ class SJConfCLI:
 
         if self.show_diff:
             print "############### local.conf diffs ################"
-            os.system("diff -U -1 %s %s" % (self.sjconf.confs['local'].file_name, self.sjconf.temp_file_name))
+            os.system("diff -U -1 %s %s" % (self.sjconf.confs['local'].file_path, self.sjconf.temp_file_path))
             print "#################################################\n"
 
         if self.save:
