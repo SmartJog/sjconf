@@ -19,6 +19,8 @@ class SJConfCLI:
     def __init__(self, argv = None):
         self.get = []
         self.sets = []
+        self.list_adds = []
+        self.list_deletions = []
         self.delete_sections = []
         self.delete_keys = []
         self.files_to_install = []
@@ -50,6 +52,8 @@ class SJConfCLI:
         --deploy                             : deploy configuration
         --restart                            : restart all services
         --set section key value              : set a configuration key
+        --add-to-list section key value      : add value to the configuration key
+        --remove-from-list section key value : remove value from the configuration key
         --delete-key section key             : delete a key within a section
         --delete-section section             : delete a complete section
         --install-plugin [--link] plugin     : install ``plugin'' into the plugins path; if --link is given, use symbolic links
@@ -93,6 +97,10 @@ class SJConfCLI:
                     self.get = self.__get_params(argv, 2)
                 elif cmd == '--set':
                     self.sets += [self.__get_params(argv, 3)]
+                elif cmd == '--add-to-list':
+                    self.list_adds.append(self.__get_params(argv, 3))
+                elif cmd == '--remove-from-list':
+                    self.list_deletions.append(self.__get_params(argv, 3))
                 elif cmd == '--delete-section':
                     self.delete_sections += self.__get_params(argv, 1)
                 elif cmd == '--delete-key':
@@ -118,7 +126,7 @@ class SJConfCLI:
             except SJConfCLI.BadParam, param:
                 print 'Incorrect %s command\n' % param
                 self.__usage(bin, 1)
-        self.changes = (self.sets or self.delete_sections or self.delete_keys)
+        self.changes = (self.sets or self.list_adds or self.list_deletions or self.delete_sections or self.delete_keys)
 
     def __verify_args(self):
         if self.get:
@@ -171,8 +179,8 @@ class SJConfCLI:
             else:
                 sys.exit(1)
 
-        if self.sets or self.delete_keys or self.delete_sections or self.show_diff:
-            self.sjconf.apply_conf_modifications(self.sets, self.delete_keys, self.delete_sections, not self.save)
+        if self.sets or self.list_adds or self.list_deletions or self.delete_keys or self.delete_sections or self.show_diff:
+            self.sjconf.apply_conf_modifications(self.sets, self.list_adds, self.list_deletions, self.delete_keys, self.delete_sections, not self.save)
 
         if self.show_diff:
             print "############### local.conf diffs ################"

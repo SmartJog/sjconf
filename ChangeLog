@@ -6,3 +6,5 @@ Version 1.0.0~dev
 	* Add template installation facilities: --install-template, --uninstall-template.
 	* Add config installation facilities: --install-config, --uninstall-config.
 	* A Python module to allow access to all sjconf operations is now provided.
+	* Writing plugins is now easy: there is a plugin class hierarchy to keep DRY.
+	* Add --add-to-list and --remove-from-list options to add/remove a value to/from a configuration interpreted as a comma-separated list.

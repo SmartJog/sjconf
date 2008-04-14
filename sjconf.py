@@ -63,15 +63,25 @@ Instead, add your custom values in local.conf.
             if plugin in services_to_restart or 'all' in services_to_restart:
                 plugin.restart_all_services()
 
-    def apply_conf_modifications(self, sets = [], delete_keys = [], delete_sections = [], temp = False):
+    def apply_conf_modifications(self, sets = [], list_adds = [], list_deletions = [], delete_keys = [], delete_sections = [], temp = False):
         conf = self.confs['local']
-        if sets or delete_keys or delete_sections:
+        if sets or delete_keys or delete_sections or list_adds or list_deletions:
             self.__my_print("########## Scheduled modifications ##############")
 
             for section in delete_sections:
                 if section in conf:
                     del(conf[section])
                 self.__my_print('delete section : %s' % (section))
+
+            for section, key, value in list_adds:
+                conf.set_type(section, key, 'list')
+                conf[section][key + '_list'].append(value)
+                self.__my_print('set            : %s:%s=%s' % (section, key, conf[section][key]))
+
+            for section, key, value in list_deletions:
+                conf.set_type(section, key, 'list')
+                conf[section][key + '_list'].remove(value)
+                self.__my_print('set            : %s:%s=%s' % (section, key, conf[section][key]))
 
             for section, key in delete_keys:
                 if section in conf:
@@ -83,6 +93,7 @@ Instead, add your custom values in local.conf.
                 conf.setdefault(section, {})
                 conf[section][key] = value
                 self.__my_print('set            : %s:%s=%s' % (section, key, value))
+
             self.__my_print("#################################################\n")
 
         if temp:
