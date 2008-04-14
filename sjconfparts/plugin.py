@@ -1,8 +1,9 @@
 from sjconfparts.conf import *
+from sjconfparts.exceptions import *
 import os
 
 class PythonIsCrappy:
-    class Error(Exception):
+    class Error(Error):
         pass
 
 class Plugin(PythonIsCrappy):

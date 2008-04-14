@@ -3,6 +3,7 @@ import re, sys, os, errno, time, popen2
 from sjconfparts.type import *
 from sjconfparts.plugin import *
 from sjconfparts.conf import *
+from sjconfparts.exceptions import *
 
 class SJConf:
 
