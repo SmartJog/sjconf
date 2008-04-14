@@ -43,13 +43,13 @@ Instead, add your custom values in local.conf.
 
         self.__plugins_load()
 
-    def get_conf(self):
+    def conf(self):
         conf = Conf(self.confs['base'])
         conf.update(self.confs['local'])
         return conf
 
-    def get_plugin_conf(self, plugin_name):
-        conf = self.get_conf()
+    def plugin_conf(self, plugin_name):
+        conf = self.conf()
         plugin_conf = Conf()
         for section in conf:
             if re.compile(plugin_name + ':?.*').match(section):
@@ -91,8 +91,8 @@ Instead, add your custom values in local.conf.
         conf.save(output_file)
 
     def deploy_conf(self, services_to_restart):
-        conf_files = self.__get_conf_files()
-        files_to_backup = self.__get_files_to_backup() + conf_files
+        conf_files = self.__conf_files()
+        files_to_backup = self.__files_to_backup() + conf_files
         self.backup_files(files_to_backup)
 
         try:
@@ -201,27 +201,45 @@ Instead, add your custom values in local.conf.
 
         return out, err, exit_value
 
+    def __plugin_dependencies(self, plugin, plugins_hash):
+        plugin_dependencies_hash = {}
+        for dependency in plugin.dependencies():
+            if not dependency.name in plugins_hash and dependency.optionnal:
+                continue
+            if not dependency.name in plugins_hash and not dependency.optionnal: # Plugin is not available, find out if it is not installed or not enabled
+                try:
+                    self.__file_path('plugin', dependency.name) # This will raise an IOError if plugin is not installed
+                    raise Plugin.Dependency.NotEnabledError
+                except IOError, exception:
+                    if hasattr(exception, 'errno') and exception.errno == errno.ENOENT:
+                        raise Plugin.Dependency.NotInstalledError
+                    else:
+                        raise
+            dependency.verify(plugins_hash[dependency.name].version())
+            plugin_dependencies_hash[dependency.name] = plugins_hash[dependency.name]
+        return plugin_dependencies_hash
+
     def __plugins_load(self):
         for plugin in self.confs_internal['sjconf']['conf']['plugins_list']:
-            if not plugin in map(lambda plugin: plugin.name, self.plugins):
-                self.plugins.append(__import__(plugin).Plugin(self, self.get_plugin_conf(plugin)))
+            self.plugins.append(__import__(plugin).Plugin(self, self.plugin_conf(plugin)))
         plugins_hash = {}
         for plugin in self.plugins:
-            plugins_hash[plugin.name] = plugin
+            plugins_hash[plugin.name()] = plugin
         for plugin in self.plugins:
-            plugin.set_plugins(plugins_hash)
+            plugin_dependencies_hash = self.__plugin_dependencies(plugin, plugins_hash)
+            if len(plugin_dependencies_hash) > 0: 
+                plugin.set_plugins(plugin_dependencies_hash)
 
-
-    def __get_files_to_backup(self):
+    def __files_to_backup(self):
         files_to_backup = []
         # Ask all plugins a list of files that I should backup for them
         for plugin in self.plugins:
-            files_to_backup += plugin.get_files_to_backup()
+            files_to_backup += plugin.files_to_backup()
         return files_to_backup
 
     def backup_files(self, files_to_backup = None):
         if files_to_backup == None:
-            files_to_backup = self.__get_files_to_backup() + self.__get_conf_files()
+            files_to_backup = self.__files_to_backup() + self.__conf_files()
         self.__my_print( "Backup folder : %s" % self.backup_dir )
         os.makedirs(self.backup_dir)
         os.makedirs(self.backup_dir + '/sjconf/')
@@ -282,7 +300,7 @@ Instead, add your custom values in local.conf.
     def __apply_confs(self, conf_files = None):
         # Open and write all configuration files
         if conf_files == None:
-            conf_files = self.__get_conf_files()
+            conf_files = self.__conf_files()
         for conf_file in conf_files:
             self.__my_print("Writing configuration file %s (%s)" % (conf_file.path, conf_file.plugin_name))
             # checking if the dirname exists
@@ -293,10 +311,10 @@ Instead, add your custom values in local.conf.
             conf_file.written = True
         self.__my_print('')
 
-    def __get_conf_files(self):
+    def __conf_files(self):
         conf_files = []
         for plugin in self.plugins:
-            conf_files += plugin.get_conf_files()
+            conf_files += plugin.conf_files()
         return conf_files
 
     def __file_path(self, file_type, file_path):
