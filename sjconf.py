@@ -62,7 +62,7 @@ Instead, add your custom values in local.conf.
             if plugin in services_to_restart or 'all' in services_to_restart:
                 plugin.restart_all_services()
 
-    def apply_conf_modifications(self, sets = {}, delete_keys = {}, delete_sections = {}, temp = False):
+    def apply_conf_modifications(self, sets = [], delete_keys = [], delete_sections = [], temp = False):
         conf = self.confs['local']
         if sets or delete_keys or delete_sections:
             self.__my_print("########## Scheduled modifications ##############")
