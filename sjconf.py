@@ -1,108 +1,8 @@
-import re, sys, os, ConfigParser, errno, time, popen2
+import re, sys, os, errno, time, popen2
 
-class Type:
-
-    @classmethod
-    def str_to_list(xcls, str_object):
-        list = map(str.strip, str_object.split(','))
-        try:
-            list.remove('')
-        except ValueError:
-            pass
-        return list
-
-    @classmethod
-    def list_to_str(xcls, list):
-        return ', '.join(list)
-
-class Conf(dict):
-    class ConfSection(dict):
-        def __init__(self, *args, **kw):
-            dict.__init__(self, *args, **kw)
-            self.types = {}
-
-        def __delitem__(self, key):
-            dict.__delitem__(self, key)
-            if key in self.types:
-                del self.types[key]
-
-        def __find_type(self, key):
-            type = None
-            search_result = re.compile('(.*)_([^_]+)$').search(key)
-            if search_result:
-                key_tmp = search_result.group(1)
-                type = search_result.group(2)
-                if key_tmp in self.types and type == self.types[key_tmp][0]:
-                    key = key_tmp
-                else:
-                    type = None
-            return key, type
-
-        def __getitem__(self, key):
-            key, type = self.__find_type(key)
-            value = dict.__getitem__(self, key)
-            if type:
-                value = self.types[key][1]
-            elif key in self.types:
-                value = apply(getattr(Type, self.types[key][0] + '_to_str'), [self.types[key][1]])
-                dict.__setitem__(self, key, value)
-            return value
-
-        def __setitem__(self, key, value):
-            key, type = self.__find_type(key)
-            if type:
-                self.types[key][1] = value
-                value = apply(getattr(Type, self.types[key][0] + '_to_str'), [value])
-            elif key in self.types:
-                self.types[key][1] = apply(getattr(Type, 'str_to_' + self.types[key][0]), [value])
-            dict.__setitem__(self, key, value)
-
-        def set_type(self, key, type):
-            self.types[key] = [type, apply(getattr(Type, 'str_to_' + type), [self[key]])]
-
-    def __init__(self, file_name, default_value = None):
-        dict.__init__({})
-        self.file_name = file_name
-        self.comments = None
-        try:
-            self.load()
-        except IOError, exception:
-            if exception.errno == errno.ENOENT and default_value != None:
-                for key in default_value:
-                    self[key] = default_value[key]
-            else:
-                raise
-
-    def load(self, file_name = None):
-        if not file_name:
-            file_name = self.file_name
-        # Configuration file loader
-        if not os.path.exists(file_name):
-            raise IOError(errno.ENOENT, "%s: %s" % (self.file_name, os.strerror(errno.ENOENT)))
-        elif os.path.isdir(file_name):
-            raise IOError(errno.EISDIR, "%s: %s" % (self.file_name, os.strerror(errno.EISDIR)))
-        cp = ConfigParser.ConfigParser()
-        cp.read(file_name)
-        for section in cp.sections():
-            self[section] = Conf.ConfSection(cp.items(section))
-
-    def save(self, file_name = None):
-        if not file_name:
-            file_name = self.file_name
-        output_file = open(file_name, "w")
-        if self.comments != None and len(self.comments) > 0:
-            for comment in comments.split('\n'):
-                output_file.write('# ' + comment + '\n')
-            output_file.write('\n')
-        cp = ConfigParser.ConfigParser()
-        for section in self:
-            cp.add_section(section)
-            for key in self[section]:
-                cp.set(section, key, self[section][key])
-        cp.write(output_file)
-
-    def set_type(self, section, key, type):
-        self[section].set_type(key, type)
+from sjconfparts.type import *
+from sjconfparts.plugin import *
+from sjconfparts.conf import *
 
 class SJConf:
 
@@ -114,23 +14,22 @@ Instead, add your custom values in local.conf.
 
     DEFAULT_SJCONF_FILE_NAME = '/etc/smartjog/sjconf.conf'
 
-    def __init__(self, sjconf_file_name = DEFAULT_SJCONF_FILE_NAME, quiet = True, verbose = False):
+    def __init__(self, sjconf_file_path = DEFAULT_SJCONF_FILE_NAME, quiet = True, verbose = False):
 
-        self.confs_internal = {'sjconf' : Conf(sjconf_file_name)}
+        self.confs_internal = {'sjconf' : Conf(file_path = sjconf_file_path)}
         self.confs_internal['sjconf'].set_type('conf', 'plugins', 'list')
-        for conf in ('installed_confs'):
-            conf_file_name = os.path.realpath(self.confs_internal['sjconf']['conf']['internal_config_path'] + '/' + conf + '.conf')
-            self.confs_internal[conf] = Conf(conf_file_name, {})
+
+        self.backup_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()))
+        self.etc_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['etc_dir'])
+        self.base_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['base_dir'])
 
         self.confs = {}
         for conf in ('base', 'local'):
-            conf_file_name = os.path.realpath(self.confs_internal['sjconf']['conf']['base_path'] + '/' + conf + '.conf')
-            self.confs[conf] = Conf(conf_file_name)
+            conf_file_path = os.path.realpath(self.base_dir + '/' + conf + '.conf')
+            self.confs[conf] = Conf(file_path = conf_file_path)
         self.confs['base'].comments = self.BASE_COMMENTS
 
-        self.backup_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()))
-
-        self.temp_file_name = "/tmp/sjconf_tempfile.conf"
+        self.temp_file_path = "/tmp/sjconf_tempfile.conf"
 
         self.files_path = {'plugin' : os.path.realpath(self.confs_internal['sjconf']['conf']['plugins_path']), 'template' : os.path.realpath(self.confs_internal['sjconf']['conf']['templates_path'])}
         self.files_extensions = {'plugin' : ('.py'), 'template' : ('.conf')}
@@ -142,25 +41,26 @@ Instead, add your custom values in local.conf.
         self.quiet = quiet
         self.verbose = verbose
 
-    def get_conf(self):
-        conf = {}
-        # Creating a dict with list of base conf dicts
-        for dic_key in self.confs['base']:
-            for key in self.confs['base'][dic_key]:
-                conf['%s:%s' % (dic_key, key)] = self.confs['base'][dic_key][key]
+        self.__plugins_load()
 
-        # Updating this dict with list of local conf dicts
-        for dic_key in self.confs['local']:
-            for key in self.confs['local'][dic_key]:
-                conf['%s:%s' % (dic_key, key)] = self.confs['local'][dic_key][key]
+    def get_conf(self):
+        conf = Conf(self.confs['base'])
+        conf.update(self.confs['local'])
         return conf
 
+    def get_plugin_conf(self, plugin_name):
+        conf = self.get_conf()
+        plugin_conf = Conf()
+        for section in conf:
+            if re.compile(plugin_name + ':?.*').match(section):
+                plugin_conf[section] = conf[section]
+        return plugin_conf
+
     def restart_services(self, services_to_restart):
-        self.__plugins_load()
         already_restart = []
         for plugin in self.plugins:
-            if plugin.SERVICE_NAME in services_to_restart or 'all' in services_to_restart:
-                plugin.restart_service(self.confs_internal['sjconf'], already_restart)
+            if plugin in services_to_restart or 'all' in services_to_restart:
+                plugin.restart_all_services()
 
     def apply_conf_modifications(self, sets = {}, delete_keys = {}, delete_sections = {}, temp = False):
         conf = self.confs['local']
@@ -185,27 +85,28 @@ Instead, add your custom values in local.conf.
             self.__my_print("#################################################\n")
 
         if temp:
-            output_file = self.temp_file_name
+            output_file = self.temp_file_path
         else:
-            output_file = conf.file_name
+            output_file = conf.file_path
         conf.save(output_file)
 
-    def deploy_conf(self, restart, services_to_restart):
-        self.__plugins_init()
-        backuped_files = self.__backup_files()
+    def deploy_conf(self, services_to_restart):
+        conf_files = self.__get_conf_files()
+        files_to_backup = self.__get_files_to_backup() + conf_files
+        self.backup_files(files_to_backup)
 
         try:
             # Write all configuration files
-            self.__apply_confs()
+            self.__apply_confs(conf_files)
 
             # restart services if asked
-            if restart:
+            if len(services_to_restart) > 0:
                 self.restart_services(services_to_restart)
             self.__my_print('')
         except:
             # Something when wrong, restoring backup files
-            self.__restore_files(backuped_files)
-            if restart:
+            self.restore_files(files_to_backup)
+            if len(services_to_restart) > 0:
                 self.restart_services(services_to_restart)
             # And delete backup folder
             self.__delete_backup_dir()
@@ -263,49 +164,29 @@ Instead, add your custom values in local.conf.
 
     def conf_file_install(self, conf_file_to_install):
         conf_file_to_install_name = os.path.basename(conf_file_to_install).replace('.conf', '')
-        if conf_file_to_install_name in self.confs_internal['sjconf']['installed_confs_list']:
-            raise IOError(errno.EEXIST, "config %s is already installed" % (conf_file_to_install_name))
-        conf_to_install = Conf(conf_file_to_install)
+        conf_to_install = Conf(file_path = conf_file_to_install)
         for section in conf_to_install:
+            if not re.compile(conf_file_to_install_name + ':?.*').match(section):
+                raise KeyError(section + ': All sections should start with \'' + conf_file_to_install_name + '\', optionnally followed by \':<subsection>\'')
+            if section in self.confs['base']:
+                raise IOError(errno.EEXIST, "config %s is already installed" % (conf_file_to_install_name))
+        for section in conf_to_install:
+            self.confs['base'][section] = {}
             for key in conf_to_install[section]:
-                if not section in self.confs_internal['installed_confs']:
-                    self.confs_internal['installed_confs'][section] = {}
-                if key in self.confs_internal['installed_confs'][section] and self.confs_internal['installed_confs'][section][key] != conf_file_to_install_name:
-                    raise IOError(errno.EEXIST, "the key %s in section %s is already installed by config %s" % (key, section, self.confs_internal['installed_confs'][section][key]))
-                self.confs_internal['installed_confs'][section][key] = conf_file_to_install_name
-                if not section in self.confs['base']:
-                    self.confs['base'][section] = {}
                 self.confs['base'][section][key] = conf_to_install[section][key]
-        self.confs_internal['sjconf']['installed_confs_list'].append(conf_file_to_install_name)
         self.confs['base'].save()
-        self.confs_internal['installed_confs'].save()
-        self.confs_internal['sjconf'].save()
 
     def conf_file_uninstall(self, conf_file_to_uninstall):
+        sections_to_delete = []
         conf_file_to_uninstall_name = os.path.basename(conf_file_to_uninstall).replace('.conf', '')
-        if not conf_file_to_uninstall_name in self.confs_internal['sjconf']['installed_confs_list']:
+        for section in self.confs['base']:
+            if re.compile(conf_file_to_uninstall_name + ':?.*').match(section):
+                sections_to_delete.append(section)
+        if len(sections_to_delete) == 0:
             raise IOError(errno.ENOENT, "config %s is not installed" % (conf_file_to_uninstall_name))
-        keys_to_delete = {}
-        for section in configs_installed:
-            if section == 'sjconf':
-                continue
-            for key in self.confs_internal['installed_confs'][section]:
-                if self.confs_internal['installed_confs'][section][key] == conf_file_to_uninstall_name:
-                    if not section in keys_to_delete:
-                        keys_to_delete[section] = []
-                    keys_to_delete[section].append(key)
-        for section in keys_to_delete:
-            for key in keys_to_delete[section]:
-                    del self.confs_internal['installed_confs'][section][key]
-                    del self.confs['base'][section][key]
-            if len(self.confs_internal['installed_confs'][section]) == 0:
-                del self.confs_internal['installed_confs'][section]
-            if len(self.confs['base'][section]) == 0:
-                del self.confs['base'][section]
-        self.confs_internal['sjconf']['installed_confs_list'].remove(conf_file_to_uninstall_name)
+        for section in sections_to_delete:
+            del self.confs['base'][section]
         self.confs['base'].save()
-        self.confs_internal['installed_confs'].save()
-        self.confs_internal['sjconf'].save()
 
     def __my_print(self, str):
         if not self.quiet: print str
@@ -322,38 +203,42 @@ Instead, add your custom values in local.conf.
 
     def __plugins_load(self):
         for plugin in self.confs_internal['sjconf']['conf']['plugins_list']:
-            if not plugin in map(lambda plugin: plugin.__name__, self.plugins):
-                self.plugins.append(__import__(plugin))
+            if not plugin in map(lambda plugin: plugin.name, self.plugins):
+                self.plugins.append(__import__(plugin).Plugin(self, self.get_plugin_conf(plugin)))
+        plugins_hash = {}
+        for plugin in self.plugins:
+            plugins_hash[plugin.name] = plugin
+        for plugin in self.plugins:
+            plugin.set_plugins(plugins_hash)
+
 
     def __get_files_to_backup(self):
-        self.__plugins_load()
         files_to_backup = []
         # Ask all plugins a list of files that I should backup for them
         for plugin in self.plugins:
             files_to_backup += plugin.get_files_to_backup()
         return files_to_backup
 
-    def __backup_files(self):
-        files_to_backup = self.__get_files_to_backup()
+    def backup_files(self, files_to_backup = None):
+        if files_to_backup == None:
+            files_to_backup = self.__get_files_to_backup() + self.__get_conf_files()
         self.__my_print( "Backup folder : %s" % self.backup_dir )
         os.makedirs(self.backup_dir)
         os.makedirs(self.backup_dir + '/sjconf/')
-        out, err, exit_value = self.__exec_command("cp '%s' '%s'" % (self.confs['local'].file_name, self.backup_dir + os.path.basename(self.confs['local'].file_name)))
+        out, err, exit_value = self.__exec_command("cp '%s' '%s'" % (self.confs['local'].file_path, self.backup_dir + os.path.basename(self.confs['local'].file_path)))
         if exit_value != 0:
             raise err
-        try:
         # Store all files into a service dedicated folder
-            for file in files_to_backup:
-                if not os.path.isdir(self.backup_dir + '/' + file['service']):
-                    os.makedirs(self.backup_dir + '/' + file['service'])
-                file['backup_path'] = self.backup_dir + '/' + file['service'] + '/' + os.path.basename(file['path'])
-                out, err, exit_value = self.__exec_command("mv '%s' '%s'" % (file['path'], file['backup_path']))
-                if exit_value != 0:
-                    raise (err + '\nPlease restore files manually from %s' % self.backup_dir, files_to_backup)
-                file['backed_up'] = True
-        except:
-            self.__restore_files(self, backuped_files)
-            raise
+        for file_to_backup in files_to_backup:
+            if not os.path.isfile(file_to_backup.path):
+                continue
+            if not os.path.isdir(self.backup_dir + '/' + file_to_backup.plugin_name):
+                os.makedirs(self.backup_dir + '/' + file_to_backup.plugin_name)
+            file_to_backup.backup_path = self.backup_dir + '/' + file_to_backup.plugin_name + '/' + os.path.basename(file_to_backup.path)
+            out, err, exit_value = self.__exec_command("mv '%s' '%s'" % (file_to_backup.path, file_to_backup.backup_path))
+            if exit_value != 0:
+                raise (err + '\nPlease restore files manually from %s' % (self.backup_dir), files_to_backup)
+            file_to_backup.backed_up = True
         return files_to_backup
 
     def __archive_backup(self):
@@ -378,50 +263,44 @@ Instead, add your custom values in local.conf.
                 os.unlink(path)
         os.rmdir(dir)
 
-    def __restore_files(self, backuped_files):
+    def restore_files(self, backed_up_files):
         # Something went wrong
         self.__my_print("Restoring files from %s" % self.backup_dir)
 
         # Unlink all conf files just created
-        for file in backuped_files:
-            if 'written' in file and file['written'] and os.path.isfile(file['path']):
-                os.unlink(file['path'])
+        for backed_up_file in backed_up_files:
+            if backed_up_file.written and os.path.isfile(backed_up_file.path):
+                os.unlink(backup_up_file.file_path)
 
         # Restore backup files
-        for file in backuped_files:
-            if file['backed_up']:
-                out, err, exit_value = self.__exec_command("mv '%s' '%s'" % (file['backup_path'], file['path']))
+        for backed_up_file in backed_up_files:
+            if backed_up_file.backed_up:
+                out, err, exit_value = self.__exec_command("mv '%s' '%s'" % (backed_up_file.backup_path, backed_up_file.path))
                 if exit_value != 0:
                     raise err + "\nPlease restore files manually from %s" % self.backup_dir
 
-    def __apply_confs(self):
+    def __apply_confs(self, conf_files = None):
         # Open and write all configuration files
-        conf_files = self.__get_conf_files()
-        for conf in conf_files:
-            self.__my_print("Writing configuration file %(path)s (%(service)s)" % conf)
+        if conf_files == None:
+            conf_files = self.__get_conf_files()
+        for conf_file in conf_files:
+            self.__my_print("Writing configuration file %s (%s)" % (conf_file.path, conf_file.plugin_name))
             # checking if the dirname exists
-            folder = os.path.dirname(conf['path'])
+            folder = os.path.dirname(conf_file.path)
             if not os.path.isdir(folder):
                 os.makedirs(folder)
-            open(conf['path'], "w").write(conf['content'])
-            conf['written'] = True
+            open(conf_file.path, "w").write(conf_file.content)
+            conf_file.written = True
         self.__my_print('')
 
-    def __plugins_init(self):
-        self.__plugins_load()
-        self.restart = False
-        for plugin in self.plugins:
-            plugin.init(self.confs_internal['sjconf'], self.confs['base'], self.confs['local'], self.get_conf())
-
     def __get_conf_files(self):
-        self.__plugins_load()
         conf_files = []
         for plugin in self.plugins:
             conf_files += plugin.get_conf_files()
         return conf_files
 
-    def __file_path(self, file_type, file_name):
-        file_path = file_name
+    def __file_path(self, file_type, file_path):
+        file_path = file_path
         if not file_path.startswith(self.files_path[file_type]):
             file_path = self.files_path[file_type] + '/' + file_path
         for extension in self.files_extensions[file_type]:
@@ -429,5 +308,5 @@ Instead, add your custom values in local.conf.
                 break
             file_path += extension
         if not os.path.exists(file_path):
-            raise IOError(errno.ENOENT, "file %s not installed, path: %s" % (file_name, file_path))
+            raise IOError(errno.ENOENT, "file %s not installed, path: %s" % (file_path, file_path))
         return file_path
