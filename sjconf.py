@@ -43,12 +43,8 @@ class SJConf:
 
         sys.path.append(self.files_path['plugin'])
 
-        self.plugins = []
-
         self.quiet = quiet
         self.verbose = verbose
-
-        self._plugins_load()
 
     def conf(self):
         conf = Conf(self.confs['base'])
@@ -65,9 +61,11 @@ class SJConf:
                 plugin_conf[section] = conf[section]
         return plugin_conf
 
-    def restart_services(self, services_to_restart):
+    def restart_services(self, services_to_restart, plugins = None):
+        if plugins == None:
+            plugins = self._plugins_load()
         already_restart = []
-        for plugin in self.plugins:
+        for plugin in plugins:
             if plugin in services_to_restart or 'all' in services_to_restart:
                 plugin.restart_all_services()
 
@@ -111,8 +109,9 @@ class SJConf:
         conf.save(output_file)
 
     def deploy_conf(self, services_to_restart):
-        conf_files = self._conf_files()
-        files_to_backup = self._files_to_backup() + conf_files
+        plugins = self._plugins_load()
+        conf_files = self._conf_files(plugins)
+        files_to_backup = self._files_to_backup(plugins) + conf_files
         self.backup_files(files_to_backup)
 
         try:
@@ -121,13 +120,13 @@ class SJConf:
 
             # restart services if asked
             if len(services_to_restart) > 0:
-                self.restart_services(services_to_restart)
+                self.restart_services(services_to_restart, plugins)
             self._my_print('')
         except:
             # Something when wrong, restoring backup files
             self.restore_files(files_to_backup)
             if len(services_to_restart) > 0:
-                self.restart_services(services_to_restart)
+                self.restart_services(services_to_restart, plugins)
             # And delete backup folder
             self._delete_backup_dir()
             raise
@@ -216,26 +215,30 @@ class SJConf:
         return plugin_dependencies_hash
 
     def _plugins_load(self):
+        plugins = []
         for plugin in self.confs_internal['sjconf']['conf']['plugins_list']:
-            self.plugins.append(__import__(plugin).Plugin(self, self.plugin_conf(plugin)))
+            plugins.append(__import__(plugin).Plugin(self, self.plugin_conf(plugin)))
         plugins_hash = {}
-        for plugin in self.plugins:
+        for plugin in plugins:
             plugins_hash[plugin.name()] = plugin
-        for plugin in self.plugins:
+        for plugin in plugins:
             plugin_dependencies_hash = self._plugin_dependencies(plugin, plugins_hash)
             if len(plugin_dependencies_hash) > 0: 
                 plugin.set_plugins(plugin_dependencies_hash)
+        return plugins
 
-    def _files_to_backup(self):
+    def _files_to_backup(self, plugins):
         files_to_backup = []
         # Ask all plugins a list of files that I should backup for them
-        for plugin in self.plugins:
+        for plugin in plugins:
             files_to_backup += plugin.files_to_backup()
         return files_to_backup
 
-    def backup_files(self, files_to_backup = None):
+    def backup_files(self, files_to_backup = None, plugins = None):
         if files_to_backup == None:
-            files_to_backup = self._files_to_backup() + self._conf_files()
+            if plugins == None:
+                plugins = self._plugins_load()
+            files_to_backup = self._files_to_backup(plugins) + self._conf_files(plugins)
         self._my_print( "Backup folder : %s" % self.backup_dir )
         os.makedirs(self.backup_dir)
         os.makedirs(self.backup_dir + '/sjconf/')
@@ -293,10 +296,12 @@ class SJConf:
                 if exit_value != 0:
                     raise err + "\nPlease restore files manually from %s" % self.backup_dir
 
-    def _apply_confs(self, conf_files = None):
+    def _apply_confs(self, conf_files = None, plugins = None):
         # Open and write all configuration files
         if conf_files == None:
-            conf_files = self._conf_files()
+            if plugins == None:
+                plugins = self._plugins_load()
+            conf_files = self._conf_files(plugins)
         for conf_file in conf_files:
             self._my_print("Writing configuration file %s (%s)" % (conf_file.path, conf_file.plugin_name))
             # checking if the dirname exists
@@ -307,9 +312,9 @@ class SJConf:
             conf_file.written = True
         self._my_print('')
 
-    def _conf_files(self):
+    def _conf_files(self, plugins):
         conf_files = []
-        for plugin in self.plugins:
+        for plugin in plugins:
             conf_files += plugin.conf_files()
         return conf_files
 
