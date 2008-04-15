@@ -4,4 +4,4 @@ set -e
 
 #DEBHELPER#
 
-rm -f /usr/lib/sjconf/plugins/*.pyc
+rm -f /var/lib/sjconf/plugins/*.pyc

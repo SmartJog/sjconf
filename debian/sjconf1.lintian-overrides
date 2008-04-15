@@ -1,2 +1,0 @@
-# We provide an empty directory because no plugin are shipped by default
-sjconf1: package-contains-empty-directory usr/lib/sjconf/plugins/

@@ -8,9 +8,3 @@ DEB_PYTHON_SYSTEM = pycentral
 include /usr/share/cdbs/1/class/python-distutils.mk
 
 DEB_DESTDIR = $(CURDIR)/debian/tmp
-
-# Remove this when cdbs 0.4.52 is released
-install/sjconf1::
-	dh_lintian -psjconf1
-	# Comment previous line and uncomment next one if debhelper 6.0.7 is unavailable
-	#install -D -m 644 debian/sjconf1.lintian-overrides debian/tmp/usr/share/lintian/overrides/sjconf1
