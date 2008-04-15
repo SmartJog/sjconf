@@ -82,23 +82,23 @@ class SJConf:
             for section, key, value in list_adds:
                 conf.set_type(section, key, 'list')
                 conf[section][key + '_list'].append(value)
-                self._my_print('set            : %s:%s=%s' % (section, key, conf[section][key]))
+                self._my_print('set            : %s: %s = %s' % (section, key, conf[section][key]))
 
             for section, key, value in list_deletions:
                 conf.set_type(section, key, 'list')
                 conf[section][key + '_list'].remove(value)
-                self._my_print('set            : %s:%s=%s' % (section, key, conf[section][key]))
+                self._my_print('set            : %s: %s = %s' % (section, key, conf[section][key]))
 
             for section, key in delete_keys:
                 if section in conf:
                     if key in conf[section]:
                         del(conf[section][key])
-                self._my_print('delete key     : %s:%s' % (section, key))
+                self._my_print('delete key     : %s: %s' % (section, key))
 
             for section, key, value in sets:
                 conf.setdefault(section, {})
                 conf[section][key] = value
-                self._my_print('set            : %s:%s=%s' % (section, key, value))
+                self._my_print('set            : %s: %s = %s' % (section, key, value))
 
             self._my_print("#################################################\n")
 
