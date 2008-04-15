@@ -17,7 +17,7 @@ class Conf(dict):
             if key in self.types:
                 del self.types[key]
 
-        def __find_type(self, key):
+        def _find_type(self, key):
             type = None
             search_result = re.compile('(.*)_([^_]+)$').search(key)
             if search_result:
@@ -30,7 +30,7 @@ class Conf(dict):
             return key, type
 
         def __getitem__(self, key):
-            key, type = self.__find_type(key)
+            key, type = self._find_type(key)
             value = dict.__getitem__(self, key)
             if type:
                 value = self.types[key][1]
@@ -40,7 +40,7 @@ class Conf(dict):
             return value
 
         def __setitem__(self, key, value):
-            key, type = self.__find_type(key)
+            key, type = self._find_type(key)
             if type:
                 self.types[key][1] = value
                 value = apply(getattr(Type, self.types[key][0] + '_to_str'), [value])

@@ -8,7 +8,7 @@ class SJConfCLI:
         def __init__(self, name):
             self.name = name
 
-    def __get_params(self, argv, nb):
+    def _get_params(self, argv, nb):
         if len(argv) < nb:
             raise BadParam("nb")
         ret = argv[0:nb]
@@ -40,11 +40,11 @@ class SJConfCLI:
         if argv == None:
             argv = list(sys.argv)
         bin, argv = argv[0], argv[1:]
-        self.__parse_args(bin, argv)
-        self.__verify_args()
+        self._parse_args(bin, argv)
+        self._verify_args()
         self.sjconf = sjconf.SJConf(quiet = self.quiet, verbose = self.verbose)
 
-    def __usage(self, bin, exit_code):
+    def _usage(self, bin, exit_code):
         print '''%s usage:
         -e                                   : open local.conf on an EDITOR
         --diff                               : show 'diff -u' between old and new configuration files
@@ -66,10 +66,10 @@ class SJConfCLI:
         --disable-plugin plugin              : remove ``plugin'' from the list of plugins to use
 ''' % (bin)
         if exit_code:
-            self.__my_print("No modification done on configuration")
+            self._my_print("No modification done on configuration")
         sys.exit(exit_code)
 
-    def __parse_args(self, bin, argv):
+    def _parse_args(self, bin, argv):
         if not argv:
             self.show_local_conf = True
         while len(argv):
@@ -82,7 +82,7 @@ class SJConfCLI:
                 if cmd == '--deploy':
                     self.deploy = True
                 elif cmd == '-h' or cmd == '--help':
-                     self.__usage(bin, 0)
+                     self._usage(bin, 0)
                 elif cmd == '-v' or cmd == '--verbose':
                     self.verbose = True
                 elif cmd == '--diff':
@@ -92,43 +92,43 @@ class SJConfCLI:
                 elif cmd == '--save':
                     self.save = True
                 elif cmd == '--restart':
-                    self.services_to_restart += self.__get_params(argv, 1)
+                    self.services_to_restart += self._get_params(argv, 1)
                 elif cmd == '--get':
-                    self.get = self.__get_params(argv, 2)
+                    self.get = self._get_params(argv, 2)
                 elif cmd == '--set':
-                    self.sets += [self.__get_params(argv, 3)]
+                    self.sets += [self._get_params(argv, 3)]
                 elif cmd == '--add-to-list':
-                    self.list_adds.append(self.__get_params(argv, 3))
+                    self.list_adds.append(self._get_params(argv, 3))
                 elif cmd == '--remove-from-list':
-                    self.list_deletions.append(self.__get_params(argv, 3))
+                    self.list_deletions.append(self._get_params(argv, 3))
                 elif cmd == '--delete-section':
-                    self.delete_sections += self.__get_params(argv, 1)
+                    self.delete_sections += self._get_params(argv, 1)
                 elif cmd == '--delete-key':
-                    self.delete_keys += [self.__get_params(argv, 2)]
+                    self.delete_keys += [self._get_params(argv, 2)]
                 elif cmd == '--install-plugin' or cmd == '--install-template':
                     if len(argv) < 1:
                         raise SJConfCLI.BadParam(cmd)
                     link = (argv[0] == '--link' and argv.pop(0) and True) or False
-                    self.files_to_install.append([cmd.replace('--install-', ''), self.__get_params(argv, 1)[0], link])
+                    self.files_to_install.append([cmd.replace('--install-', ''), self._get_params(argv, 1)[0], link])
                 elif cmd == '--install-config':
-                    self.conf_files_to_install += self.__get_params(argv, 1)
+                    self.conf_files_to_install += self._get_params(argv, 1)
                 elif cmd == '--uninstall-config':
-                    self.conf_files_to_uninstall += self.__get_params(argv, 1)
+                    self.conf_files_to_uninstall += self._get_params(argv, 1)
                 elif cmd == '--uninstall-plugin' or cmd == '--uninstall-template':
-                    self.files_to_uninstall.append([cmd.replace('--uninstall-', ''), self.__get_params(argv, 1)[0]])
+                    self.files_to_uninstall.append([cmd.replace('--uninstall-', ''), self._get_params(argv, 1)[0]])
                 elif cmd == '--enable-plugin':
-                    self.plugins_to_enable += self.__get_params(argv, 1)
+                    self.plugins_to_enable += self._get_params(argv, 1)
                 elif cmd == '--disable-plugin':
-                    self.plugins_to_disable += self.__get_params(argv, 1)
+                    self.plugins_to_disable += self._get_params(argv, 1)
                 else:
                     print 'Incorrect command : %s\n' % cmd
-                    __usage(bin, 1)
+                    _usage(bin, 1)
             except SJConfCLI.BadParam, param:
                 print 'Incorrect %s command\n' % param
-                self.__usage(bin, 1)
+                self._usage(bin, 1)
         self.changes = (self.sets or self.list_adds or self.list_deletions or self.delete_sections or self.delete_keys)
 
-    def __verify_args(self):
+    def _verify_args(self):
         if self.get:
             if self.changes or self.deploy or self.save or self.services_to_restart:
                 print 'Cannot mix get command and other command'
@@ -137,17 +137,17 @@ class SJConfCLI:
             print 'You should add the --save parameter to save configuration before deploying it'
             sys.exit(1)
 
-    def __my_print(self, str):
+    def _my_print(self, str):
         if not self.quiet: print str
 
     def run(self):
         if self.verbose:
-            self.__my_print('Using base configuration file: %s' % self.sjconf.confs['base'].file_path)
-            self.__my_print('Using local configuration file: %s' % self.sjconf.confs['local'].file_path)
-            self.__my_print('')
+            self._my_print('Using base configuration file: %s' % self.sjconf.confs['base'].file_path)
+            self._my_print('Using local configuration file: %s' % self.sjconf.confs['local'].file_path)
+            self._my_print('')
 
         if self.show_local_conf:
-            self.__my_print(open(self.sjconf.confs['local'].file_path).read())
+            self._my_print(open(self.sjconf.confs['local'].file_path).read())
 
         if self.files_to_install:
             for self.file_to_install in self.files_to_install:
@@ -188,9 +188,9 @@ class SJConfCLI:
             print "#################################################\n"
 
         if self.save:
-            self.__my_print('Configuration saved\n')
+            self._my_print('Configuration saved\n')
         elif self.changes:
-            self.__my_print("No configuration saved (use --save)\n")
+            self._my_print("No configuration saved (use --save)\n")
 
         if not self.deploy and self.services_to_restart:
             self.sjconf.restart_services(self.services_to_restart)
