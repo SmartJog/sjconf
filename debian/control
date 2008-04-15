@@ -1,6 +1,6 @@
 Source: sjconf
 Priority: optional
-Section: smartjog
+Section: admin
 Maintainer: Philippe BRIDANT <philippe.bridant@smartjog.com>
 Uploaders: Jean-Philippe Garcia Ballester <jeanphilippe.garciaballester@smartjog.com>
 Build-Depends: cdbs (>= 0.4.43), debhelper (>= 6.0.7), python-central, python-all
