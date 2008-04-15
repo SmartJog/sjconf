@@ -284,7 +284,7 @@ class SJConf:
         # Unlink all conf files just created
         for backed_up_file in backed_up_files:
             if backed_up_file.written and os.path.isfile(backed_up_file.path):
-                os.unlink(backup_up_file.file_path)
+                os.unlink(backed_up_file.path)
 
         # Restore backup files
         for backed_up_file in backed_up_files:
