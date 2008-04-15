@@ -28,19 +28,22 @@ class Plugin(PythonIsCrappy):
             self.name = name
             self.optionnal = optionnal
             for key in requirements:
-                if key not in ('>=', '<=', '>>', '<<'):
+                if key not in ('=', '>=', '<=', '>', '<'):
                     raise TypeError
             self.requirements = requirements
 
         def verify(self, version):
-            if '>>' in  self.requirements:
-                if not version > self.requirements['>>']:
+            if '=' in  self.requirements:
+                if not version == self.requirements['=']:
+                    raise Plugin.Dependency.WrongVersionError
+            if '>' in  self.requirements:
+                if not version > self.requirements['>']:
                     raise Plugin.Dependency.WrongVersionError
             if '>=' in  self.requirements:
                 if not version >= self.requirements['>=']:
                     raise Plugin.Dependency.WrongVersionError
-            if '<<' in  self.requirements:
-                if not version < self.requirements['<<']:
+            if '<' in  self.requirements:
+                if not version < self.requirements['<']:
                     raise Plugin.Dependency.WrongVersionError
             if '<=' in  self.requirements:
                 if not version <= self.requirements['<=']:
