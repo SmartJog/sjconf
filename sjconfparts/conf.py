@@ -94,14 +94,25 @@ class Conf(dict):
         if not file_path:
             file_path = self.file_path
         # Configuration file loader
-        if not os.path.exists(file_path):
-            raise IOError(errno.ENOENT, "%s: %s" % (self.file_path, os.strerror(errno.ENOENT)))
-        elif os.path.isdir(file_path):
+        if os.path.isdir(file_path) and file_path.endswith('.conf'):
             raise IOError(errno.EISDIR, "%s: %s" % (self.file_path, os.strerror(errno.EISDIR)))
-        cp = ConfigParser.ConfigParser()
-        cp.read(file_path)
-        for section in cp.sections():
-            self[section] = self.conf_section_class(cp.items(section))
+        if not os.path.isdir(file_path) and not file_path.endswith('.conf'):
+            raise IOError(errno.ENOTDIR, "%s: %s" % (self.file_path, os.strerror(errno.ENOTDIR)))
+        if os.path.isdir(file_path):
+            files_path = map(lambda file_name: file_path + '/' + file_name, os.listdir(file_path))
+        else:
+            files_path = (file_path,)
+        for file_path in files_path:
+            if not file_path.endswith('.conf'):
+                continue
+            if not os.path.exists(file_path):
+                raise IOError(errno.ENOENT, "%s: %s" % (self.file_path, os.strerror(errno.ENOENT)))
+            elif os.path.isdir(file_path):
+                raise IOError(errno.EISDIR, "%s: %s" % (self.file_path, os.strerror(errno.EISDIR)))
+            cp = ConfigParser.ConfigParser()
+            cp.read(file_path)
+            for section in cp.sections():
+                self[section] = self.conf_section_class(cp.items(section))
 
     def save(self, file_path = None):
         if not file_path:

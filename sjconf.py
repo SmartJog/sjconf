@@ -33,7 +33,9 @@ Instead, add your custom values in local.conf.
 
         self.confs = {}
         for conf in conf_files:
-            conf_file_path = os.path.realpath(self.base_dir + '/' + conf_files[conf] + '.conf')
+            conf_file_path = os.path.realpath(self.base_dir + '/' + conf_files[conf])
+            if not os.path.exists(conf_file_path):
+                conf_file_path += '.conf'
             self.confs[conf] = Conf(file_path = conf_file_path)
         self.confs['base'].comments = self.BASE_COMMENTS
 
