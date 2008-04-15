@@ -109,7 +109,7 @@ class Plugin(PythonIsCrappy):
     def restart_service(self, service):
         os.system('invoke-rc.d %s restart' % (service))
 
-class PluginTemplated(Plugin):
+class PluginWithTemplate(Plugin):
     def template_path(self, file_path):
         section = self.name()
         if section in self.conf:
