@@ -228,11 +228,7 @@ class SJConf:
         return plugins
 
     def _files_to_backup(self, plugins):
-        files_to_backup = []
-        # Ask all plugins a list of files that I should backup for them
-        for plugin in plugins:
-            files_to_backup += plugin.files_to_backup()
-        return files_to_backup
+        return reduce(lambda files_to_backup, plugin: files_to_backup + plugin.files_to_backup(), plugins, [])
 
     def backup_files(self, files_to_backup = None, plugins = None):
         if files_to_backup == None:
@@ -313,10 +309,7 @@ class SJConf:
         self._my_print('')
 
     def _conf_files(self, plugins):
-        conf_files = []
-        for plugin in plugins:
-            conf_files += plugin.conf_files()
-        return conf_files
+        return reduce(lambda conf_files, plugin: conf_files + plugin.conf_files(), plugins, [])
 
     def _file_verify_conf(self, conf_file_to_verify):
         conf_file_to_verify_name = os.path.basename(conf_file_to_verify).replace('.conf', '')
