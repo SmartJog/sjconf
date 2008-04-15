@@ -24,9 +24,9 @@ class Plugin(PythonIsCrappy):
         class NotEnabledError(Error):
             pass
 
-        def __init__(self, name, optionnal = False, requirements = {}):
+        def __init__(self, name, optional = False, requirements = {}):
             self.name = name
-            self.optionnal = optionnal
+            self.optional = optional
             for key in requirements:
                 if key not in ('=', '>=', '<=', '>', '<'):
                     raise TypeError

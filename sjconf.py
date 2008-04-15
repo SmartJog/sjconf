@@ -200,9 +200,9 @@ class SJConf:
     def _plugin_dependencies(self, plugin, plugins_hash):
         plugin_dependencies_hash = {}
         for dependency in plugin.dependencies():
-            if not dependency.name in plugins_hash and dependency.optionnal:
+            if not dependency.name in plugins_hash and dependency.optional:
                 continue
-            if not dependency.name in plugins_hash and not dependency.optionnal: # Plugin is not available, find out if it is not installed or not enabled
+            if not dependency.name in plugins_hash and not dependency.optional: # Plugin is not available, find out if it is not installed or not enabled
                 try:
                     self._file_path('plugin', dependency.name) # This will raise an IOError if plugin is not installed
                     raise Plugin.Dependency.NotEnabledError
@@ -318,7 +318,7 @@ class SJConf:
         conf_to_verify = Conf(file_path = conf_file_to_verify)
         for section in conf_to_verify:
             if not re.compile(conf_file_to_verify_name + ':?.*').match(section):
-                raise KeyError(section + ': All sections should start with \'' + conf_file_to_verify_name + '\', optionnally followed by \':<subsection>\'')
+                raise KeyError(section + ': All sections should start with \'' + conf_file_to_verify_name + '\', optionally followed by \':<subsection>\'')
 
     def _file_path(self, file_type, file_path):
         file_path = file_path
