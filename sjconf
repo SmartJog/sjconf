@@ -116,7 +116,7 @@ class SJConfCLI:
                     self.plugins_to_disable += self._get_params(argv, 1)
                 else:
                     print 'Incorrect command : %s\n' % cmd
-                    _usage(bin, 1)
+                    self._usage(bin, 1)
             except SJConfCLI.BadParam, param:
                 print 'Incorrect %s command\n' % param
                 self._usage(bin, 1)
