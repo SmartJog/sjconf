@@ -10,5 +10,5 @@ class Type:
         return list
 
     @classmethod
-    def list_to_str(xcls, list):
-        return ', '.join(list)
+    def list_to_str(xcls, list_object):
+        return ', '.join(list_object)
