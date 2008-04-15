@@ -8,3 +8,4 @@ Version 1.0.0~dev
 	* A Python module to allow access to all sjconf operations is now provided.
 	* Writing plugins is now easy: there is a plugin class hierarchy to keep DRY.
 	* Add --add-to-list and --remove-from-list options to add/remove a value to/from a configuration interpreted as a comma-separated list.
+	* The base configuration is now a directory containing one file per plugin.

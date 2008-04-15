@@ -25,8 +25,6 @@ class SJConfCLI:
         self.delete_keys = []
         self.files_to_install = []
         self.files_to_uninstall = []
-        self.conf_files_to_install = []
-        self.conf_files_to_uninstall = []
         self.plugins_to_enable = []
         self.plugins_to_disable = []
         self.services_to_restart = []
@@ -60,8 +58,8 @@ class SJConfCLI:
         --uninstall-plugin  plugin           : uninstall ``plugin'' from the plugins path
         --install-template [--link] template : install ``template'' into the templates path; if --link is given, use symbolic links
         --uninstall-template template        : uninstall ``plugin'' from the templates path
-        --install-config config              : install the content of ``config'' into the base.conf file
-        --uninstall-config config            : uninstall ``config'' from the base.conf file, ``config'' should be the basename of a config file previously installed.
+        --install-conf conf                  : install the content of ``conf'' into the base.conf file
+        --uninstall-conf conf                : uninstall ``conf'' from the base.conf file, ``conf'' should be the basename of a conf file previously installed.
         --enable-plugin plugin               : add ``plugin'' to the list of plugins to use
         --disable-plugin plugin              : remove ``plugin'' from the list of plugins to use
 ''' % (bin)
@@ -105,16 +103,12 @@ class SJConfCLI:
                     self.delete_sections += self._get_params(argv, 1)
                 elif cmd == '--delete-key':
                     self.delete_keys += [self._get_params(argv, 2)]
-                elif cmd == '--install-plugin' or cmd == '--install-template':
+                elif cmd == '--install-plugin' or cmd == '--install-template' or cmd == '--install-conf':
                     if len(argv) < 1:
                         raise SJConfCLI.BadParam(cmd)
                     link = (argv[0] == '--link' and argv.pop(0) and True) or False
                     self.files_to_install.append([cmd.replace('--install-', ''), self._get_params(argv, 1)[0], link])
-                elif cmd == '--install-config':
-                    self.conf_files_to_install += self._get_params(argv, 1)
-                elif cmd == '--uninstall-config':
-                    self.conf_files_to_uninstall += self._get_params(argv, 1)
-                elif cmd == '--uninstall-plugin' or cmd == '--uninstall-template':
+                elif cmd == '--uninstall-plugin' or cmd == '--uninstall-template' or cmd == '--uninstall-conf':
                     self.files_to_uninstall.append([cmd.replace('--uninstall-', ''), self._get_params(argv, 1)[0]])
                 elif cmd == '--enable-plugin':
                     self.plugins_to_enable += self._get_params(argv, 1)
@@ -156,14 +150,6 @@ class SJConfCLI:
         if self.files_to_uninstall:
             for self.file_to_uninstall in self.files_to_uninstall:
                 self.sjconf.file_uninstall(*self.file_to_uninstall)
-
-        if self.conf_files_to_install:
-            for self.conf_file_to_install in self.conf_files_to_install:
-                self.sjconf.conf_file_install(self.conf_file_to_install)
-
-        if self.conf_files_to_uninstall:
-            for self.conf_file_to_uninstall in self.conf_files_to_uninstall:
-                self.sjconf.conf_file_uninstall(self.conf_file_to_uninstall)
 
         if self.plugins_to_enable:
             for self.plugin_to_enable in self.plugins_to_enable:
