@@ -15,9 +15,9 @@ class Type:
 
     @classmethod
     def str_to_bool(xcls, str_object):
-        if str_object == "yes" or str_object == "on" or str_object == "true" or str_object == "enabled" or str_object == "enable":
+        if str_object in ("yes", "on", "true", "enabled", "enable"):
             return True
-        elif str_object == "no" or str_object == "off" or str_object == "false" or str_object == "disabled" or str_object == "disable":
+        elif str_object in ("no", "off", "false", "disabled", "disable"):
             return False
         else:
             raise TypeError
