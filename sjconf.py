@@ -24,9 +24,16 @@ Instead, add your custom values in local.conf.
         self.etc_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['etc_dir'])
         self.base_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['base_dir'])
 
+        conf_files = {}
+        conf_files['base'] = 'base'
+        distrib = self.confs_internal['sjconf']['conf']['distrib']
+        if distrib != '':
+            conf_files['distrib'] = distrib
+        conf_files['local'] = 'local'
+
         self.confs = {}
-        for conf in ('base', 'local'):
-            conf_file_path = os.path.realpath(self.base_dir + '/' + conf + '.conf')
+        for conf in conf_files:
+            conf_file_path = os.path.realpath(self.base_dir + '/' + conf_files[conf] + '.conf')
             self.confs[conf] = Conf(file_path = conf_file_path)
         self.confs['base'].comments = self.BASE_COMMENTS
 
@@ -46,6 +53,8 @@ Instead, add your custom values in local.conf.
 
     def conf(self):
         conf = Conf(self.confs['base'])
+        if 'distrib' in self.confs:
+            conf.update(self.confs['distrib'])
         conf.update(self.confs['local'])
         return conf
 
