@@ -79,7 +79,28 @@ class SJConf:
                     del(conf[section])
                 self._my_print('delete section : %s' % (section))
 
+            for section, key in delete_keys:
+                if section in conf:
+                    if key in conf[section]:
+                        del(conf[section][key])
+                self._my_print('delete key     : %s: %s' % (section, key))
+
+            for section, key, value in sets:
+                conf.setdefault(section, conf.conf_section_class({}))
+                conf[section][key] = value
+                self._my_print('set            : %s: %s = %s' % (section, key, value))
+
             for section, key, value in list_adds:
+                if section not in conf:
+                    conf[section] = conf.conf_section_class()
+                if key not in conf[section]:
+                    confs_to_test = ['base']
+                    if 'distrib' in self.confs:
+                        confs_to_test.append('distrib')
+                    for conf_to_test in confs_to_test:
+                        if section in self.confs[conf_to_test] and key in self.confs[conf_to_test][section] and self.confs[conf_to_test][section][key] != '':
+                            raise KeyError('The value "%s" does not exist in local configuration, but exist in %s configuration. To force, first set the value to ""' % (value, conf_to_test))
+                    conf[section][key] = ''
                 conf.set_type(section, key, 'list')
                 if value in conf[section][key + '_list']:
                     raise KeyError("The value \"%s\" is already in %s: %s" % (value, section, key))
@@ -90,17 +111,6 @@ class SJConf:
                 conf.set_type(section, key, 'list')
                 conf[section][key + '_list'].remove(value)
                 self._my_print('set            : %s: %s = %s' % (section, key, conf[section][key]))
-
-            for section, key in delete_keys:
-                if section in conf:
-                    if key in conf[section]:
-                        del(conf[section][key])
-                self._my_print('delete key     : %s: %s' % (section, key))
-
-            for section, key, value in sets:
-                conf.setdefault(section, {})
-                conf[section][key] = value
-                self._my_print('set            : %s: %s = %s' % (section, key, value))
 
             self._my_print("#################################################\n")
 
