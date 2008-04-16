@@ -57,19 +57,19 @@ class SJConfCLI:
         --remove-from-list section key value : remove value from the configuration key
         --delete-key section key             : delete a key within a section
         --delete-section section             : delete a complete section
-        --install-plugin [--link] plugin     : install ``plugin'' into the plugins path; if --link is given, use symbolic links
-        --uninstall-plugin  plugin           : uninstall ``plugin'' from the plugins path
-        --install-template [--link] template : install ``template'' into the templates path; if --link is given, use symbolic links
-        --uninstall-template template        : uninstall ``plugin'' from the templates path
-        --install-conf conf                  : install the content of ``conf'' into the base.conf file
-        --uninstall-conf conf                : uninstall ``conf'' from the base.conf file, ``conf'' should be the basename of a conf file previously installed.
+        --install-plugin [--link] plugin     : install ``plugin'' into the plugins path; if --link is given, use a symbolic link
+        --uninstall-plugin plugin            : uninstall ``plugin'' from the plugins path
         --enable-plugin plugin               : add ``plugin'' to the list of plugins to use
         --disable-plugin plugin              : remove ``plugin'' from the list of plugins to use
-        --install-distrib [--link] distrib   : install ``distrib'' file into the configuration directory; if --link is given, use symbolic links
+        --list-plugins                       : list installed plugins
+        --install-template [--link] template : install ``template'' into the templates path; if --link is given, use a symbolic link
+        --uninstall-template template        : uninstall ``plugin'' from the templates path
+        --install-conf [--link] conf         : install ``conf'' into the ``base'' configuration directory; if --link is given, use a symbolic link
+        --uninstall-conf conf                : uninstall ``conf'' from the base.conf file, ``conf'' should be the basename of a conf file previously installed
+        --install-distrib [--link] distrib   : install ``distrib'' file into the configuration directory; if --link is given, use a symbolic link
         --uninstall-distrib distrib          : uninstall ``distrib'' file, ``distrib'' should be the basename of a distrib file previously installed
         --enable-distrib distrib             : use the distrib ``distrib''
         --disable-distrib distrib            : do not use the distrib ``distrib''
-        --list-plugins                       : list installed plugins
 ''' % (bin)
         if exit_code:
             self._my_print("No modification done on configuration")
