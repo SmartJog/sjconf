@@ -37,9 +37,10 @@ class SJConf:
         self.files_path = {
             'plugin' : os.path.realpath(self.confs_internal['sjconf']['conf']['plugins_path']),
             'template' : os.path.realpath(self.confs_internal['sjconf']['conf']['templates_path']),
-            'conf' : self.base_dir + '/base'
+            'conf' : self.base_dir + '/base',
+            'distrib' : self.base_dir
         }
-        self.files_extensions = {'plugin' : ('.py',), 'template' : ('.conf',), 'conf' : ('.conf',)}
+        self.files_extensions = {'plugin' : ('.py',), 'template' : ('.conf',), 'conf' : ('.conf',), 'distrib' : ('.conf',)}
 
         sys.path.append(self.files_path['plugin'])
 
@@ -193,6 +194,22 @@ class SJConf:
             self.confs_internal['sjconf']['conf']['plugins_list'].remove(plugin_to_disable)
         except ValueError:
             raise Plugin.NotEnabledError(plugin_to_disable)
+        self.confs_internal['sjconf'].save()
+
+    def distrib_enable(self, distrib_to_enable):
+        # ensure the distrib in installed
+        self._file_path('distrib', distrib_to_enable)
+        if self.confs_internal['sjconf']['conf']['distrib'] != '':
+            raise DistribAlreadyEnabledError(self.confs_internal['sjconf']['conf']['distrib'])
+        self.confs_internal['sjconf']['conf']['distrib'] = distrib_to_enable
+        self.confs_internal['sjconf'].save()
+
+    def distrib_disable(self, distrib_to_disable):
+        # ensure the distrib in installed
+        self._file_path('distrib', distrib_to_disable)
+        if self.confs_internal['sjconf']['conf']['distrib'] != distrib_to_disable:
+            raise DistribNotEnabledError(distrib_to_disable)
+        self.confs_internal['sjconf']['conf']['distrib'] = ''
         self.confs_internal['sjconf'].save()
 
     def plugins_list(self, plugins_to_list = None):

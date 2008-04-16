@@ -1,3 +1,8 @@
+Version 1.1.0~dev
+
+	* Add --install-distrib, --uninstall-distrib to install/uninstall a distrib configuration file.
+	* Add --enable-distrib, --disable-distrib to install/uninstall a distrib.
+
 Version 1.0.0 Released on 2008/04/16
 
 	* sjconf plugins are now provided by package being configured.
