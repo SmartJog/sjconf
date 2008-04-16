@@ -186,4 +186,8 @@ class SJConfCLI:
 
 if __name__ == '__main__':
     sjconf_cli = SJConfCLI()
-    sjconf_cli.run()
+    try:
+        sjconf_cli.run()
+    except sjconf.Error, exception:
+        print >> sys.stderr, 'Error: ' + str(exception) + '.'
+        sys.exit(1)

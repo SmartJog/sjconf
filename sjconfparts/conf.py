@@ -1,7 +1,27 @@
 from sjconfparts.type import *
+from sjconfparts.exceptions import *
 import os, re, ConfigParser, errno
 
 class Conf(dict):
+
+    class Error(Error):
+        pass
+
+    class ListError(Error):
+        pass
+
+    class ListValueAlreadyExistError(ListError):
+        def __init__(self, section, key, value):
+            self.msg = "The value \"%s\" is already in key %s of section %s" % (value, section, key)
+
+    class ListExistInParentError(ListError):
+        def __init__(self, section, key, conf_parent):
+            self.msg = 'The key "%s" in section "%s" does not exist in local configuration, but exist in %s configuration. To force, first set the value to "" before adding to the list' % (key, section, conf_parent)
+
+    class UnauthorizedSection(Error):
+        def __init__(self, section, conf_file):
+            self.msg = 'Unauthorized section "%s": all sections should be either "%s" or "%s:<subsection>"' % (section, conf_file, conf_file)
+
     class ConfSection(dict):
         def __init__(self, dictionnary):
             dict.__init__(self, dictionnary)
@@ -35,7 +55,7 @@ class Conf(dict):
             if type:
                 value = self.types[key][1]
             elif key in self.types:
-                value = apply(getattr(Type, self.types[key][0] + '_to_str'), [self.types[key][1]])
+                value = Type.convert(self.types[key][0], 'str', self.types[key][1])
                 dict.__setitem__(self, key, value)
             return value
 
@@ -43,13 +63,13 @@ class Conf(dict):
             key, type = self._find_type(key)
             if type:
                 self.types[key][1] = value
-                value = apply(getattr(Type, self.types[key][0] + '_to_str'), [value])
+                value = Type.convert(self.types[key][0], 'str', value)
             elif key in self.types:
-                self.types[key][1] = apply(getattr(Type, 'str_to_' + self.types[key][0]), [value])
+                self.types[key][1] = Type.convert('str', self.types[key][0], value)
             dict.__setitem__(self, key, value)
 
         def set_type(self, key, type):
-            self.types[key] = [type, apply(getattr(Type, 'str_to_' + type), [self[key]])]
+            self.types[key] = (type, Type.convert('str', type, self[key]))
 
         def get_type(self, key):
             # Raise KeyError in key not defined

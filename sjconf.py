@@ -1,4 +1,4 @@
-import re, sys, os, errno, time, popen2
+import re, sys, os, errno, time, shutil, tarfile
 
 from sjconfparts.type import *
 from sjconfparts.plugin import *
@@ -99,11 +99,11 @@ class SJConf:
                         confs_to_test.append('distrib')
                     for conf_to_test in confs_to_test:
                         if section in self.confs[conf_to_test] and key in self.confs[conf_to_test][section] and self.confs[conf_to_test][section][key] != '':
-                            raise KeyError('The value "%s" does not exist in local configuration, but exist in %s configuration. To force, first set the value to ""' % (value, conf_to_test))
+                            raise Conf.ListExistInParentError(section, key, conf_to_test)
                     conf[section][key] = ''
                 conf.set_type(section, key, 'list')
                 if value in conf[section][key + '_list']:
-                    raise KeyError("The value \"%s\" is already in %s: %s" % (value, section, key))
+                    raise Conf.ListValueAlreadyExistError(section, key, value)
                 conf[section][key + '_list'].append(value)
                 self._my_print('set            : %s: %s = %s' % (section, key, conf[section][key]))
 
@@ -152,7 +152,7 @@ class SJConf:
         if self.verbose:
            self. _my_print("Installing file: %s" % (file_to_install))
         if os.path.exists(self.files_path[file_type] + '/' + os.path.basename(file_to_install)):
-            raise IOError(errno.EEXIST, "file %s already installed" % (file_to_install))
+            raise FileAlreadyInstalledError(file_to_install)
         if hasattr(self, '_file_verify_' + file_type):
             getattr(self, '_file_verify_' + file_type)(file_to_install)
         file_destination_path = self.files_path[file_type] + '/' + os.path.basename(file_to_install)
@@ -182,7 +182,7 @@ class SJConf:
         self._file_path('plugin', plugin_to_enable)
         plugins_list = self.confs_internal['sjconf']['conf']['plugins_list']
         if plugin_to_enable in plugins_list:
-            raise IOError(errno.EEXIST, "plugin %s already enabled" % (plugin_to_enable))
+            raise Plugin.AlreadyEnabledError(plugin_to_enable)
         self.confs_internal['sjconf']['conf']['plugins_list'].append(plugin_to_enable)
         self.confs_internal['sjconf'].save()
 
@@ -192,21 +192,11 @@ class SJConf:
         try:
             self.confs_internal['sjconf']['conf']['plugins_list'].remove(plugin_to_disable)
         except ValueError:
-            raise IOError(errno.ENOENT, "plugin %s not enabled" % (plugin_to_disable))
+            raise Plugin.NotEnabledError(plugin_to_disable)
         self.confs_internal['sjconf'].save()
 
     def _my_print(self, str):
         if not self.quiet: print str
-
-    def _exec_command(self, command, input = ''):
-        # Using popen to know program output
-        cmd = popen2.Popen3(command, True)
-        cmd.tochild.write(input)
-        out = cmd.fromchild.read()
-        err = cmd.childerr.read()
-        exit_value = cmd.wait()
-
-        return out, err, exit_value
 
     def _plugin_dependencies(self, plugin, plugins_hash):
         plugin_dependencies_hash = {}
@@ -215,13 +205,10 @@ class SJConf:
                 continue
             if not dependency.name in plugins_hash and not dependency.optional: # Plugin is not available, find out if it is not installed or not enabled
                 try:
-                    self._file_path('plugin', dependency.name) # This will raise an IOError if plugin is not installed
-                    raise Plugin.Dependency.NotEnabledError
-                except IOError, exception:
-                    if hasattr(exception, 'errno') and exception.errno == errno.ENOENT:
-                        raise Plugin.Dependency.NotInstalledError
-                    else:
-                        raise
+                    self._file_path('plugin', dependency.name) # This will raise an Error if plugin is not installed
+                    raise Plugin.Dependency.NotEnabledError(plugin.name(), dependency.name)
+                except Plugin.NotInstalledError:
+                    raise Plugin.Dependency.NotInstalledError(plugin.name(), dependency.name)
             dependency.verify(plugins_hash[dependency.name].version())
             plugin_dependencies_hash[dependency.name] = plugins_hash[dependency.name]
         return plugin_dependencies_hash
@@ -229,7 +216,7 @@ class SJConf:
     def _plugins_load(self):
         plugins = []
         for plugin in self.confs_internal['sjconf']['conf']['plugins_list']:
-            plugins.append(__import__(plugin).Plugin(self, self.plugin_conf(plugin)))
+            plugins.append(__import__(plugin).Plugin(plugin, self, self.plugin_conf(plugin)))
         plugins_hash = {}
         for plugin in plugins:
             plugins_hash[plugin.name()] = plugin
@@ -250,9 +237,7 @@ class SJConf:
         self._my_print( "Backup folder : %s" % self.backup_dir )
         os.makedirs(self.backup_dir)
         os.makedirs(self.backup_dir + '/sjconf/')
-        out, err, exit_value = self._exec_command("cp '%s' '%s'" % (self.confs['local'].file_path, self.backup_dir + os.path.basename(self.confs['local'].file_path)))
-        if exit_value != 0:
-            raise err
+        shutil.copy(self.confs['local'].file_path, self.backup_dir + '/sjconf')
         # Store all files into a service dedicated folder
         for file_to_backup in files_to_backup:
             if not os.path.isfile(file_to_backup.path):
@@ -260,9 +245,7 @@ class SJConf:
             if not os.path.isdir(self.backup_dir + '/' + file_to_backup.plugin_name):
                 os.makedirs(self.backup_dir + '/' + file_to_backup.plugin_name)
             file_to_backup.backup_path = self.backup_dir + '/' + file_to_backup.plugin_name + '/' + os.path.basename(file_to_backup.path)
-            out, err, exit_value = self._exec_command("mv '%s' '%s'" % (file_to_backup.path, file_to_backup.backup_path))
-            if exit_value != 0:
-                raise (err + '\nPlease restore files manually from %s' % (self.backup_dir), files_to_backup)
+            shutil.move(file_to_backup.path, file_to_backup.backup_path)
             file_to_backup.backed_up = True
         return files_to_backup
 
@@ -270,9 +253,7 @@ class SJConf:
         # Once configuration is saved, we can archive backup into a tgz
         path = "%s/sjconf_backup_%s.tgz" % (os.path.dirname(self.backup_dir), os.path.basename(self.backup_dir))
         self._my_print("Backup file : %s" % path)
-        out, err, exit_value = self._exec_command("tar zcvf %s %s" % (path, self.backup_dir))
-        if exit_value != 0:
-            raise err +  "\nCannot archive backup dir %s/ to %s, please do it manually" % (self.backup_dir, path)
+        tarfile.open(path, 'w:gz').add(self.backup_dir)
 
     def _delete_backup_dir(self, dir=None):
         # Once backup has been archived, delete it
@@ -300,9 +281,10 @@ class SJConf:
         # Restore backup files
         for backed_up_file in backed_up_files:
             if backed_up_file.backed_up:
-                out, err, exit_value = self._exec_command("mv '%s' '%s'" % (backed_up_file.backup_path, backed_up_file.path))
-                if exit_value != 0:
-                    raise err + "\nPlease restore files manually from %s" % self.backup_dir
+                try:
+                    shutil.move(backed_up_file.backup_path, backed_up_file.path)
+                except shutil.Error, exception:
+                    raise RestoreError(exception, self.backup_dir)
 
     def _apply_confs(self, conf_files = None, plugins = None):
         # Open and write all configuration files
@@ -328,7 +310,7 @@ class SJConf:
         conf_to_verify = Conf(file_path = conf_file_to_verify)
         for section in conf_to_verify:
             if not re.compile(conf_file_to_verify_name + ':?.*').match(section):
-                raise KeyError(section + ': All sections should start with \'' + conf_file_to_verify_name + '\', optionally followed by \':<subsection>\'')
+                raise Conf.UnauthorizedSectionError(section, conf_file_to_verify_name)
 
     def _file_path(self, file_type, file_path):
         file_path = file_path
@@ -339,5 +321,5 @@ class SJConf:
                 break
             file_path += extension
         if not os.path.exists(file_path):
-            raise IOError(errno.ENOENT, "file %s not installed, path: %s" % (file_path, file_path))
+            raise FileNotInstalledError(file_path)
         return file_path
