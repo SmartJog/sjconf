@@ -41,7 +41,7 @@ class SJConfCLI:
         bin, argv = argv[0], argv[1:]
         self._parse_args(bin, argv)
         self._verify_args()
-        self.sjconf = sjconf.SJConf(quiet = self.quiet, verbose = self.verbose)
+        self.sjconf = sjconf.SJConf(verbose = self.verbose, logger = self._my_print)
 
     def _usage(self, bin, exit_code):
         print '''%s usage:

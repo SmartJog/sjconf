@@ -9,7 +9,7 @@ class SJConf:
 
     DEFAULT_SJCONF_FILE_NAME = '/etc/smartjog/sjconf.conf'
 
-    def __init__(self, sjconf_file_path = DEFAULT_SJCONF_FILE_NAME, quiet = True, verbose = False):
+    def __init__(self, sjconf_file_path = DEFAULT_SJCONF_FILE_NAME, verbose = False, logger = None):
 
         self.confs_internal = {'sjconf' : Conf(file_path = sjconf_file_path)}
         self.confs_internal['sjconf'].set_type('conf', 'plugins', 'list')
@@ -43,8 +43,8 @@ class SJConf:
 
         sys.path.append(self.files_path['plugin'])
 
-        self.quiet = quiet
         self.verbose = verbose
+        self.logger = logger
 
     def conf(self):
         conf = Conf(self.confs['base'])
@@ -72,23 +72,23 @@ class SJConf:
     def apply_conf_modifications(self, sets = [], list_adds = [], list_deletions = [], delete_keys = [], delete_sections = [], temp = False):
         conf = self.confs['local']
         if sets or delete_keys or delete_sections or list_adds or list_deletions:
-            self._my_print("########## Scheduled modifications ##############")
+            self._logger("########## Scheduled modifications ##############")
 
             for section in delete_sections:
                 if section in conf:
                     del(conf[section])
-                self._my_print('delete section : %s' % (section))
+                self._logger('delete section : %s' % (section))
 
             for section, key in delete_keys:
                 if section in conf:
                     if key in conf[section]:
                         del(conf[section][key])
-                self._my_print('delete key     : %s: %s' % (section, key))
+                self._logger('delete key     : %s: %s' % (section, key))
 
             for section, key, value in sets:
                 conf.setdefault(section, conf.conf_section_class({}))
                 conf[section][key] = value
-                self._my_print('set            : %s: %s = %s' % (section, key, value))
+                self._logger('set            : %s: %s = %s' % (section, key, value))
 
             for section, key, value in list_adds:
                 if section not in conf:
@@ -105,14 +105,14 @@ class SJConf:
                 if value in conf[section][key + '_list']:
                     raise Conf.ListValueAlreadyExistError(section, key, value)
                 conf[section][key + '_list'].append(value)
-                self._my_print('set            : %s: %s = %s' % (section, key, conf[section][key]))
+                self._logger('set            : %s: %s = %s' % (section, key, conf[section][key]))
 
             for section, key, value in list_deletions:
                 conf.set_type(section, key, 'list')
                 conf[section][key + '_list'].remove(value)
-                self._my_print('set            : %s: %s = %s' % (section, key, conf[section][key]))
+                self._logger('set            : %s: %s = %s' % (section, key, conf[section][key]))
 
-            self._my_print("#################################################\n")
+            self._logger("#################################################\n")
 
         if temp:
             output_file = self.temp_file_path
@@ -133,7 +133,7 @@ class SJConf:
             # restart services if asked
             if len(services_to_restart) > 0:
                 self.restart_services(services_to_restart, plugins)
-            self._my_print('')
+            self._logger('')
         except:
             # Something when wrong, restoring backup files
             self.restore_files(files_to_backup)
@@ -144,13 +144,13 @@ class SJConf:
             raise
         # Only archive once everything is OK
         self._archive_backup()
-        self._my_print('')
+        self._logger('')
         # Delete backup, everything is cool
         self._delete_backup_dir()
 
     def file_install(self, file_type, file_to_install, link=False):
         if self.verbose:
-           self. _my_print("Installing file: %s" % (file_to_install))
+           self. _logger("Installing file: %s" % (file_to_install))
         if os.path.exists(self.files_path[file_type] + '/' + os.path.basename(file_to_install)):
             raise FileAlreadyInstalledError(file_to_install)
         if hasattr(self, '_file_verify_' + file_type):
@@ -164,18 +164,18 @@ class SJConf:
         else:
             os.symlink(os.path.realpath(file_to_install), file_destination_path)
         if self.verbose:
-            self._my_print("Installed file: %s" % (file_to_install))
+            self._logger("Installed file: %s" % (file_to_install))
 
     def file_uninstall(self, file_type, file_to_uninstall):
         if self.verbose:
-            self._my_print("Uninstalling file: %s" % (file_to_uninstall))
+            self._logger("Uninstalling file: %s" % (file_to_uninstall))
         file_to_uninstall_path = self._file_path(file_type, file_to_uninstall)
         if not os.path.islink(file_to_uninstall_path) and os.path.isdir(file_to_uninstall_path):
             shutil.rmtree(file_to_uninstall_path)
         else:
             os.unlink(file_to_uninstall_path)
         if self.verbose:
-            self._my_print("Uninstalled file: %s" % (file_to_uninstall))
+            self._logger("Uninstalled file: %s" % (file_to_uninstall))
 
     def plugin_enable(self, plugin_to_enable):
         # ensure the plugin in installed
@@ -207,8 +207,9 @@ class SJConf:
             plugins_list[plugin.name()] = self._plugin_list(plugin, plugins_hash)
         return plugins_list
 
-    def _my_print(self, str):
-        if not self.quiet: print str
+    def _logger(self, str):
+        if self.logger:
+            self.logger(str)
 
     def _plugin_list(self, plugin_to_list, plugins_hash):
         plugin_info = {}
@@ -276,7 +277,7 @@ class SJConf:
             if plugins == None:
                 plugins = self._plugins_load()
             files_to_backup = self._files_to_backup(plugins) + self._conf_files(plugins)
-        self._my_print( "Backup folder : %s" % self.backup_dir )
+        self._logger( "Backup folder : %s" % self.backup_dir )
         os.makedirs(self.backup_dir)
         os.makedirs(self.backup_dir + '/sjconf/')
         shutil.copy(self.confs['local'].file_path, self.backup_dir + '/sjconf')
@@ -294,14 +295,14 @@ class SJConf:
     def _archive_backup(self):
         # Once configuration is saved, we can archive backup into a tgz
         path = "%s/sjconf_backup_%s.tgz" % (os.path.dirname(self.backup_dir), os.path.basename(self.backup_dir))
-        self._my_print("Backup file : %s" % path)
+        self._logger("Backup file : %s" % path)
         tarfile.open(path, 'w:gz').add(self.backup_dir)
 
     def _delete_backup_dir(self, dir=None):
         # Once backup has been archived, delete it
         if dir == None:
             dir = self.backup_dir
-            self._my_print("Deleting folder %s" % dir)
+            self._logger("Deleting folder %s" % dir)
 
         for entry in os.listdir(dir):
             path = dir + '/' + entry
@@ -313,7 +314,7 @@ class SJConf:
 
     def restore_files(self, backed_up_files):
         # Something went wrong
-        self._my_print("Restoring files from %s" % self.backup_dir)
+        self._logger("Restoring files from %s" % self.backup_dir)
 
         # Unlink all conf files just created
         for backed_up_file in backed_up_files:
@@ -335,14 +336,14 @@ class SJConf:
                 plugins = self._plugins_load()
             conf_files = self._conf_files(plugins)
         for conf_file in conf_files:
-            self._my_print("Writing configuration file %s (%s)" % (conf_file.path, conf_file.plugin_name))
+            self._logger("Writing configuration file %s (%s)" % (conf_file.path, conf_file.plugin_name))
             # checking if the dirname exists
             folder = os.path.dirname(conf_file.path)
             if not os.path.isdir(folder):
                 os.makedirs(folder)
             open(conf_file.path, "w").write(conf_file.content)
             conf_file.written = True
-        self._my_print('')
+        self._logger('')
 
     def _conf_files(self, plugins):
         return reduce(lambda conf_files, plugin: conf_files + plugin.conf_files(), plugins, [])
