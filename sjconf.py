@@ -188,8 +188,6 @@ class SJConf:
         self.confs_internal['sjconf'].save()
 
     def plugin_disable(self, plugin_to_disable):
-        # ensure the plugin in installed
-        self._file_path('plugin', plugin_to_disable)
         try:
             self.confs_internal['sjconf']['conf']['plugins_list'].remove(plugin_to_disable)
         except ValueError:
