@@ -39,7 +39,7 @@ class SJConf:
             'template' : os.path.realpath(self.confs_internal['sjconf']['conf']['templates_path']),
             'conf' : self.base_dir + '/base'
         }
-        self.files_extensions = {'plugin' : ('.py'), 'template' : ('.conf'), 'conf' : ('.conf')}
+        self.files_extensions = {'plugin' : ('.py',), 'template' : ('.conf',), 'conf' : ('.conf',)}
 
         sys.path.append(self.files_path['plugin'])
 
@@ -359,10 +359,11 @@ class SJConf:
         file_path = file_path
         if not file_path.startswith(self.files_path[file_type]):
             file_path = self.files_path[file_type] + '/' + file_path
+        tmp_file_path = file_path
         for extension in self.files_extensions[file_type]:
             if os.path.exists(file_path):
                 break
-            file_path += extension
+            file_path = tmp_file_path + extension
         if not os.path.exists(file_path):
             raise FileNotInstalledError(file_path)
         return file_path
