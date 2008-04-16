@@ -5,7 +5,7 @@ import glob
 
 setup(
         name = 'sjconf',
-        version = '1.0.0~dev',
+        version = '1.0.0',
         scripts = ['sjconf'],
         py_modules = ['sjconf'],
         packages = ['sjconfparts'],

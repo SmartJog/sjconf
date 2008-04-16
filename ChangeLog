@@ -1,4 +1,4 @@
-Version 1.0.0~dev
+Version 1.0.0 Released on 2008/04/16
 
 	* sjconf plugins are now provided by package being configured.
 	* Add plugin installation and enabling facilities: --install-plugin, --uninstall-plugin, --enable-plugin, --disable-plugin.
