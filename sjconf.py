@@ -1,4 +1,4 @@
-import re, sys, os, errno, time, shutil, tarfile
+import re, sys, os, errno, time, shutil, tarfile, glob
 
 from sjconfparts.type import *
 from sjconfparts.plugin import *
@@ -195,28 +195,58 @@ class SJConf:
             raise Plugin.NotEnabledError(plugin_to_disable)
         self.confs_internal['sjconf'].save()
 
+    def plugins_list(self, plugins_to_list = None):
+        if plugins_to_list == None:
+            plugins_to_list = map(lambda plugin_path: os.path.basename(plugin_path).replace('.py', ''), glob.glob(self.confs_internal['sjconf']['conf']['plugins_path'] + '/*.py'))
+        plugins = self._plugins_init(plugins_to_list)
+        plugins_hash = {}
+        for plugin in plugins:
+            plugins_hash[plugin.name()] = plugin
+        plugins_list = {}
+        for plugin in plugins:
+            plugins_list[plugin.name()] = self._plugin_list(plugin, plugins_hash)
+        return plugins_list
+
     def _my_print(self, str):
         if not self.quiet: print str
+
+    def _plugin_list(self, plugin_to_list, plugins_hash):
+        plugin_info = {}
+        plugin_info['plugin'] = plugin_to_list
+        plugin_info['is_enabled'] = plugin_to_list.name() in self.confs_internal['sjconf']['conf']['plugins_list']
+        plugin_info['dependencies'] = {}
+        for dependency in plugin_to_list.dependencies():
+            plugin_info['dependencies'][dependency.name] = {}
+            plugin_info['dependencies'][dependency.name]['dependency'] = dependency
+            plugin_info['dependencies'][dependency.name]['is_enabled'] = dependency.name in self.confs_internal['sjconf']['conf']['plugins_list']
+            plugin_info['dependencies'][dependency.name]['plugin'] = (dependency.name in plugins_hash and plugins_hash[dependency.name]) or None
+            try:
+                self._plugin_dependency_verify(plugin_to_list, dependency, plugins_hash)
+                plugin_info['dependencies'][dependency.name]['state'] = True
+            except Plugin.Dependency.Error, exception:
+                plugin_info['dependencies'][dependency.name]['state'] = exception
+        return plugin_info
+
+    def _plugin_dependency_verify(self, plugin, dependency, plugins_hash):
+        if not dependency.name in self.confs_internal['sjconf']['conf']['plugins_list'] and not dependency.optional: # Plugin is not available, find out if it is not installed or not enabled
+            try:
+                self._file_path('plugin', dependency.name) # This will raise an Error if plugin is not installed
+                raise Plugin.Dependency.NotEnabledError(plugin.name(), dependency.name)
+            except Plugin.Dependency.NotInstalledError:
+                raise Plugin.Dependency.NotInstalledError(plugin.name(), dependency.name)
+        if dependency.name in self.confs_internal['sjconf']['conf']['plugins_list']:
+            dependency.verify(plugins_hash[dependency.name].version())
 
     def _plugin_dependencies(self, plugin, plugins_hash):
         plugin_dependencies_hash = {}
         for dependency in plugin.dependencies():
             if not dependency.name in plugins_hash and dependency.optional:
                 continue
-            if not dependency.name in plugins_hash and not dependency.optional: # Plugin is not available, find out if it is not installed or not enabled
-                try:
-                    self._file_path('plugin', dependency.name) # This will raise an Error if plugin is not installed
-                    raise Plugin.Dependency.NotEnabledError(plugin.name(), dependency.name)
-                except Plugin.NotInstalledError:
-                    raise Plugin.Dependency.NotInstalledError(plugin.name(), dependency.name)
-            dependency.verify(plugins_hash[dependency.name].version())
+            self._plugin_dependency_verify(plugin, dependency, plugins_hash)
             plugin_dependencies_hash[dependency.name] = plugins_hash[dependency.name]
         return plugin_dependencies_hash
 
-    def _plugins_load(self):
-        plugins = []
-        for plugin in self.confs_internal['sjconf']['conf']['plugins_list']:
-            plugins.append(__import__(plugin).Plugin(plugin, self, self.plugin_conf(plugin)))
+    def _plugins_dependencies(self, plugins):
         plugins_hash = {}
         for plugin in plugins:
             plugins_hash[plugin.name()] = plugin
@@ -224,6 +254,18 @@ class SJConf:
             plugin_dependencies_hash = self._plugin_dependencies(plugin, plugins_hash)
             if len(plugin_dependencies_hash) > 0: 
                 plugin.set_plugins(plugin_dependencies_hash)
+
+    def _plugins_init(self, plugins_list = None):
+        if plugins_list == None:
+            plugins_list = self.confs_internal['sjconf']['conf']['plugins_list']
+        plugins = []
+        for plugin in plugins_list:
+            plugins.append(__import__(plugin).Plugin(plugin, self, self.plugin_conf(plugin)))
+        return plugins
+
+    def _plugins_load(self):
+        plugins = self._plugins_init()
+        self._plugins_dependencies(plugins)
         return plugins
 
     def _files_to_backup(self, plugins):

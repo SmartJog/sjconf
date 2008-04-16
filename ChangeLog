@@ -9,3 +9,4 @@ Version 1.0.0~dev
 	* Writing plugins is now easy: there is a plugin class hierarchy to keep DRY.
 	* Add --add-to-list and --remove-from-list options to add/remove a value to/from a configuration interpreted as a comma-separated list.
 	* The base configuration is now a directory containing one file per plugin.
+	* Add --list-plugins to list installed plugins.

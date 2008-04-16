@@ -35,6 +35,7 @@ class SJConfCLI:
         self.save = False
         self.deploy = False
         self.show_local_conf = False
+        self.plugins_list = False
         if argv == None:
             argv = list(sys.argv)
         bin, argv = argv[0], argv[1:]
@@ -62,6 +63,7 @@ class SJConfCLI:
         --uninstall-conf conf                : uninstall ``conf'' from the base.conf file, ``conf'' should be the basename of a conf file previously installed.
         --enable-plugin plugin               : add ``plugin'' to the list of plugins to use
         --disable-plugin plugin              : remove ``plugin'' from the list of plugins to use
+        --list-plugins                       : list installed plugins
 ''' % (bin)
         if exit_code:
             self._my_print("No modification done on configuration")
@@ -114,6 +116,8 @@ class SJConfCLI:
                     self.plugins_to_enable += self._get_params(argv, 1)
                 elif cmd == '--disable-plugin':
                     self.plugins_to_disable += self._get_params(argv, 1)
+                elif cmd == '--list-plugins':
+                    self.plugins_list = True
                 else:
                     print 'Incorrect command : %s\n' % cmd
                     self._usage(bin, 1)
@@ -158,6 +162,23 @@ class SJConfCLI:
         if self.plugins_to_disable:
             for self.plugin_to_disable in self.plugins_to_disable:
                 self.sjconf.plugin_disable(self.plugin_to_disable)
+
+        if self.plugins_list:
+            plugins_list = self.sjconf.plugins_list()
+            for plugin_info in plugins_list.values():
+                self._my_print('Plugin %s' % (plugin_info['plugin'].name()))
+                self._my_print('  Version: %s' % (plugin_info['plugin'].version()))
+                self._my_print('  Enabled: %s' % (sjconf.Type.Bool.bool_to_str(plugin_info['is_enabled'])))
+                if len(plugin_info['plugin'].dependencies()) > 0:
+                    self._my_print('  Dependencies:')
+                    for dependency_name, dependency in plugin_info['dependencies'].items():
+                        self._my_print('    Plugin %s:' % (dependency_name))
+                        self._my_print('      Required: %s' % (sjconf.Type.Bool.bool_to_str(not dependency['dependency'].optional)))
+                        self._my_print('      Requirements: %s' % (', '.join(map(lambda (operator, version): operator + ' ' + version, dependency['dependency'].requirements.items()))))
+                        self._my_print('      Installed version: %s' % ((dependency['plugin'] and dependency['plugin'].version()) or 'Not installed'))
+                        if dependency['plugin']:
+                            self._my_print('      Enabled: %s' % (sjconf.Type.Bool.bool_to_str(dependency['is_enabled'])))
+                        self._my_print('      State: %s' % ((dependency['state'] == True and 'OK') or 'Error: ' + str(dependency['state'])))
 
         if self.get:
             if self.get[0] in self.sjconf.confs['local'] and self.get[1] in self.sjconf.confs['local'][self.get[0]]:
