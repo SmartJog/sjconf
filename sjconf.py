@@ -232,7 +232,7 @@ class SJConf:
             try:
                 self._file_path('plugin', dependency.name) # This will raise an Error if plugin is not installed
                 raise Plugin.Dependency.NotEnabledError(plugin.name(), dependency.name)
-            except Plugin.Dependency.NotInstalledError:
+            except FileNotInstalledError:
                 raise Plugin.Dependency.NotInstalledError(plugin.name(), dependency.name)
         if dependency.name in self.confs_internal['sjconf']['conf']['plugins_list']:
             dependency.verify(plugins_hash[dependency.name].version())
