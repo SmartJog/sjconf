@@ -23,14 +23,14 @@ class Conf(dict):
             self.msg = 'Unauthorized section "%s": all sections should be either "%s" or "%s:<subsection>"' % (section, conf_file, conf_file)
 
     class ConfSection(dict):
-        def __init__(self, dictionnary = {}):
-            dict.__init__(self, dictionnary)
+        def __init__(self, dictionary = {}):
+            dict.__init__(self, dictionary)
             self.types = {}
-            if 'get_type' in dir(dictionnary):
-                for key in dictionnary:
-                    type = dictionnary.get_type(key)
+            if 'get_type' in dir(dictionary):
+                for key in dictionary:
+                    type = dictionary.get_type(key)
                     if type != None:
-                        self.set_type(self, key, dictionnary.get_type(key))
+                        self.set_type(self, key, dictionary.get_type(key))
 
         def __delitem__(self, key):
             dict.__delitem__(self, key)
@@ -80,15 +80,15 @@ class Conf(dict):
                 type = None
             return type
 
-    def __init__(self, dictionnary = {}, file_path = None, conf_section_class = ConfSection):
+    def __init__(self, dictionary = {}, file_path = None, conf_section_class = ConfSection):
         self.conf_section_class = conf_section_class
         dict.__init__({})
         self.file_path = file_path
         self.comments = None
         if self.file_path:
             self.load()
-        elif dictionnary:
-            self.load_from_dict(dictionnary)
+        elif dictionary:
+            self.load_from_dict(dictionary)
 
     def __setitem__(self, key, value):
         if value.__class__ != self.conf_section_class:
@@ -106,9 +106,9 @@ class Conf(dict):
                     value = other_dict[section]
                 self[section] = value
 
-    def load_from_dict(self, dictionnary):
-        for section in dictionnary:
-            self[section] = self.conf_section_class(dictionnary[section])
+    def load_from_dict(self, dictionary):
+        for section in dictionary:
+            self[section] = self.conf_section_class(dictionary[section])
 
     def load(self, file_path = None):
         if not file_path:
