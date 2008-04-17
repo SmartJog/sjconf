@@ -23,7 +23,7 @@ class Conf(dict):
             self.msg = 'Unauthorized section "%s": all sections should be either "%s" or "%s:<subsection>"' % (section, conf_file, conf_file)
 
     class ConfSection(dict):
-        def __init__(self, dictionnary):
+        def __init__(self, dictionnary = {}):
             dict.__init__(self, dictionnary)
             self.types = {}
             if 'get_type' in dir(dictionnary):
