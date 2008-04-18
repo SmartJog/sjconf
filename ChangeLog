@@ -1,4 +1,4 @@
-Version 1.1.0~dev
+Version 1.1.0 Released on 2008/04/18
 
 	* Add --install-distrib, --uninstall-distrib to install/uninstall a distrib configuration file.
 	* Add --enable-distrib, --disable-distrib to install/uninstall a distrib.
