@@ -10,7 +10,7 @@ class SJConfCLI:
 
     def _get_params(self, argv, nb):
         if len(argv) < nb:
-            raise BadParam("nb")
+            raise SJConfCLI.BadParam("nb")
         ret = argv[0:nb]
         for i in range(0, nb):
             argv.pop(0)
