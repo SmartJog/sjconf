@@ -4,6 +4,7 @@ Version 1.2.0~dev
 	* Add "size" type. Closes: #706.
 	* Fix restarting one particular plugin. Closes: #709.
 	* Do not trigger an exception when a bad conversion value is given. Closes: #704.
+	* Boolean values are now case-insensitive. Closes: #705.
 
 Version 1.1.0 Released on 2008/04/18
 

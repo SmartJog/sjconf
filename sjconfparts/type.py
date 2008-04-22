@@ -57,9 +57,9 @@ class Type(TypePythonIsCrappy):
 
         @classmethod
         def str_to_bool(xcls, str_object):
-            if str_object in Type.Bool.TRUE_VALUES:
+            if str_object.lower() in Type.Bool.TRUE_VALUES:
                 return True
-            elif str_object in Type.Bool.FALSE_VALUES:
+            elif str_object.lower() in Type.Bool.FALSE_VALUES:
                 return False
             else:
                 raise Type.Bool.StrToBoolError(str_object)
