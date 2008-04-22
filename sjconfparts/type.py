@@ -53,7 +53,7 @@ class Type(TypePythonIsCrappy):
 
         class BoolToStrError(TypePythonIsCrappy.ConversionError):
             def __init__(self, bool_object):
-                self.msg = 'Bad value "%s" for bool to str conversion, expected True or False' % (str_object)
+                self.msg = 'Bad value "%s" for bool to str conversion, expected a boolean' % (str_object)
 
         @classmethod
         def str_to_bool(xcls, str_object):
