@@ -67,7 +67,7 @@ class SJConf:
             plugins = self._plugins_load()
         already_restart = []
         for plugin in plugins:
-            if plugin in services_to_restart or 'all' in services_to_restart:
+            if plugin.name() in services_to_restart or 'all' in services_to_restart:
                 plugin.restart_all_services()
 
     def apply_conf_modifications(self, sets = [], list_adds = [], list_deletions = [], delete_keys = [], delete_sections = [], temp = False):
