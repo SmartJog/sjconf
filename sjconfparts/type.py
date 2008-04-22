@@ -1,4 +1,5 @@
 from sjconfparts.exceptions import *
+import re
 
 class TypePythonIsCrappy:
 
@@ -71,3 +72,37 @@ class Type(TypePythonIsCrappy):
                 return "no"
             else:
                 raise BoolToStrError(bool_object)
+
+    class Size:
+
+        class StrToSizeError(TypePythonIsCrappy.ConversionError):
+            def __init__(self, str_object):
+                self.msg = 'Bad value "%s" for str to size conversion, expected a value like, e.g. 10M' % (str_object)
+
+        class SizeToStrError(TypePythonIsCrappy.ConversionError):
+            def __init__(self, size_object):
+                self.msg = 'Bad value "%s" for size to str conversion, expected an integer' % (size_object)
+
+        @classmethod
+        def str_to_size(xcls, str_object):
+            suffixes = ['T', 'G', 'M', 'k']
+            match_result = re.compile("^(\d+)([%s])?$" % (''.join(suffixes))).match(str_object)
+            if match_result == None:
+                raise Type.Size.StrToSizeError(str_object)
+            size, suffix = match_result.groups('')
+            size = int(size)
+            while len(suffixes) > 0:
+                if suffix in suffixes:
+                    size *= 1024
+                suffixes.pop()
+            return size
+
+        @classmethod
+        def size_to_str(xcls, size_object):
+            if not isinstance(size_object, int):
+                raise SizeToStrError(size_object)
+            for suffix_to_test in ('k', 'M', 'G', 'T'):
+                if size > 1024:
+                    suffix = suffix_to_test
+                    size /= 1024
+            return str(size) + suffix

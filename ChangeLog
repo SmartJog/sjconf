@@ -1,6 +1,7 @@
-Version 1.1.1~dev
+Version 1.2.0~dev
 
 	* Fix error message display when there is an argument missing. Closes: #701.
+	* Add "size" type. Closes: #706.
 
 Version 1.1.0 Released on 2008/04/18
 
