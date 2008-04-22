@@ -22,7 +22,7 @@ class Type(TypePythonIsCrappy):
         elif type_dest == 'str':
             type_class_name = type_source.capitalize()
         else:
-            raise ConversionBadTypeError(type_source, type_dest)
+            raise Type.ConversionBadTypeError(type_source, type_dest)
         type_class = getattr(xcls, type_class_name)
         return getattr(type_class, type_source + '_to_' + type_dest)(value)
 
@@ -49,7 +49,7 @@ class Type(TypePythonIsCrappy):
 
         class StrToBoolError(TypePythonIsCrappy.ConversionError):
             def __init__(self, str_object):
-                self.msg = 'Bad value "%s" for str to bool conversion, expected a value in %s' % (str_object, str(TRUE_VALUES + FALSE_VALUES))
+                self.msg = 'Bad value "%s" for str to bool conversion, expected a value in %s' % (str_object, str(Type.Bool.TRUE_VALUES + Type.Bool.FALSE_VALUES))
 
         class BoolToStrError(TypePythonIsCrappy.ConversionError):
             def __init__(self, bool_object):
@@ -62,7 +62,7 @@ class Type(TypePythonIsCrappy):
             elif str_object in Type.Bool.FALSE_VALUES:
                 return False
             else:
-                raise StrToBoolError(str_object)
+                raise Type.Bool.StrToBoolError(str_object)
 
         @classmethod
         def bool_to_str(xcls, bool_object):
@@ -71,7 +71,7 @@ class Type(TypePythonIsCrappy):
             elif bool_object == False:
                 return "no"
             else:
-                raise BoolToStrError(bool_object)
+                raise Type.Bool.BoolToStrError(bool_object)
 
     class Size:
 
