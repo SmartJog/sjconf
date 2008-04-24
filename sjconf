@@ -132,7 +132,7 @@ class SJConfCLI:
                     print 'Incorrect command : %s\n' % cmd
                     self._usage(bin, 1)
             except SJConfCLI.BadParam, param:
-                print 'Incorrect %s command\n' % param
+                print 'Incorrect %s command\n' % param.name
                 self._usage(bin, 1)
         self.changes = (self.sets or self.list_adds or self.list_deletions or self.delete_sections or self.delete_keys)
 
