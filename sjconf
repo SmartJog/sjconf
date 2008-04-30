@@ -5,6 +5,8 @@ import sjconf, sys, os
 
 class SJConfCLI:
 
+    VERSION = '1.3.0~dev'
+
     class BadParam:
         def __init__(self, name):
             self.name = name
@@ -49,6 +51,7 @@ class SJConfCLI:
     def _usage(self, bin, exit_code):
         print '''%s usage:
         -e                                   : open local.conf on an EDITOR
+        --version                            : print version and exit
         --diff                               : show “diff -u” between old and new configuration files
         --save                               : save modification (mandatory to deploy)
         --deploy                             : deploy configuration
@@ -86,7 +89,12 @@ class SJConfCLI:
                     editor = os.getenv("EDITOR") or "vim"
                     os.system("%s /etc/smartjog/local.conf" % editor)
                     sys.exit(0)
-                if cmd == '--deploy':
+                elif cmd == '--version':
+                    print os.path.basename(bin), SJConfCLI.VERSION
+                    print 'Copyright © 2008 SmartJog'
+                    print 'This is proprietary software, you are not allowed to change nor redistribute it.'
+                    sys.exit(0)
+                elif cmd == '--deploy':
                     self.deploy = True
                 elif cmd == '-h' or cmd == '--help':
                      self._usage(bin, 0)

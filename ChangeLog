@@ -1,7 +1,8 @@
-Version 1.2.1~dev
+Version 1.3.0~dev
 
 	* Do not print object internals. Closes: #720.
 	* Restart services in order given on the command-line. Closes: #735.
+	* Add --version command. Closes: #736.
 
 Version 1.2.0 Released on 2008/04/23
 
