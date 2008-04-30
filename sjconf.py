@@ -65,10 +65,13 @@ class SJConf:
     def restart_services(self, services_to_restart, plugins = None):
         if plugins == None:
             plugins = self._plugins_load()
-        already_restart = []
-        for plugin in plugins:
-            if plugin.name() in services_to_restart or 'all' in services_to_restart:
-                plugin.restart_all_services()
+        plugins_hash = dict([(plugin.name(), plugin) for plugin in plugins])
+        if 'all' in services_to_restart:
+            for plugin_name in plugins_hash.keys():
+                if not plugin_name in services_to_restart:
+                    services_to_restart.append(plugin_name)
+        for service_to_restart in services_to_restart:
+            plugins_hash[service_to_restart].restart_all_services()
 
     def apply_conf_modifications(self, sets = [], list_adds = [], list_deletions = [], delete_keys = [], delete_sections = [], temp = False):
         conf = self.confs['local']

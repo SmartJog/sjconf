@@ -1,6 +1,7 @@
 Version 1.2.1~dev
 
 	* Do not print object internals. Closes: #720.
+	* Restart services in order given on the command-line. Closes: #735.
 
 Version 1.2.0 Released on 2008/04/23
 
