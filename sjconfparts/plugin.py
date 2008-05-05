@@ -104,10 +104,18 @@ class Plugin(PythonIsCrappy):
         return ()
 
     def conf_class(self):
-        return Conf
+        if hasattr(self.__class__, 'Conf'):
+            return getattr(self.__class__, 'Conf')
+        else:
+            return Conf
 
     def conf_section_class(self):
-        return Conf.ConfSection
+        if hasattr(self.__class__, 'Conf') and hasattr(getattr(self.__class__, 'Conf',), 'ConfSection'):
+            return getattr(getattr(self.__class__, 'Conf',), 'ConfSection')
+        elif hasattr(self.__class__, 'ConfSection'):
+            return getattr(self.__class__, 'ConfSection')
+        else:
+            return Conf.ConfSection
 
     def set_conf(self, conf):
         if (self.conf_class() and conf.__class__ != self.conf_class()) or (self.conf_section_class() and self.conf_section_class() != conf.conf_section_class):
