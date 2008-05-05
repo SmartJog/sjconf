@@ -83,7 +83,10 @@ class Plugin(PythonIsCrappy):
         return self.plugin_name
 
     def version(self):
-        raise Plugin.MethodNotImplementedError(self.name(), 'version')
+        if hasattr(self.__class__, 'VERSION'):
+            return getattr(self.__class__, 'VERSION')
+        else:
+            raise Plugin.MethodNotImplementedError(self.name(), 'version')
 
     def dependencies(self):
         return ()
