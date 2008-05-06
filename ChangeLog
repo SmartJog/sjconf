@@ -6,6 +6,7 @@ Version 1.3.0~dev
 	* Default "version" method uses Plugin.VERSION if it exists. Closes: #743.
 	* Default "conf_class" method uses Plugin.Conf it it exists. Refs: #739.
 	* Default "conf_section_class" method Plugin.Conf.ConfSection if it exists, or Plugin.ConfSection if it exists. Closes: #739.
+	* More clever default "template_path" method that also searches inside the template configuration.
 
 Version 1.2.0 Released on 2008/04/23
 

@@ -142,21 +142,22 @@ class Plugin(PythonIsCrappy):
         os.system('invoke-rc.d %s restart' % (service))
 
 class PluginWithTemplate(Plugin):
-    def template_path(self, file_path):
-        section = self.name()
-        if section in self.conf:
-            key = 'template_' + os.path.basename(file_path)
-            if not key in self.conf[section]:
-                key = 'template_' + os.path.basename(file_path).replace('.conf', '')
-            if not key in self.conf[section]:
-                key = 'template'
-        if section in self.conf and key in self.conf[section]:
-            return self.sjconf.base_dir + '/' + self.conf[section][key]
-        else:
-            raise Plugin.MethodNotImplementedError(self.name(), 'template_path')
+    def template_path(self, file_path, confs_to_test = None):
+        if not confs_to_test:
+            confs_to_test = (self.conf[self.name()],)
+        for conf_to_test in confs_to_test:
+            for key_to_test in ('template_' + os.path.basename(file_path), 'template_' + os.path.basename(file_path).replace('.conf', ''), 'template'):
+                if key_to_test in conf_to_test:
+                    return self.sjconf.base_dir + '/' + conf_to_test[key_to_test]
+        raise Plugin.MethodNotImplementedError(self.name(), 'template_path')
 
     def template_conf(self, file_path):
         return self.conf[self.name()]
 
     def file_content(self, file_path):
-        return open(self.template_path(file_path)).read() % self.template_conf(file_path)
+        template_conf = self.template_conf(file_path)
+        confs_to_test = [template_conf]
+        if self.name() in self.conf:
+            confs_to_test.append(self.conf[self.name()])
+        template_path = self.template_path(file_path, confs_to_test)
+        return open(template_path).read() % template_conf
