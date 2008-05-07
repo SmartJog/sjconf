@@ -134,10 +134,11 @@ class Conf(dict):
             for section in cp.sections():
                 self[section] = self.conf_section_class(cp.items(section))
 
-    def save(self, file_path = None):
-        if not file_path:
-            file_path = self.file_path
-        output_file = open(file_path, "w")
+    def save(self, output_file = None):
+        if not output_file:
+            output_file = self.file_path
+        if not hasattr(output_file, 'write'):
+            output_file = open(output_file, "w")
         if self.comments != None and len(self.comments) > 0:
             for comment in self.comments.split('\n'):
                 output_file.write('# ' + comment + '\n')
