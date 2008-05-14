@@ -129,7 +129,7 @@ class Conf(dict):
                 raise IOError(errno.ENOENT, "%s: %s" % (self.file_path, os.strerror(errno.ENOENT)))
             elif os.path.isdir(file_path):
                 raise IOError(errno.EISDIR, "%s: %s" % (self.file_path, os.strerror(errno.EISDIR)))
-            cp = ConfigParser.ConfigParser()
+            cp = ConfigParser.SafeConfigParser()
             cp.read(file_path)
             for section in cp.sections():
                 self[section] = self.conf_section_class(cp.items(section))
@@ -143,7 +143,7 @@ class Conf(dict):
             for comment in self.comments.split('\n'):
                 output_file.write('# ' + comment + '\n')
             output_file.write('\n')
-        cp = ConfigParser.ConfigParser()
+        cp = ConfigParser.SafeConfigParser()
         for section in self:
             cp.add_section(section)
             for key in self[section]:
