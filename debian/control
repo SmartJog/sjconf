@@ -3,7 +3,7 @@ Priority: optional
 Section: admin
 Maintainer: Philippe BRIDANT <philippe.bridant@smartjog.com>
 Uploaders: Jean-Philippe Garcia Ballester <jeanphilippe.garciaballester@smartjog.com>
-Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5.0.38), python-central (>= 0.5), python-all
+Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5.0.38), python-central (>= 0.5), python-all, python-setuptools
 Standards-Version: 3.7.3
 XS-Python-Version: all
 

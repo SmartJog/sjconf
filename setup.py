@@ -1,9 +1,8 @@
 #!/usr/bin/python
 
-from distutils.core import setup
-import glob
+import glob, setuptools
 
-setup(
+setuptools.setup(
         name = 'sjconf',
         version = '1.3.0~dev',
         scripts = ['sjconf'],
