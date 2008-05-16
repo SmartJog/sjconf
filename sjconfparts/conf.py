@@ -2,7 +2,7 @@ from sjconfparts.type import *
 from sjconfparts.exceptions import *
 import os, re, ConfigParser, errno
 
-class Conf(dict):
+class Conf:
 
     class Error(Error):
         pass
@@ -22,9 +22,9 @@ class Conf(dict):
         def __init__(self, section, conf_file):
             self.msg = 'Unauthorized section "%s": all sections should be either "%s" or "%s:<subsection>"' % (section, conf_file, conf_file)
 
-    class ConfSection(dict):
+    class ConfSection:
         def __init__(self, dictionary = {}):
-            dict.__init__(self, dictionary)
+            self.dict = dict(dictionary)
             self.types = {}
             self.type_values = {}
             if hasattr(dictionary, 'get_types'):
@@ -32,7 +32,7 @@ class Conf(dict):
                     self.set_type(self, key, type)
 
         def __delitem__(self, key):
-            dict.__delitem__(self, key)
+            del dict[key]
             if key in self.type_values:
                 del self.type_values[key]
 
@@ -67,9 +67,9 @@ class Conf(dict):
                 type = self._find_type_for(key)
                 if type:
                     value = Type.convert(type, 'str', self.type_values[key])
-                    dict.__setitem__(self, key, value)
+                    self.dict[key] = value
                 else:
-                    value = dict.__getitem__(self, key)
+                    value = self.dict[key]
             return value
 
         def __setitem__(self, key, value):
@@ -81,7 +81,7 @@ class Conf(dict):
                 type = self._find_type_for(key)
                 if type:
                     self.type_values[key] = Type.convert('str', type, value)
-            dict.__setitem__(self, key, value)
+            self.dict[key] = value
 
         def set_type(self, key, type):
             self.types[key] = type
@@ -90,11 +90,11 @@ class Conf(dict):
             else:
                 keys = (key in self.dict and (key,)) or ()
             for key in keys:
-                self.type_values[key] = Type.convert('str', type, self[key])
+                self.type_values[key] = Type.convert('str', type, self.dict[key])
 
         def get_type(self, key):
             # Raise KeyError in key not defined
-            self[key]
+            self.dict[key]
             return self._find_type_for(key)
 
         def del_type(self, key):
@@ -103,9 +103,12 @@ class Conf(dict):
         def get_types(self):
             return self.types
 
+        def __getattr__(self, *args, **kw):
+            return getattr(self.dict, *args, **kw)
+
     def __init__(self, dictionary = {}, file_path = None, conf_section_class = ConfSection):
         self.conf_section_class = conf_section_class
-        dict.__init__({})
+        self.dict = dict({})
         self.file_path = file_path
         self.comments = None
         self.types = {}
@@ -117,29 +120,29 @@ class Conf(dict):
     def __setitem__(self, key, value):
         if value.__class__ != self.conf_section_class:
             value = self.conf_section_class(value)
-        dict.__setitem__(self, key, value)
+        self.dict[key] = value
         for (section, values) in self.types.iteritems():
             if section == key or (hasattr(section, 'search') and section.search(key)):
                 for value in values:
-                    self[key].set_type(*value)
+                    self.dict[key].set_type(*value)
 
     def update(self, other_dict):
         for section in other_dict:
             if section in self:
-                self[section].update(other_dict[section])
+                self.dict[section].update(other_dict[section])
             else:
                 if other_dict[section].__class__ != self.conf_section_class:
                     value = self.conf_section_class(other_dict[section])
                 else:
                     value = other_dict[section]
-                self[section] = value
+                self.dict[section] = value
         if hasattr(other_dict, 'get_types'):
             for (key, type) in other_dict.get_types().iteritems():
                 self.set_type(self, key, type)
 
     def load_from_dict(self, dictionary):
         for section in dictionary:
-            self[section] = self.conf_section_class(dictionary[section])
+            self.dict[section] = self.conf_section_class(dictionary[section])
         if hasattr(dictionary, 'get_types'):
             for (key, type) in dictionary.get_types().iteritems():
                 self.set_type(self, key, type)
@@ -166,7 +169,7 @@ class Conf(dict):
             cp = ConfigParser.SafeConfigParser()
             cp.read(file_path)
             for section in cp.sections():
-                self[section] = self.conf_section_class(cp.items(section))
+                self.dict[section] = self.conf_section_class(cp.items(section))
 
     def save(self, output_file = None):
         if not output_file:
@@ -178,20 +181,23 @@ class Conf(dict):
                output_file.write('# ' + comment + '\n')
             output_file.write('\n')
         cp = ConfigParser.SafeConfigParser()
-        for section in self:
+        for section in self.dict:
             cp.add_section(section)
-            for key in self[section]:
-                cp.set(section, key, self[section][key])
+            for key in self.dict[section]:
+                cp.set(section, key, self.dict[section][key])
         cp.write(output_file)
 
     def set_type(self, section, key, type):
         self.types.setdefault(section, []).append((key, type))
         if hasattr(section, 'search'):
-            sections = [section_matched for section_matched in self if section.search(section_matched)]
+            sections = [section_matched for section_matched in self.dict if section.search(section_matched)]
         else:
             sections = (section,)
         for section in sections:
-            self[section].set_type(key, type)
+            self.dict[section].set_type(key, type)
 
     def get_type(self, section, key):
-        return self[section].get_type(key)
+        return self.dict[section].get_type(key)
+
+    def __getattr__(self, *args, **kw):
+        return getattr(self.dict, *args, **kw)
