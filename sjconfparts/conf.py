@@ -22,6 +22,10 @@ class Conf:
         def __init__(self, section, conf_file):
             self.msg = 'Unauthorized section "%s": all sections should be either "%s" or "%s:<subsection>"' % (section, conf_file, conf_file)
 
+    class SafeConfigParser(ConfigParser.SafeConfigParser):
+        def optionxform(self, optionstr):
+            return optionstr
+
     class ConfSection:
         def __init__(self, dictionary = {}):
             self.dict = dict(dictionary)
@@ -166,7 +170,7 @@ class Conf:
                 raise IOError(errno.ENOENT, "%s: %s" % (self.file_path, os.strerror(errno.ENOENT)))
             elif os.path.isdir(file_path):
                 raise IOError(errno.EISDIR, "%s: %s" % (self.file_path, os.strerror(errno.EISDIR)))
-            cp = ConfigParser.SafeConfigParser()
+            cp = Conf.SafeConfigParser()
             cp.read(file_path)
             for section in cp.sections():
                 self.dict[section] = self.conf_section_class(cp.items(section))
@@ -180,7 +184,7 @@ class Conf:
             for comment in self.comments.split('\n'):
                output_file.write('# ' + comment + '\n')
             output_file.write('\n')
-        cp = ConfigParser.SafeConfigParser()
+        cp = Conf.SafeConfigParser()
         for section in self.dict:
             cp.add_section(section)
             for key in self.dict[section]:

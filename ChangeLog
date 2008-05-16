@@ -9,6 +9,7 @@ Version 1.3.0~dev
 	* More clever default "template_path" method that also searches inside the template configuration.
 	* The "Conf" class can save the configuration in an "IO" object.
 	* Plugins can use regular expression when setting types of configuration options.
+	* Option names are now case sensitive.
 
 Version 1.2.0 Released on 2008/04/23
 
