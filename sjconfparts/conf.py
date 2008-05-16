@@ -26,65 +26,89 @@ class Conf(dict):
         def __init__(self, dictionary = {}):
             dict.__init__(self, dictionary)
             self.types = {}
-            if 'get_type' in dir(dictionary):
-                for key in dictionary:
-                    type = dictionary.get_type(key)
-                    if type != None:
-                        self.set_type(self, key, dictionary.get_type(key))
+            self.type_values = {}
+            if hasattr(dictionary, 'get_types'):
+                for (key, type) in dictionary.get_types().iteritems():
+                    self.set_type(self, key, type)
 
         def __delitem__(self, key):
             dict.__delitem__(self, key)
-            if key in self.types:
-                del self.types[key]
+            if key in self.type_values:
+                del self.type_values[key]
 
-        def _find_type(self, key):
+        def _find_type_of(self, key):
             type = None
             search_result = re.compile('(.*)_([^_]+)$').search(key)
             if search_result:
                 key_tmp = search_result.group(1)
                 type = search_result.group(2)
-                if key_tmp in self.types and type == self.types[key_tmp][0]:
+                if self._find_type_for(key_tmp) == type:
                     key = key_tmp
                 else:
                     type = None
             return key, type
 
+        def _find_type_for(self, key):
+            type = None
+            if key in self.types:
+                type = self.types[key]
+            else:
+                for type_to_test in self.types:
+                    if hasattr(type_to_test, 'search') and type_to_test.search(key):
+                        type = self.types[type_to_test]
+                        break
+            return type
+
         def __getitem__(self, key):
-            key, type = self._find_type(key)
-            value = dict.__getitem__(self, key)
+            key, type = self._find_type_of(key)
             if type:
-                value = self.types[key][1]
-            elif key in self.types:
-                value = Type.convert(self.types[key][0], 'str', self.types[key][1])
-                dict.__setitem__(self, key, value)
+                value = self.type_values[key]
+            else:
+                type = self._find_type_for(key)
+                if type:
+                    value = Type.convert(type, 'str', self.type_values[key])
+                    dict.__setitem__(self, key, value)
+                else:
+                    value = dict.__getitem__(self, key)
             return value
 
         def __setitem__(self, key, value):
-            key, type = self._find_type(key)
+            key, type = self._find_type_of(key)
             if type:
-                self.types[key][1] = value
-                value = Type.convert(self.types[key][0], 'str', value)
-            elif key in self.types:
-                self.types[key][1] = Type.convert('str', self.types[key][0], value)
+                self.type_values[key] = value
+                value = Type.convert(type, 'str', value)
+            else:
+                type = self._find_type_for(key)
+                if type:
+                    self.type_values[key] = Type.convert('str', type, value)
             dict.__setitem__(self, key, value)
 
         def set_type(self, key, type):
-            self.types[key] = (type, Type.convert('str', type, self[key]))
+            self.types[key] = type
+            if hasattr(key, 'search'):
+                keys = [key_matched for key_matched in self if key.search(key_matched)]
+            else:
+                keys = (key in self.dict and (key,)) or ()
+            for key in keys:
+                self.type_values[key] = Type.convert('str', type, self[key])
 
         def get_type(self, key):
             # Raise KeyError in key not defined
             self[key]
-            if key in self.types:
-                type = self.types[key][0]
-            else:
-                type = None
-            return type
+            return self._find_type_for(key)
+
+        def del_type(self, key):
+            del self.types[key]
+
+        def get_types(self):
+            return self.types
 
     def __init__(self, dictionary = {}, file_path = None, conf_section_class = ConfSection):
         self.conf_section_class = conf_section_class
         dict.__init__({})
         self.file_path = file_path
         self.comments = None
+        self.types = {}
         if self.file_path:
             self.load()
         elif dictionary:
@@ -94,6 +118,10 @@ class Conf(dict):
         if value.__class__ != self.conf_section_class:
             value = self.conf_section_class(value)
         dict.__setitem__(self, key, value)
+        for (section, values) in self.types.iteritems():
+            if section == key or (hasattr(section, 'search') and section.search(key)):
+                for value in values:
+                    self[key].set_type(*value)
 
     def update(self, other_dict):
         for section in other_dict:
@@ -105,10 +133,16 @@ class Conf(dict):
                 else:
                     value = other_dict[section]
                 self[section] = value
+        if hasattr(other_dict, 'get_types'):
+            for (key, type) in other_dict.get_types().iteritems():
+                self.set_type(self, key, type)
 
     def load_from_dict(self, dictionary):
         for section in dictionary:
             self[section] = self.conf_section_class(dictionary[section])
+        if hasattr(dictionary, 'get_types'):
+            for (key, type) in dictionary.get_types().iteritems():
+                self.set_type(self, key, type)
 
     def load(self, file_path = None):
         if not file_path:
@@ -141,7 +175,7 @@ class Conf(dict):
             output_file = open(output_file, "w")
         if self.comments != None and len(self.comments) > 0:
             for comment in self.comments.split('\n'):
-                output_file.write('# ' + comment + '\n')
+               output_file.write('# ' + comment + '\n')
             output_file.write('\n')
         cp = ConfigParser.SafeConfigParser()
         for section in self:
@@ -151,7 +185,13 @@ class Conf(dict):
         cp.write(output_file)
 
     def set_type(self, section, key, type):
-        self[section].set_type(key, type)
+        self.types.setdefault(section, []).append((key, type))
+        if hasattr(section, 'search'):
+            sections = [section_matched for section_matched in self if section.search(section_matched)]
+        else:
+            sections = (section,)
+        for section in sections:
+            self[section].set_type(key, type)
 
     def get_type(self, section, key):
         return self[section].get_type(key)
