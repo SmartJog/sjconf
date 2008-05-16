@@ -93,7 +93,7 @@ class Conf(dict):
     def __setitem__(self, key, value):
         if value.__class__ != self.conf_section_class:
             value = self.conf_section_class(value)
-        dict.__setitem__(self, key, self.conf_section_class(value))
+        dict.__setitem__(self, key, value)
 
     def update(self, other_dict):
         for section in other_dict:
