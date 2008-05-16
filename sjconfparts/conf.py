@@ -33,7 +33,7 @@ class Conf:
             self.type_values = {}
             if hasattr(dictionary, 'get_types'):
                 for (key, type) in dictionary.get_types().iteritems():
-                    self.set_type(self, key, type)
+                    self.set_type(key, type)
 
         def __delitem__(self, key):
             del dict[key]
