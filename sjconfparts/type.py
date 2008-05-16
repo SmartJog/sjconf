@@ -133,7 +133,7 @@ class Type(TypePythonIsCrappy):
             match_results = re.compile('^(.*)-\d+$').match(key)
             if match_results:
                 key = match_results.group(1)
-            regexp = re.compile('^%s-\d+$' % key)
+            regexp = re.compile('^%s-\d+$' % (key))
             for (key_to_test, value) in dict_source.iteritems():
                 if key_to_test == key or regexp.match(key_to_test):
                     str_object.append((key_to_test, value))
