@@ -144,16 +144,19 @@ class Type(TypePythonIsCrappy):
 
         @classmethod
         def sequence_to_str(xcls, dict_source, dict_dest, key):
-            sequence_object = dict_source[key]
+            match_results = re.compile('^(.*)-\d+$').match(key)
+            if match_results:
+                key = match_results.group(1)
+            sequence_object = list(dict_source[key])
             str_keys = []
-            regexp = re.compile('^%s-\d+$')
+            regexp = re.compile('^%s-\d+$' % (key))
             for key_to_test in dict_dest:
                 if key_to_test == key or regexp.match(key_to_test):
                     str_keys.append(key_to_test)
             str_keys.sort()
             index = str_keys[-1].replace(key + '-', '')
-            while len(str_keys):
-                dict_dest[str_keys.pop()] = sequence_object.pop()
+            while len(str_keys) > 0 and len(sequence_object) > 0:
+                dict_dest[str_keys.pop(0)] = sequence_object.pop(0)
             for str_key in str_keys:
                 del dict_dest[str_key]
             for elt in sequence_object:
