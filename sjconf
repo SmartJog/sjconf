@@ -187,16 +187,16 @@ class SJConfCLI:
             for plugin_info in plugins_list.values():
                 self._my_print('Plugin %s' % (plugin_info['plugin'].name()))
                 self._my_print('  Version: %s' % (plugin_info['plugin'].version()))
-                self._my_print('  Enabled: %s' % (sjconf.Type.Bool.bool_to_str(plugin_info['is_enabled'])))
+                self._my_print('  Enabled: %s' % (sjconf.Type.Bool.bool_to_str(plugin_info, {}, 'is_enabled')['is_enabled']))
                 if len(plugin_info['plugin'].dependencies()) > 0:
                     self._my_print('  Dependencies:')
                     for dependency_name, dependency in plugin_info['dependencies'].items():
                         self._my_print('    Plugin %s:' % (dependency_name))
-                        self._my_print('      Required: %s' % (sjconf.Type.Bool.bool_to_str(not dependency['dependency'].optional)))
+                        self._my_print('      Required: %s' % (sjconf.Type.Bool.bool_to_str({'optional': not dependency['dependency'].optional}, {}, 'optional')['optional']))
                         self._my_print('      Requirements: %s' % (', '.join(map(lambda (operator, version): operator + ' ' + version, dependency['dependency'].requirements.items()))))
                         self._my_print('      Installed version: %s' % ((dependency['plugin'] and dependency['plugin'].version()) or 'Not installed'))
                         if dependency['plugin']:
-                            self._my_print('      Enabled: %s' % (sjconf.Type.Bool.bool_to_str(dependency['is_enabled'])))
+                            self._my_print('      Enabled: %s' % (sjconf.Type.Bool.bool_to_str(dependency, {}, 'is_enabled')['is_enabled']))
                         self._my_print('      State: %s' % ((dependency['state'] == True and 'OK') or 'Error: ' + str(dependency['state'])))
 
         if self.distribs_to_enable:

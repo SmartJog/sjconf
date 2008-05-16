@@ -66,8 +66,8 @@ class Conf:
             else:
                 type = self._find_type_for(key)
                 if type:
-                    value = Type.convert(type, 'str', self.type_values[key])
-                    self.dict[key] = value
+                    Type.convert(type, 'str', self.type_values, self.dict, key)
+                    value = self.dict[key]
                 else:
                     value = self.dict[key]
             return value
@@ -76,12 +76,12 @@ class Conf:
             key, type = self._find_type_of(key)
             if type:
                 self.type_values[key] = value
-                value = Type.convert(type, 'str', value)
+                Type.convert(type, 'str', self.type_values, self.dict, key)
             else:
+                self.dict[key] = value
                 type = self._find_type_for(key)
                 if type:
-                    self.type_values[key] = Type.convert('str', type, value)
-            self.dict[key] = value
+                    Type.convert('str', type, self.dict, self.type_values, key)
 
         def set_type(self, key, type):
             self.types[key] = type
@@ -90,7 +90,7 @@ class Conf:
             else:
                 keys = (key in self.dict and (key,)) or ()
             for key in keys:
-                self.type_values[key] = Type.convert('str', type, self.dict[key])
+                Type.convert('str', type, self.dict, self.type_values, key)
 
         def get_type(self, key):
             # Raise KeyError in key not defined
