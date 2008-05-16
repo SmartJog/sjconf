@@ -89,10 +89,7 @@ class Conf:
 
         def set_type(self, key, type):
             self.types[key] = type
-            if hasattr(key, 'search'):
-                keys = [key_matched for key_matched in self if key.search(key_matched)]
-            else:
-                keys = (key in self.dict and (key,)) or ()
+            keys = [key_matched for key_matched in self.dict if self._find_type_for(key_matched) == type]
             for key in keys:
                 Type.convert('str', type, self.dict, self.type_values, key)
 
