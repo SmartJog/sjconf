@@ -36,7 +36,7 @@ class Conf:
                     self.set_type(key, type)
 
         def __delitem__(self, key):
-            del dict[key]
+            del self.dict[key]
             if key in self.type_values:
                 del self.type_values[key]
 
