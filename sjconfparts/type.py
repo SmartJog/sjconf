@@ -123,3 +123,40 @@ class Type(TypePythonIsCrappy):
             str_object = str(size) + suffix
             dict_dest[key] = str_object
             return dict_dest
+
+    class Sequence:
+
+        @classmethod
+        def str_to_sequence(xcls, dict_source, dict_dest, key):
+            sequence_object = []
+            str_object = []
+            match_results = re.compile('^(.*)-\d+$').match(key)
+            if match_results:
+                key = match_results.group(1)
+            regexp = re.compile('^%s-\d+$' % key)
+            for (key_to_test, value) in dict_source.iteritems():
+                if key_to_test == key or regexp.match(key_to_test):
+                    str_object.append((key_to_test, value))
+            str_object.sort()
+            sequence_object = [value for (str_key, value) in str_object]
+            dict_dest[key] = sequence_object
+            return dict_dest
+
+        @classmethod
+        def sequence_to_str(xcls, dict_source, dict_dest, key):
+            sequence_object = dict_source[key]
+            str_keys = []
+            regexp = re.compile('^%s-\d+$')
+            for key_to_test in dict_dest:
+                if key_to_test == key or regexp.match(key_to_test):
+                    str_keys.append(key_to_test)
+            str_keys.sort()
+            index = str_keys[-1].replace(key + '-', '')
+            while len(str_keys):
+                dict_dest[str_keys.pop()] = sequence_object.pop()
+            for str_key in str_keys:
+                del dict_dest[str_key]
+            for elt in sequence_object:
+                index += 1
+                dict_dest[key + '-' + index] = elt
+            return dict_dest
