@@ -99,7 +99,9 @@ class Type(TypePythonIsCrappy):
 
         @classmethod
         def size_to_str(xcls, size_object):
-            if not isinstance(size_object, int):
+            try:
+                size_object = int(size_object)
+            except ValueError:
                 raise SizeToStrError(size_object)
             for suffix_to_test in ('k', 'M', 'G', 'T'):
                 if size > 1024:
