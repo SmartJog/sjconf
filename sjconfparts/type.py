@@ -9,6 +9,23 @@ class TypePythonIsCrappy:
     class ConversionError(Error):
         pass
 
+class ConversionList:
+
+    def __init__(self, conversion_method, list_object = None):
+        self.conversion_method = conversion_method
+        if list_object == None:
+            list_object = []
+        self.list = list_object
+
+    def __getattr__(self, name):
+        list_method = getattr(self.list, name)
+        def method(*args, **kw):
+            result =  list_method(*args, **kw)
+            if name in ('__setslice__', '__delslice__', '__setitem__', '__delitem__', '__add__', '__radd__', '__iadd__', '__mul__', '__rmul__', '__imul__', 'append', 'extend', 'insert', 'pop', 'remove', 'reverse', 'sort'):
+                self.conversion_method()
+            return result
+        return method
+
 class Type(TypePythonIsCrappy):
 
     class ConversionBadTypeError(TypePythonIsCrappy.ConversionError):
@@ -31,6 +48,10 @@ class Type(TypePythonIsCrappy):
         return xcls._convert_method('key', key, type)
 
     @classmethod
+    def convert_value(xcls, value, type, dict_str, dict_type, key):
+        return xcls._convert_method('value', value, type, dict_str, dict_type, key)
+
+    @classmethod
     def _convert_method(xcls, method, value, type, *args):
         type_class = getattr(xcls, type.capitalize())
         if not hasattr(type_class, method):
@@ -42,14 +63,22 @@ class Type(TypePythonIsCrappy):
     class List:
 
         @classmethod
+        def value(xcls, value, key, dict_str, dict_type):
+            def conversion_method():
+                Type.List.list_to_str(dict_type, dict_str, key)
+            return ConversionList(conversion_method, value)
+
+        @classmethod
         def str_to_list(xcls, dict_source, dict_dest, key):
+            def conversion_method():
+                Type.List.list_to_str(dict_dest, dict_source, key)
             str_object = dict_source[key]
             list = map(str.strip, str_object.split(','))
             try:
                 list.remove('')
             except ValueError:
                 pass
-            dict_dest[key] = list
+            dict_dest[key] = ConversionList(conversion_method, list)
             return dict_dest
 
         @classmethod
@@ -146,8 +175,15 @@ class Type(TypePythonIsCrappy):
             return key
 
         @classmethod
+        def value(xcls, value, dict_str, dict_type, key):
+            def conversion_method():
+                Type.Sequence.sequence_to_str(dict_type, dict_str, key)
+            return ConversionList(conversion_method, value)
+
+        @classmethod
         def str_to_sequence(xcls, dict_source, dict_dest, key):
-            sequence_object = []
+            def conversion_method():
+                Type.Sequence.sequence_to_str(dict_dest, dict_source, key)
             str_object = []
             match_results = re.compile('^(.*)-\d+$').match(key)
             if match_results:
@@ -157,7 +193,7 @@ class Type(TypePythonIsCrappy):
                 if key_to_test == key or regexp.match(key_to_test):
                     str_object.append((key_to_test, value))
             str_object.sort()
-            sequence_object = [value for (str_key, value) in str_object]
+            sequence_object = ConversionList(conversion_method, [value for (str_key, value) in str_object])
             dict_dest[key] = sequence_object
             return dict_dest
 
@@ -173,8 +209,8 @@ class Type(TypePythonIsCrappy):
                 if regexp.match(key_to_test):
                     str_keys.append(key_to_test)
             str_keys.sort()
-            if len(str_keys) == 0 and len(sequence_object) == 1:
-                str_keys = (key,)
+            if key in dict_dest and len(str_keys) == 0 and len(sequence_object) == 1:
+                str_keys = [key,]
             elif len(str_keys) > 0:
                 index = int(str_keys[-1].replace(key + '-', ''))
             else:

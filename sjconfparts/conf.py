@@ -68,18 +68,13 @@ class Conf:
             if type:
                 value = self.type_values[key]
             else:
-                type = self._find_type_for(key)
-                if type:
-                    Type.convert(type, 'str', self.type_values, self.dict, key)
-                    value = self.dict[key]
-                else:
-                    value = self.dict[key]
+                value = self.dict[key]
             return value
 
         def __setitem__(self, key, value):
             key, type = self._find_type_of(key)
             if type:
-                self.type_values[key] = value
+                self.type_values[key] = Type.convert_value(value, type, self.dict, self.type_values, key)
                 Type.convert(type, 'str', self.type_values, self.dict, key)
             else:
                 self.dict[key] = value
