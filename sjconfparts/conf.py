@@ -184,8 +184,8 @@ class Conf:
         cp = Conf.SafeConfigParser()
         for section in self.dict:
             cp.add_section(section)
-            for key in self.dict[section]:
-                cp.set(section, key, self.dict[section][key])
+            for (key, value) in self.dict[section].iteritems():
+                cp.set(section, key, value)
         cp.write(output_file)
 
     def set_type(self, section, key, type):
