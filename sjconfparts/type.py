@@ -170,15 +170,22 @@ class Type(TypePythonIsCrappy):
             str_keys = []
             regexp = re.compile('^%s-\d+$' % (key))
             for key_to_test in dict_dest:
-                if key_to_test == key or regexp.match(key_to_test):
+                if regexp.match(key_to_test):
                     str_keys.append(key_to_test)
             str_keys.sort()
-            index = str_keys[-1].replace(key + '-', '')
+            if len(str_keys) == 0 and len(sequence_object) == 1:
+                str_keys = (key,)
+            elif len(str_keys) > 0:
+                index = int(str_keys[-1].replace(key + '-', ''))
+            else:
+                index = 0
+            if key in dict_dest and not key in str_keys:
+                del dict_dest[key]
             while len(str_keys) > 0 and len(sequence_object) > 0:
                 dict_dest[str_keys.pop(0)] = sequence_object.pop(0)
             for str_key in str_keys:
                 del dict_dest[str_key]
             for elt in sequence_object:
                 index += 1
-                dict_dest[key + '-' + index] = elt
+                dict_dest[key + '-' + str(index)] = elt
             return dict_dest
