@@ -10,6 +10,7 @@ Version 1.3.0~dev
 	* The "Conf" class can save the configuration in an "IO" object.
 	* Plugins can use regular expression when setting types of configuration options.
 	* Option names are now case sensitive.
+	* Add the “sequence” type.
 	* Add “--add-to-sequence” and “--remove-from-sequence” commands.
 
 Version 1.2.0 Released on 2008/04/23
