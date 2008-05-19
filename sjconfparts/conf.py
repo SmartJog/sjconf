@@ -192,8 +192,10 @@ class Conf:
         self.types.setdefault(section, []).append((key, type))
         if hasattr(section, 'search'):
             sections = [section_matched for section_matched in self.dict if section.search(section_matched)]
-        else:
+        elif section in self.dict:
             sections = (section,)
+        else:
+            sections = ()
         for section in sections:
             self.dict[section].set_type(key, type)
 
