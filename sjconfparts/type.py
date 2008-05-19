@@ -26,6 +26,19 @@ class Type(TypePythonIsCrappy):
         type_class = getattr(xcls, type_class_name)
         return getattr(type_class, type_source + '_to_' + type_dest)(dict_source, dict_dest, key)
 
+    @classmethod
+    def convert_key(xcls, key, type):
+        return xcls._convert_method('key', key, type)
+
+    @classmethod
+    def _convert_method(xcls, method, value, type, *args):
+        type_class = getattr(xcls, type.capitalize())
+        if not hasattr(type_class, method):
+            converted_value = value
+        else:
+            converted_value = getattr(type_class, method)(value, *args)
+        return converted_value
+
     class List:
 
         @classmethod
@@ -125,6 +138,12 @@ class Type(TypePythonIsCrappy):
             return dict_dest
 
     class Sequence:
+
+        @classmethod
+        def key(xcls, key):
+            if not hasattr(key, 'search'):
+                key = re.compile('^%s(-\d+)?$' % (key))
+            return key
 
         @classmethod
         def str_to_sequence(xcls, dict_source, dict_dest, key):

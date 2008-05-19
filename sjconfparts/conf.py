@@ -88,7 +88,7 @@ class Conf:
                     Type.convert('str', type, self.dict, self.type_values, key)
 
         def set_type(self, key, type):
-            self.types[key] = type
+            self.types[Type.convert_key(key, type)] = type
             keys = [key_matched for key_matched in self.dict if self._find_type_for(key_matched) == type]
             for key in keys:
                 Type.convert('str', type, self.dict, self.type_values, key)
