@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import re, sys, os, errno, time, shutil, tarfile, glob
 
 from sjconfparts.type import *
@@ -73,48 +74,61 @@ class SJConf:
         for service_to_restart in services_to_restart:
             plugins_hash[service_to_restart].restart_all_services()
 
-    def apply_conf_modifications(self, sets = [], list_adds = [], list_deletions = [], delete_keys = [], delete_sections = [], temp = False):
+    def delete_section(self, section):
         conf = self.confs['local']
-        if sets or delete_keys or delete_sections or list_adds or list_deletions:
+        if section in conf:
+            del(conf[section])
+        self._logger('delete section : %s' % (section))
+
+    def delete_key(self, section, key):
+        conf = self.confs['local']
+        if section in conf and key in conf[section]:
+                del(conf[section][key])
+        self._logger('delete key     : %s: %s' % (section, key))
+
+    def set(self, section, key, value):
+        conf = self.confs['local']
+        conf.setdefault(section, conf.conf_section_class({}))
+        conf[section][key] = value
+        self._logger('set            : %s: %s = %s' % (section, key, value))
+
+    def list_add(self, section, key, value):
+        conf = self.confs['local']
+        self._generic_list_add(section, key, 'list', value)
+        self._logger('set            : %s: %s = %s' % (section, key, conf[section][key]))
+
+    def list_remove(self, section, key, value):
+        conf = self.confs['local']
+        self._generic_list_remove(section, key, 'list', value)
+        self._logger('set            : %s: %s = %s' % (section, key, conf[section][key]))
+
+    def sequence_add(self, section, key, value):
+        conf = self.confs['local']
+        regexp = Type.Sequence.key(key)
+        old_keys = dict([(key_to_test, value_to_test) for (key_to_test, value_to_test) in conf[section].iteritems() if regexp.match(key_to_test)])
+        self._generic_list_add(section, key, 'sequence', value)
+        new_keys = dict([(key_to_test, value_to_test) for (key_to_test, value_to_test) in conf[section].iteritems() if regexp.match(key_to_test)])
+        self._sequence_diff(section, key, old_keys, new_keys)
+
+    def sequence_remove(self, section, key, value):
+        conf = self.confs['local']
+        regexp = re.compile('^%s-\d+$' % (key))
+        old_keys = dict([(key_to_test, value_to_test) for (key_to_test, value_to_test) in conf[section].iteritems() if regexp.match(key_to_test)])
+        self._generic_list_remove(section, key, 'sequence', value)
+        new_keys = dict([(key_to_test, value_to_test) for (key_to_test, value_to_test) in conf[section].iteritems() if regexp.match(key_to_test)])
+        self._sequence_diff(section, key, old_keys, new_keys)
+
+    def apply_conf_modifications(self, temp = False, **kw):
+        conf = self.confs['local']
+        for (key, value) in kw.items(): # We use “items” since we are modifying the dictionary
+            if len(value) == 0:
+                del kw[key]
+        if len(kw) > 0:
             self._logger("########## Scheduled modifications ##############")
 
-            for section in delete_sections:
-                if section in conf:
-                    del(conf[section])
-                self._logger('delete section : %s' % (section))
-
-            for section, key in delete_keys:
-                if section in conf:
-                    if key in conf[section]:
-                        del(conf[section][key])
-                self._logger('delete key     : %s: %s' % (section, key))
-
-            for section, key, value in sets:
-                conf.setdefault(section, conf.conf_section_class({}))
-                conf[section][key] = value
-                self._logger('set            : %s: %s = %s' % (section, key, value))
-
-            for section, key, value in list_adds:
-                if section not in conf:
-                    conf[section] = conf.conf_section_class()
-                if key not in conf[section]:
-                    confs_to_test = ['base']
-                    if 'distrib' in self.confs:
-                        confs_to_test.append('distrib')
-                    for conf_to_test in confs_to_test:
-                        if section in self.confs[conf_to_test] and key in self.confs[conf_to_test][section] and self.confs[conf_to_test][section][key] != '':
-                            raise Conf.ListExistInParentError(section, key, conf_to_test)
-                    conf[section][key] = ''
-                conf.set_type(section, key, 'list')
-                if value in conf[section][key + '_list']:
-                    raise Conf.ListValueAlreadyExistError(section, key, value)
-                conf[section][key + '_list'].append(value)
-                self._logger('set            : %s: %s = %s' % (section, key, conf[section][key]))
-
-            for section, key, value in list_deletions:
-                conf.set_type(section, key, 'list')
-                conf[section][key + '_list'].remove(value)
-                self._logger('set            : %s: %s = %s' % (section, key, conf[section][key]))
+            for (key, values) in kw.iteritems():
+                for value in values:
+                    getattr(self, re.sub('s$', '', key))(*value)
 
             self._logger("#################################################\n")
 
@@ -385,3 +399,42 @@ class SJConf:
         if not os.path.exists(file_path):
             raise FileNotInstalledError(file_path)
         return file_path
+
+    def _generic_list_add(self, section, key, type, value):
+        conf = self.confs['local']
+        if section not in conf:
+            conf[section] = conf.conf_section_class()
+        conf.set_type(section, key, type)
+        key_typed = key + '_' + type
+        try:
+            conf[section][key_typed]
+        except KeyError:
+            confs_to_test = ['base']
+            if 'distrib' in self.confs:
+                confs_to_test.append('distrib')
+            for conf_to_test in confs_to_test:
+                self.confs[conf_to_test].set_type(section, key, type)
+                if section in self.confs[conf_to_test]:
+                    try:
+                        self.confs[conf_to_test][section][key_typed]
+                        if len(self.confs[conf_to_test][section][key_typed]) > 0:
+                            raise KeyError
+                    except KeyError:
+                        raise Conf.ListExistInParentError(section, key, conf_to_test)
+            conf[section][key_typed] = []
+        if value in conf[section][key_typed]:
+            raise Conf.ListValueAlreadyExistError(section, key, value)
+        conf[section][key_typed].append(value)
+
+    def _generic_list_remove(self, section, key, type, value):
+        conf = self.confs['local']
+        conf.set_type(section, key, type)
+        conf[section][key + '_' + type].remove(value)
+
+    def _sequence_diff(self, section, key, old_keys, new_keys):
+        for key in old_keys:
+            if not key in new_keys:
+                self._logger('delete key     : %s: %s' % (section, key))
+        for (key, value) in new_keys.iteritems():
+            if not key in old_keys or value != old_keys[key]:
+                self._logger('set            : %s: %s = %s' % (section, key, value))

@@ -23,7 +23,9 @@ class SJConfCLI:
         self.get = []
         self.sets = []
         self.list_adds = []
-        self.list_deletions = []
+        self.list_removes = []
+        self.sequence_adds = []
+        self.sequence_removes = []
         self.delete_sections = []
         self.delete_keys = []
         self.files_to_install = []
@@ -50,30 +52,32 @@ class SJConfCLI:
 
     def _usage(self, bin, exit_code):
         print '''%s usage:
-        -e                                   : open local.conf on an EDITOR
-        --version                            : print version and exit
-        --diff                               : show “diff -u” between old and new configuration files
-        --save                               : save modification (mandatory to deploy)
-        --deploy                             : deploy configuration
-        --restart plugin                     : restart all services of “plugin”. If “plugin” is “all, then restart all services of all plugins.
-        --set section key value              : set a configuration key
-        --add-to-list section key value      : add a value to a configuration key
-        --remove-from-list section key value : remove a value from a configuration key
-        --delete-key section key             : delete a key within a section
-        --delete-section section             : delete a complete section
-        --install-plugin [--link] plugin     : install “plugin” into the plugins path; if --link is given, use a symbolic link
-        --uninstall-plugin plugin            : uninstall “plugin” from the plugins path
-        --enable-plugin plugin               : add “plugin” to the list of plugins to use
-        --disable-plugin plugin              : remove “plugin” from the list of plugins to use
-        --list-plugins                       : list installed plugins
-        --install-template [--link] template : install “template” into the templates path; if --link is given, use a symbolic link
-        --uninstall-template template        : uninstall “plugin” from the templates path
-        --install-conf [--link] conf         : install “conf” into the “base” configuration directory; if --link is given, use a symbolic link
-        --uninstall-conf conf                : uninstall “conf” from the base.conf file, “conf” should be the basename of a conf file previously installed
-        --install-distrib [--link] distrib   : install “distrib” file into the configuration directory; if --link is given, use a symbolic link
-        --uninstall-distrib distrib          : uninstall “distrib” file, “distrib” should be the basename of a distrib file previously installed
-        --enable-distrib distrib             : use the distrib “distrib”
-        --disable-distrib distrib            : do not use the distrib “distrib”
+        -e                                       : open local.conf on an EDITOR
+        --version                                : print version and exit
+        --diff                                   : show “diff -u” between old and new configuration files
+        --save                                   : save modification (mandatory to deploy)
+        --deploy                                 : deploy configuration
+        --restart plugin                         : restart all services of “plugin”. If “plugin” is “all, then restart all services of all plugins.
+        --set section key value                  : set a configuration key
+        --add-to-list section key value          : add a value to a configuration key
+        --remove-from-list section key value     : remove a value from a configuration key
+        --add-to-sequence section key value      : add a value to a configuration key
+        --remove-from-sequence section key value : remove a value from a configuration key
+        --delete-key section key                 : delete a key within a section
+        --delete-section section                 : delete a complete section
+        --install-plugin [--link] plugin         : install “plugin” into the plugins path; if --link is given, use a symbolic link
+        --uninstall-plugin plugin                : uninstall “plugin” from the plugins path
+        --enable-plugin plugin                   : add “plugin” to the list of plugins to use
+        --disable-plugin plugin                  : remove “plugin” from the list of plugins to use
+        --list-plugins                           : list installed plugins
+        --install-template [--link] template     : install “template” into the templates path; if --link is given, use a symbolic link
+        --uninstall-template template            : uninstall “plugin” from the templates path
+        --install-conf [--link] conf             : install “conf” into the “base” configuration directory; if --link is given, use a symbolic link
+        --uninstall-conf conf                    : uninstall “conf” from the base.conf file, “conf” should be the basename of a conf file previously installed
+        --install-distrib [--link] distrib       : install “distrib” file into the configuration directory; if --link is given, use a symbolic link
+        --uninstall-distrib distrib              : uninstall “distrib” file, “distrib” should be the basename of a distrib file previously installed
+        --enable-distrib distrib                 : use the distrib “distrib”
+        --disable-distrib distrib                : do not use the distrib “distrib”
 ''' % (bin)
         if exit_code:
             self._my_print("No modification done on configuration")
@@ -115,7 +119,11 @@ class SJConfCLI:
                 elif cmd == '--add-to-list':
                     self.list_adds.append(self._get_params(argv, 3))
                 elif cmd == '--remove-from-list':
-                    self.list_deletions.append(self._get_params(argv, 3))
+                    self.list_removes.append(self._get_params(argv, 3))
+                elif cmd == '--add-to-sequence':
+                    self.sequence_adds.append(self._get_params(argv, 3))
+                elif cmd == '--remove-from-sequence':
+                    self.sequence_removes.append(self._get_params(argv, 3))
                 elif cmd == '--delete-section':
                     self.delete_sections += self._get_params(argv, 1)
                 elif cmd == '--delete-key':
@@ -143,7 +151,7 @@ class SJConfCLI:
             except SJConfCLI.BadParam, param:
                 print 'Incorrect %s command\n' % param.name
                 self._usage(bin, 1)
-        self.changes = (self.sets or self.list_adds or self.list_deletions or self.delete_sections or self.delete_keys)
+        self.changes = (self.sets or self.list_adds or self.list_removes or self.sequence_adds or self.sequence_removes or self.delete_sections or self.delete_keys)
 
     def _verify_args(self):
         if self.get:
@@ -213,8 +221,8 @@ class SJConfCLI:
             else:
                 sys.exit(1)
 
-        if self.sets or self.list_adds or self.list_deletions or self.delete_keys or self.delete_sections or self.show_diff:
-            self.sjconf.apply_conf_modifications(self.sets, self.list_adds, self.list_deletions, self.delete_keys, self.delete_sections, not self.save)
+        if self.sets or self.list_adds or self.list_removes or self.sequence_adds or self.sequence_removes or self.delete_keys or self.delete_sections or self.show_diff:
+            self.sjconf.apply_conf_modifications(not self.save, sets = self.sets, list_adds = self.list_adds, list_removes = self.list_removes, sequence_adds = self.sequence_adds, sequence_removes = self.sequence_removes, delete_keys = self.delete_keys, delete_sections = self.delete_sections)
 
         if self.show_diff:
             print "############### local.conf diffs ################"
