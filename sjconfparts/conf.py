@@ -114,13 +114,10 @@ class Conf:
             self.load_from_dict(dictionary)
 
     def __setitem__(self, key, value):
-        if value.__class__ != self.conf_section_class:
-            value = self.conf_section_class(value)
-        self.dict[key] = value
-        for (section, values) in self.types.iteritems():
-            if section == key or (hasattr(section, 'search') and section.search(key)):
-                for value in values:
-                    self.dict[key].set_type(*value)
+        self.dict[key] = self._value_to_section(key, value)
+
+    def setdefault(self, key, value = None):
+        return self.dict.setdefault(key, self._value_to_section(key, value))
 
     def update(self, other_dict):
         for section in other_dict:
@@ -199,3 +196,12 @@ class Conf:
 
     def __getattr__(self, *args, **kw):
         return getattr(self.dict, *args, **kw)
+
+    def _value_to_section(self, key, value):
+        if value.__class__ != self.conf_section_class:
+            value = self.conf_section_class(value)
+        for (section, types) in self.types.iteritems():
+            if section == key or (hasattr(section, 'search') and section.search(key)):
+                for type in types:
+                    value.set_type(*type)
+        return value
