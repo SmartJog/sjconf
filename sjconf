@@ -127,7 +127,7 @@ class SJConfCLI:
                 elif cmd == '--delete-section':
                     self.delete_sections.append(self._get_params(argv, 1))
                 elif cmd == '--delete-key':
-                    self.delete_keys += [self._get_params(argv, 2)]
+                    self.delete_keys.append(self._get_params(argv, 2))
                 elif cmd.startswith('--install-'):
                     if len(argv) < 1:
                         raise SJConfCLI.BadParam(cmd)
