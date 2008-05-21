@@ -1,8 +1,8 @@
-sjconf (1.3.0~dev-1) unstable; urgency=low
+sjconf (1.3.0-1) unstable; urgency=low
 
   * New release.
 
- -- Jean-Philippe Garcia Ballester <jeanphilippe.garciaballester@smartjog.com>  Thu, 24 Apr 2008 12:55:36 +0200
+ -- Jean-Philippe Garcia Ballester <jeanphilippe.garciaballester@smartjog.com>  Wed, 21 May 2008 17:57:47 +0200
 
 sjconf (1.2.0-1) unstable; urgency=low
 
