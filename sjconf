@@ -125,7 +125,7 @@ class SJConfCLI:
                 elif cmd == '--remove-from-sequence':
                     self.sequence_removes.append(self._get_params(argv, 3))
                 elif cmd == '--delete-section':
-                    self.delete_sections += self._get_params(argv, 1)
+                    self.delete_sections.append(self._get_params(argv, 1))
                 elif cmd == '--delete-key':
                     self.delete_keys += [self._get_params(argv, 2)]
                 elif cmd.startswith('--install-'):
