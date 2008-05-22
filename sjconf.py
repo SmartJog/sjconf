@@ -68,6 +68,7 @@ class SJConf:
             plugins = self._plugins_load()
         plugins_hash = dict([(plugin.name(), plugin) for plugin in plugins])
         if 'all' in services_to_restart:
+            services_to_restart.remove('all')
             for plugin_name in plugins_hash.keys():
                 if not plugin_name in services_to_restart:
                     services_to_restart.append(plugin_name)
