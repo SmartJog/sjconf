@@ -4,7 +4,7 @@ import glob, setuptools
 
 setuptools.setup(
         name = 'sjconf',
-        version = '1.3.1~dev',
+        version = '1.3.1',
         scripts = ['sjconf'],
         py_modules = ['sjconf'],
         packages = ['sjconfparts'],
