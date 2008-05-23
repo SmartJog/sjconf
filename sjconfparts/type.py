@@ -63,7 +63,7 @@ class Type(TypePythonIsCrappy):
     class List:
 
         @classmethod
-        def value(xcls, value, key, dict_str, dict_type):
+        def value(xcls, value, dict_str, dict_type, key):
             def conversion_method():
                 Type.List.list_to_str(dict_type, dict_str, key)
             return ConversionList(conversion_method, value)
