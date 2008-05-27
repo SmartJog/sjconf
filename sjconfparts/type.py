@@ -182,6 +182,7 @@ class Type(TypePythonIsCrappy):
         @classmethod
         def key_for_search(xcls, key):
             if not hasattr(key, 'search'):
+                key = xcls.key(key)
                 key = re.compile('^%s(-\d+)?$' % (key))
             return key
 
