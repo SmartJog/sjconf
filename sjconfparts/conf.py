@@ -82,6 +82,16 @@ class Conf:
                 if type:
                     Type.convert('str', type, self.dict, self.type_values, key)
 
+        def update(self, other_dict):
+            for (key, value) in other_dict.iteritems():
+                if hasattr(other_dict, 'get_type'):
+                    type = other_dict._find_type_for(key)
+                    if type:
+                        self.set_type(key, type)
+                        key = Type.convert_key(key, type) + '_' + type
+                        value = other_dict[key]
+                self[key] = value
+
         def set_type(self, key, type):
             self.types[Type.convert_key_for_search(key, type)] = type
             keys = [key_matched for key_matched in self.dict if self._find_type_for(key_matched) == type]
