@@ -52,6 +52,10 @@ class Type(TypePythonIsCrappy):
         return xcls._convert_method('value', value, type, dict_str, dict_type, key)
 
     @classmethod
+    def convert_key_for_search(xcls, key, type):
+        return xcls._convert_method('key_for_search', key, type)
+
+    @classmethod
     def _convert_method(xcls, method, value, type, *args):
         type_class = getattr(xcls, type.capitalize())
         if not hasattr(type_class, method):
@@ -170,6 +174,13 @@ class Type(TypePythonIsCrappy):
 
         @classmethod
         def key(xcls, key):
+            match_results = re.compile('^(.*)-\d+$').match(key)
+            if match_results:
+                key = match_results.group(1)
+            return key
+
+        @classmethod
+        def key_for_search(xcls, key):
             if not hasattr(key, 'search'):
                 key = re.compile('^%s(-\d+)?$' % (key))
             return key
@@ -185,9 +196,7 @@ class Type(TypePythonIsCrappy):
             def conversion_method():
                 Type.Sequence.sequence_to_str(dict_dest, dict_source, key)
             str_object = []
-            match_results = re.compile('^(.*)-\d+$').match(key)
-            if match_results:
-                key = match_results.group(1)
+            key = xcls.key(key)
             regexp = re.compile('^%s-\d+$' % (key))
             for (key_to_test, value) in dict_source.iteritems():
                 if key_to_test == key or regexp.match(key_to_test):
@@ -199,9 +208,7 @@ class Type(TypePythonIsCrappy):
 
         @classmethod
         def sequence_to_str(xcls, dict_source, dict_dest, key):
-            match_results = re.compile('^(.*)-\d+$').match(key)
-            if match_results:
-                key = match_results.group(1)
+            key = xcls.key(key)
             sequence_object = list(dict_source[key])
             str_keys = []
             regexp = re.compile('^%s-\d+$' % (key))

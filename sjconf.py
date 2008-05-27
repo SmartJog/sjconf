@@ -105,7 +105,7 @@ class SJConf:
 
     def sequence_add(self, section, key, value):
         conf = self.confs['local']
-        regexp = Type.Sequence.key(key)
+        regexp = Type.Sequence.key_for_search(key)
         old_keys = dict([(key_to_test, value_to_test) for (key_to_test, value_to_test) in conf[section].iteritems() if regexp.match(key_to_test)])
         self._generic_list_add(section, key, 'sequence', value)
         new_keys = dict([(key_to_test, value_to_test) for (key_to_test, value_to_test) in conf[section].iteritems() if regexp.match(key_to_test)])
