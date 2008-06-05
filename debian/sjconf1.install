@@ -1,3 +1,4 @@
 debian/tmp/usr/bin
 debian/tmp/etc/smartjog
 debian/tmp/var/lib/sjconf
+debian/tmp/usr/share/man

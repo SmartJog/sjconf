@@ -25,6 +25,7 @@ sjconftemplatesconfdir=$sjconfconfdir/templates
 AC_SUBST([sjconftemplatesconfdir])
 
 AC_CONFIG_FILES([Makefile \
+                 doc/Makefile \
                  conf/Makefile \
                  conf/base/Makefile \
                  conf/custom/Makefile \

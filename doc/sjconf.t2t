@@ -1,0 +1,155 @@
+SJCONF
+sjconf
+%%mtime
+
+%!target : man
+%!encoding : utf-8
+%!postproc(man): "^(\.TH.*) 1 "  "\1 8 "
+
+= NAME =
+
+sjconf - system configuration wrapper
+
+= DESCRIPTION =
+
+sjconf is a configuration wrapper that handles global and server specific configuration, deployment and service restart.
+
+sjconf in itself does not have any knowledge of configuration files and their settings, everything is done through the use of plugins.
+
+sjconf is based on three level of configuration files:
+
+  - The first level is the "base" directory. It contains one file per plugin. Deploying configuration with only this configuration *must* result in a configuration strictly jjequivalent to the program's default one. For example, a plugin configuring /etc/apt/sources.list must put only the one given by a default debian installation.
+
+  - The second level is the "<distrib>.conf" file, where <distrib> must be replaced by the value of the "distrib" configuration variable in /etc/sjconf/sjconf.conf. This configuration file must be provided by a unique sjconf-<distrib> package. It provides configuration shared amongst all computers of the same kind. For example, there should be a package sjconf-rxtx providing default configuration for a classic rxtx. A configuration value in this file will overwrite the value defined in a configuration file "base" directory.
+
+  - The third level of configuration is the "local.conf" file. It is not and must not be provided by any debian package. This configuration file is the local host specific configuration. It contains for example the hostname of the computer. A configuration value in this file will overwrite the value defined in a configuration file "base" directory and the value defined in the "<distrib>.conf" file.
+
+
+A plugin will only be given configuration section that have either exactly the name of the plugin, or start with the plugin name and a colon, so be careful when you add a new section to name it correctly.
+
+sjconf is based on templates, that is, the generated configuration file is generally a template file where variables have been substituted by their value in the configuration file. Be aware, however, that some magic may be done by sjconf or the plugin: some variables may be generated from the values. Do not trust the template to know which variables can be modified in the "local.conf" file, trust instead the plugin's documentation.
+
+Note than using templates is not mandatory: plugins may as well generate the whole configuration file.
+
+= OPTIONS =
+
+When run without options, sjconf will output the content of the local.conf file.
+
+: **-e**
+Open local.conf in $EDITOR.
+
+: --**version**
+Print version and exit.
+
+: --**diff**
+Show "diff -u" between old and new configuration files.
+
+: --**save**
+Save modification (mandatory to deploy).
+
+: --**deploy**
+Deploy configuration.
+
+: --**restart** //<plugin>// | //all//
+Restart all services of "plugin". If "plugin" is "all", then restart all services of all plugins.
+
+: --**set** //<section>// //<key>// //<value>//
+Set a configuration key in "local.conf".
+
+: --**add-to-list** //<section>// //<key>// //<value>//
+Add a value to a configuration key, provided the key is of type "list" (see below).
+
+: --**remove-from-list** //<section>// //<key>// //<value>//
+Remove a value from a configuration key, provided the key is of type "list" (see below).
+
+: --**add-to-sequence** //<section>// //<key>// //<value>//
+Add a value to a configuration key, provided the key is of type "sequence" (see below).
+
+: --**remove-from-sequence** //<section>// //<key>// //<value>//
+Remove a value from a configuration key, provided the key is of type "sequence" (see below).
+
+: --**delete-key** //<section>// //<key>//
+Delete a key within a section.
+
+: --**delete-section** //<section>//
+Delete a complete section.
+
+: --**install-plugin** [//--link//] //<plugin>//
+Install "plugin" into the plugins path; if --link is given, use a symbolic link.
+
+: --**uninstall-plugin** //<plugin>//
+Uninstall "plugin" from the plugins path.
+
+: --**enable-plugin** //<plugin>//
+Add "plugin" to the list of plugins to use.
+
+: --**disable-plugin** //<plugin>//
+Remove "plugin" from the list of plugins to use.
+
+: --**list-plugins**
+List installed plugins.
+
+: --**install-template** [//--link//] //<template>//
+Install "template" into the templates path; if --link is given, use a symbolic link.
+
+: --**uninstall-template** //<template>//
+Uninstall "plugin" from the templates path.
+
+: --**install-conf** [//--link//] //<conf>//
+Install "conf" into the "base" configuration directory; if --link is given, use a symbolic link.
+
+: --**uninstall-conf** //<conf>//
+Uninstall "conf" from the base.conf file, "conf" should be the basename of a conf file previously installed.
+
+: --**install-distrib** [//--link//] //<distrib>//
+Install "distrib" file into the configuration directory; if --link is given, use a symbolic link.
+
+: --**uninstall-distrib** //<distrib>//
+Uninstall "distrib" file, "distrib" should be the basename of a distrib file previously installed.
+
+: --**enable-distrib** //<distrib>//
+Use the distrib "distrib".
+
+: --**disable-distrib** //<distrib>//
+Do not use the distrib "distrib".
+
+
+= TYPES =
+
+sjconf has an internal system for handling configuration option types. That is, provided the plugins handles it, sjconf can convert the string value to an internal Python object, thus allowing easy transformations.
+
+To know if a configuration option is of a specific type, please read the manual page of the plugin.
+
+== BOOL ==
+
+The **bool** type converts values to/from boolean.
+
+The following value are converted to //true//.
+
+  //yes//, //on//, //true//, //enabled//, //enable//
+
+The following value are converted to //false//.
+
+  //"no//, //off//, //false//, //disabled//, //disable//
+
+== SIZE ==
+
+The **size** type converts values to integer. The value must be of the form //<number><suffix>//, where suffix must be one of:
+
+  //k//, //M//, //G//, //T//
+
+== LIST ==
+
+The list type converts comma separated list. Spaces around commas are automatically removed.
+
+There exists convenient options to deal with the list type from a user's point of view, see the OPTIONS section above.
+
+== SEQUENCE ==
+
+The sequence type converts list spread over multiple options. If a key is typed sequence by a plugin, then all keys of the form //<key>-<number>// will be added to the list, sorted ascendently using //<number>//. The numbers need not to be succesive.
+
+There exists convenient options to deal with the sequence type from a user's point of view, see the OPTIONS section above.
+
+= AUTHOR =
+
+The sjconf program and this manual page have been written by the **SmartJog** company.

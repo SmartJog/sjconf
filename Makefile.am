@@ -1,4 +1,4 @@
-SUBDIRS = conf
+SUBDIRS = doc conf
 
 sjconfpluginslocalstate_DATA =
 
