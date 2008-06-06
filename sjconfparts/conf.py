@@ -26,6 +26,10 @@ class Conf:
         def optionxform(self, optionstr):
             return optionstr
 
+    class RawConfigParser(ConfigParser.RawConfigParser):
+        def optionxform(self, optionstr):
+            return optionstr
+
     class ConfSection:
         def __init__(self, dictionary = {}):
             self.dict = dict(dictionary)
@@ -112,12 +116,16 @@ class Conf:
         def __getattr__(self, *args, **kw):
             return getattr(self.dict, *args, **kw)
 
-    def __init__(self, dictionary = {}, file_path = None, conf_section_class = ConfSection):
+    def __init__(self, dictionary = {}, file_path = None, conf_section_class = ConfSection, parser_type = 'magic'):
         self.conf_section_class = conf_section_class
         self.dict = dict({})
         self.file_path = file_path
         self.comments = None
         self.types = {}
+        if parser_type == 'raw':
+            self.config_parser_class = Conf.RawConfigParser
+        else:
+            self.config_parser_class = Conf.SafeConfigParser
         if self.file_path:
             self.load()
         elif dictionary:
@@ -169,7 +177,7 @@ class Conf:
                 raise IOError(errno.ENOENT, "%s: %s" % (self.file_path, os.strerror(errno.ENOENT)))
             elif os.path.isdir(file_path):
                 raise IOError(errno.EISDIR, "%s: %s" % (self.file_path, os.strerror(errno.EISDIR)))
-            cp = Conf.SafeConfigParser()
+            cp = self.config_parser_class()
             cp.read(file_path)
             for section in cp.sections():
                 self.dict[section] = self.conf_section_class(cp.items(section))
@@ -183,7 +191,7 @@ class Conf:
             for comment in self.comments.split('\n'):
                output_file.write('# ' + comment + '\n')
             output_file.write('\n')
-        cp = Conf.SafeConfigParser()
+        cp = self.config_parser_class()
         for section in self.dict:
             cp.add_section(section)
             for (key, value) in self.dict[section].iteritems():

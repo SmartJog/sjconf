@@ -2,6 +2,7 @@ Version 1.4.0~dev
 
 	* Improve building system: use autotools instead of setup.py.
 	* Add sjconf manual page. Closes: #820.
+	* Allow “%” in local.conf. Closes: #822.
 
 Version 1.3.3 Released on 2008/05/27
 

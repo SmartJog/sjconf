@@ -20,18 +20,18 @@ class SJConf:
         self.base_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['base_dir'])
 
         conf_files = {}
-        conf_files['base'] = 'base'
+        conf_files['base'] = ['base', 'magic']
         distrib = self.confs_internal['sjconf']['conf']['distrib']
         if distrib != '':
-            conf_files['distrib'] = distrib
-        conf_files['local'] = 'local'
+            conf_files['distrib'] = [distrib, 'magic']
+        conf_files['local'] = ['local', 'raw']
 
         self.confs = {}
         for conf in conf_files:
-            conf_file_path = os.path.realpath(self.base_dir + '/' + conf_files[conf])
+            conf_file_path = os.path.realpath(self.base_dir + '/' + conf_files[conf][0])
             if not os.path.exists(conf_file_path):
                 conf_file_path += '.conf'
-            self.confs[conf] = Conf(file_path = conf_file_path)
+            self.confs[conf] = Conf(file_path = conf_file_path, parser_type = conf_files[conf][1])
 
         self.temp_file_path = "/tmp/sjconf_tempfile.conf"
 
