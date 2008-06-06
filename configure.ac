@@ -30,6 +30,7 @@ AC_CONFIG_FILES([Makefile \
                  conf/base/Makefile \
                  conf/custom/Makefile \
                  conf/templates/Makefile \
+                 setup.py \
                  sjconf \
                  ])
 
