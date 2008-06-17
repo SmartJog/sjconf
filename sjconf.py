@@ -14,7 +14,6 @@ class SJConf:
 
         self.confs_internal = {'sjconf' : Conf(file_path = sjconf_file_path)}
         self.confs_internal['sjconf'].set_type('conf', 'plugins', 'list')
-        self.confs_internal['sjconf'].set_type('conf', 'profiles', 'sequence')
 
         self.backup_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()))
         self.etc_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['etc_dir'])
@@ -212,26 +211,29 @@ class SJConf:
 
     def profile_enable(self, profile_to_enable, level = 1):
         # ensure the profile in installed
+        self._load_conf_local()
         self._file_path('profile', profile_to_enable)
         enabled_level =  self._profile_level(profile_to_enable)
         if enabled_level != None:
             raise ProfileAlreadyEnabledError(profile_to_enable, enabled_level)
         key = 'profiles-' + str(level)
-        self.confs_internal['sjconf']['conf'].setdefault(key, '')
-        Type.convert('str', 'list', self.confs_internal['sjconf']['conf'], {}, key)[key].append(profile_to_enable)
-        self.confs_internal['sjconf'].save()
+        self.confs['local'].setdefault('sjconf', Conf.ConfSection())
+        self.confs['local']['sjconf'].setdefault(key, '')
+        Type.convert('str', 'list', self.confs['local']['sjconf'], {}, key)[key].append(profile_to_enable)
+        self.confs['local'].save()
 
     def profile_disable(self, profile_to_disable):
+        self._load_conf_local()
         # ensure the profile in installed
         self._file_path('profile', profile_to_disable)
         level = self._profile_level(profile_to_disable)
         if level == None:
             raise ProfileNotEnabledError(profile_to_disable)
         key = 'profiles-' + str(level)
-        Type.convert('str', 'list', self.confs_internal['sjconf']['conf'], {}, key)[key].remove(profile_to_disable)
-        if self.confs_internal['sjconf']['conf'][key] == '':
-            del self.confs_internal['sjconf']['conf'][key]
-        self.confs_internal['sjconf'].save()
+        Type.convert('str', 'list', self.confs['local']['sjconf'], {}, key)[key].remove(profile_to_disable)
+        if self.confs['local']['sjconf'][key] == '':
+            del self.confs['local']['sjconf'][key]
+        self.confs['local'].save()
 
     def plugins_list(self, plugins_to_list = None):
         if plugins_to_list == None:
@@ -378,13 +380,14 @@ class SJConf:
             self.confs = {}
         if not 'local' in self.confs or force:
             self.confs['local'] = self._load_conf_part('local', 'raw')
+            self.confs['local'].set_type('sjconf', 'profiles', 'sequence')
 
     def _load_conf_profile(self, force = False):
         if not self.confs:
             self.confs = {}
         self._load_conf_local(force)
-        if not 'profile' in self.confs or force:
-            self.confs['profile'] = self._load_conf([[('profiles/' + profile, 'magic') for profile in Type.convert('str', 'list', {'profiles' : profiles}, {}, 'profiles')['profiles']] for profiles in self.confs_internal['sjconf']['conf']['profiles_sequence']], self.confs['local'])
+        if (not 'profile' in self.confs or force) and 'sjconf' in self.confs['local']:
+            self.confs['profile'] = self._load_conf([[('profiles/' + profile, 'magic') for profile in Type.convert('str', 'list', {'profiles' : profiles}, {}, 'profiles')['profiles']] for profiles in self.confs['local']['sjconf']['profiles_sequence']], self.confs['local'])
 
     def _load_conf_base(self, force = False):
         if not self.confs:
@@ -445,10 +448,13 @@ class SJConf:
                         raise Conf.ProfileConflictError(conf_part_name, other_conf_part_name, section, key)
 
     def _profile_level(self, profile):
+        self._load_conf_local()
         regexp = re.compile('^profiles-(\d+)$')
-        for key in self.confs_internal['sjconf']['conf']:
+        if not 'sjconf' in self.confs['local']:
+            return None
+        for key in self.confs['local']['sjconf']:
             match_results = regexp.match(key)
-            if match_results and profile in Type.convert('str', 'list', self.confs_internal['sjconf']['conf'], {}, key)[key]:
+            if match_results and profile in Type.convert('str', 'list', self.confs['local']['sjconf'], {}, key)[key]:
                 return int(match_results.group(1))
         return None
 
