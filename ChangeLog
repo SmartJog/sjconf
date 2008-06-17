@@ -3,7 +3,9 @@ Version 1.4.0~dev
 	* Improve building system: use autotools instead of setup.py.
 	* Add sjconf manual page. Closes: #820.
 	* Allow “%” in local.conf. Closes: #822.
-	* Distrib is now multi-level and a level can have several distributions. Closes: #826.
+	* Rename “distrib” to “profile” since the latter is much more appropriate to
+	the actual semantic in sjconf.
+	* Profiles are now multi-level and a level can have several profiles. Closes: #826.
 
 Version 1.3.3 Released on 2008/05/27
 

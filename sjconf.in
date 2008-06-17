@@ -32,8 +32,8 @@ class SJConfCLI:
         self.files_to_uninstall = []
         self.plugins_to_enable = []
         self.plugins_to_disable = []
-        self.distribs_to_enable = []
-        self.distribs_to_disable = []
+        self.profiles_to_enable = []
+        self.profiles_to_disable = []
         self.services_to_restart = []
         self.changes = False
         self.quiet = False
@@ -74,10 +74,10 @@ class SJConfCLI:
         --uninstall-template template            : uninstall “plugin” from the templates path
         --install-conf [--link] conf             : install “conf” into the “base” configuration directory; if --link is given, use a symbolic link
         --uninstall-conf conf                    : uninstall “conf” from the base.conf file, “conf” should be the basename of a conf file previously installed
-        --install-distrib [--link] distrib       : install “distrib” file into the configuration directory; if --link is given, use a symbolic link
-        --uninstall-distrib distrib              : uninstall “distrib” file, “distrib” should be the basename of a distrib file previously installed
-        --enable-distrib distrib level           : enable the distrib “distrib” at level “level”
-        --disable-distrib distrib                : disable the distrib “distrib”
+        --install-profile [--link] profile       : install “profile” file into the configuration directory; if --link is given, use a symbolic link
+        --uninstall-profile profile              : uninstall “profile” file, “profile” should be the basename of a profile file previously installed
+        --enable-profile profile level           : enable the profile “profile” at level “level”
+        --disable-profile profile                : disable the profile “profile”
 ''' % (bin)
         if exit_code:
             self._my_print("No modification done on configuration")
@@ -96,7 +96,7 @@ class SJConfCLI:
                 elif cmd == '--version':
                     print os.path.basename(bin), SJConfCLI.VERSION
                     print 'Copyright © 2008 SmartJog'
-                    print 'This is proprietary software, you are not allowed to change nor redistribute it.'
+                    print 'This is proprietary software, you are not allowed to change nor reprofileute it.'
                     sys.exit(0)
                 elif cmd == '--deploy':
                     self.deploy = True
@@ -141,10 +141,10 @@ class SJConfCLI:
                     self.plugins_to_disable += self._get_params(argv, 1)
                 elif cmd == '--list-plugins':
                     self.plugins_list = True
-                elif cmd == '--enable-distrib':
-                    self.distribs_to_enable.append(self._get_params(argv, 2))
-                elif cmd == '--disable-distrib':
-                    self.distribs_to_disable += self._get_params(argv, 1)
+                elif cmd == '--enable-profile':
+                    self.profiles_to_enable.append(self._get_params(argv, 2))
+                elif cmd == '--disable-profile':
+                    self.profiles_to_disable += self._get_params(argv, 1)
                 else:
                     print 'Incorrect command : %s\n' % cmd
                     self._usage(bin, 1)
@@ -208,13 +208,13 @@ class SJConfCLI:
                             self._my_print('      Enabled: %s' % (sjconf.Type.Bool.bool_to_str(dependency, {}, 'is_enabled')['is_enabled']))
                         self._my_print('      State: %s' % ((dependency['state'] == True and 'OK') or 'Error: ' + str(dependency['state'])))
 
-        if self.distribs_to_enable:
-            for self.distrib_to_enable in self.distribs_to_enable:
-                self.sjconf.distrib_enable(*self.distrib_to_enable)
+        if self.profiles_to_enable:
+            for self.profile_to_enable in self.profiles_to_enable:
+                self.sjconf.profile_enable(*self.profile_to_enable)
 
-        if self.distribs_to_disable:
-            for self.distrib_to_disable in self.distribs_to_disable:
-                self.sjconf.distrib_disable(self.distrib_to_disable)
+        if self.profiles_to_disable:
+            for self.profile_to_disable in self.profiles_to_disable:
+                self.sjconf.profile_disable(self.profile_to_disable)
 
         if self.get:
             if self.get[0] in self.sjconf.confs['local'] and self.get[1] in self.sjconf.confs['local'][self.get[0]]:

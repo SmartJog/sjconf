@@ -18,8 +18,8 @@ AC_SUBST([sjconfconfdir])
 sjconfbaseconfdir=$sjconfconfdir/base
 AC_SUBST([sjconfbaseconfdir])
 
-sjconfdistribconfdir=$sjconfconfdir/distrib
-AC_SUBST([sjconfdistribconfdir])
+sjconfprofilesconfdir=$sjconfconfdir/profiles
+AC_SUBST([sjconfprofilesconfdir])
 
 sjconfcustomconfdir=$sjconfconfdir/custom
 AC_SUBST([sjconfcustomconfdir])
@@ -31,7 +31,7 @@ AC_CONFIG_FILES([Makefile \
                  doc/Makefile \
                  conf/Makefile \
                  conf/base/Makefile \
-                 conf/distrib/Makefile \
+                 conf/profiles/Makefile \
                  conf/custom/Makefile \
                  conf/templates/Makefile \
                  setup.py \

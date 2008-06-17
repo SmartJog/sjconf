@@ -14,7 +14,7 @@ class SJConf:
 
         self.confs_internal = {'sjconf' : Conf(file_path = sjconf_file_path)}
         self.confs_internal['sjconf'].set_type('conf', 'plugins', 'list')
-        self.confs_internal['sjconf'].set_type('conf', 'distrib', 'sequence')
+        self.confs_internal['sjconf'].set_type('conf', 'profiles', 'sequence')
 
         self.backup_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()))
         self.etc_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['etc_dir'])
@@ -28,9 +28,9 @@ class SJConf:
             'plugin' : os.path.realpath(self.confs_internal['sjconf']['conf']['plugins_path']),
             'template' : os.path.realpath(self.confs_internal['sjconf']['conf']['templates_path']),
             'conf' : self.base_dir + '/base',
-            'distrib' : self.base_dir + '/distrib'
+            'profile' : self.base_dir + '/profiles'
         }
-        self.files_extensions = {'plugin' : ('.py',), 'template' : ('.conf',), 'conf' : ('.conf',), 'distrib' : ('.conf',)}
+        self.files_extensions = {'plugin' : ('.py',), 'template' : ('.conf',), 'conf' : ('.conf',), 'profile' : ('.conf',)}
 
         sys.path.append(self.files_path['plugin'])
 
@@ -40,8 +40,8 @@ class SJConf:
     def conf(self):
         self._load_confs()
         conf = Conf(self.confs['base'])
-        if 'distrib' in self.confs:
-            conf.update(self.confs['distrib'])
+        if 'profile' in self.confs:
+            conf.update(self.confs['profile'])
         conf.update(self.confs['local'])
         return conf
 
@@ -210,25 +210,25 @@ class SJConf:
             raise Plugin.NotEnabledError(plugin_to_disable)
         self.confs_internal['sjconf'].save()
 
-    def distrib_enable(self, distrib_to_enable, level = 1):
-        # ensure the distrib in installed
-        self._file_path('distrib', distrib_to_enable)
-        enabled_level =  self._distrib_level(distrib_to_enable)
+    def profile_enable(self, profile_to_enable, level = 1):
+        # ensure the profile in installed
+        self._file_path('profile', profile_to_enable)
+        enabled_level =  self._profile_level(profile_to_enable)
         if enabled_level != None:
-            raise DistribAlreadyEnabledError(distrib_to_enable, enabled_level)
-        key = 'distrib-' + str(level)
+            raise ProfileAlreadyEnabledError(profile_to_enable, enabled_level)
+        key = 'profiles-' + str(level)
         self.confs_internal['sjconf']['conf'].setdefault(key, '')
-        Type.convert('str', 'list', self.confs_internal['sjconf']['conf'], {}, key)[key].append(distrib_to_enable)
+        Type.convert('str', 'list', self.confs_internal['sjconf']['conf'], {}, key)[key].append(profile_to_enable)
         self.confs_internal['sjconf'].save()
 
-    def distrib_disable(self, distrib_to_disable):
-        # ensure the distrib in installed
-        self._file_path('distrib', distrib_to_disable)
-        level = self._distrib_level(distrib_to_disable)
+    def profile_disable(self, profile_to_disable):
+        # ensure the profile in installed
+        self._file_path('profile', profile_to_disable)
+        level = self._profile_level(profile_to_disable)
         if level == None:
-            raise DistribNotEnabledError(distrib_to_disable)
-        key = 'distrib-' + str(level)
-        Type.convert('str', 'list', self.confs_internal['sjconf']['conf'], {}, key)[key].remove(distrib_to_disable)
+            raise ProfileNotEnabledError(profile_to_disable)
+        key = 'profiles-' + str(level)
+        Type.convert('str', 'list', self.confs_internal['sjconf']['conf'], {}, key)[key].remove(profile_to_disable)
         if self.confs_internal['sjconf']['conf'][key] == '':
             del self.confs_internal['sjconf']['conf'][key]
         self.confs_internal['sjconf'].save()
@@ -370,7 +370,7 @@ class SJConf:
 
     def _load_confs(self, force = False):
         self._load_conf_local(force)
-        self._load_conf_distrib(force)
+        self._load_conf_profile(force)
         self._load_conf_base(force)
 
     def _load_conf_local(self, force = False):
@@ -379,12 +379,12 @@ class SJConf:
         if not 'local' in self.confs or force:
             self.confs['local'] = self._load_conf_part('local', 'raw')
 
-    def _load_conf_distrib(self, force = False):
+    def _load_conf_profile(self, force = False):
         if not self.confs:
             self.confs = {}
         self._load_conf_local(force)
-        if not 'distrib' in self.confs or force:
-            self.confs['distrib'] = self._load_conf([[('distrib/' + distrib, 'magic') for distrib in Type.convert('str', 'list', {'distrib' : distrib}, {}, 'distrib')['distrib']] for distrib in self.confs_internal['sjconf']['conf']['distrib_sequence']], self.confs['local'])
+        if not 'profile' in self.confs or force:
+            self.confs['profile'] = self._load_conf([[('profiles/' + profile, 'magic') for profile in Type.convert('str', 'list', {'profiles' : profiles}, {}, 'profiles')['profiles']] for profiles in self.confs_internal['sjconf']['conf']['profiles_sequence']], self.confs['local'])
 
     def _load_conf_base(self, force = False):
         if not self.confs:
@@ -442,13 +442,13 @@ class SJConf:
                     if not self._overriden_in_level(conf_level_parts, section, key):
                         conf_part_name = os.path.basename(conf_part.file_path).replace('.conf', '')
                         other_conf_part_name = os.path.basename(other_conf_part.file_path).replace('.conf', '')
-                        raise Conf.DistribConflictError(conf_part_name, other_conf_part_name, section, key)
+                        raise Conf.ProfileConflictError(conf_part_name, other_conf_part_name, section, key)
 
-    def _distrib_level(self, distrib):
-        regexp = re.compile('^distrib-(\d+)$')
+    def _profile_level(self, profile):
+        regexp = re.compile('^profiles-(\d+)$')
         for key in self.confs_internal['sjconf']['conf']:
             match_results = regexp.match(key)
-            if match_results and distrib in Type.convert('str', 'list', self.confs_internal['sjconf']['conf'], {}, key)[key]:
+            if match_results and profile in Type.convert('str', 'list', self.confs_internal['sjconf']['conf'], {}, key)[key]:
                 return int(match_results.group(1))
         return None
 
@@ -503,8 +503,8 @@ class SJConf:
             conf[section][key_typed]
         except KeyError:
             confs_to_test = ['base']
-            if 'distrib' in self.confs:
-                confs_to_test.append('distrib')
+            if 'profile' in self.confs:
+                confs_to_test.append('profile')
             for conf_to_test in confs_to_test:
                 self.confs[conf_to_test].set_type(section, key, type)
                 if section in self.confs[conf_to_test]:

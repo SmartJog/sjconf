@@ -22,9 +22,9 @@ class Conf:
         def __init__(self, section, conf_file):
             self.msg = 'Unauthorized section "%s": all sections should be either "%s" or "%s:<subsection>"' % (section, conf_file, conf_file)
 
-    class DistribConflictError(Error):
+    class ProfileConflictError(Error):
         def __init__(self, conf_name1, conf_name2, section, key):
-            self.msg = 'The distributions "%s" and "%s" are enabled on the same level, but have a conflicting value for key "%s" in section "%s", please set it to the appropriate value in local.conf or disable one of the distributions' % (conf_name1, conf_name2, key, section)
+            self.msg = 'The profiles "%s" and "%s" are enabled on the same level, but have a conflicting value for key "%s" in section "%s", please set it to the appropriate value in local.conf or disable one of the profiles' % (conf_name1, conf_name2, key, section)
 
     class SafeConfigParser(ConfigParser.SafeConfigParser):
         def optionxform(self, optionstr):
