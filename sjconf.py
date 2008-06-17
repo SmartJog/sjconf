@@ -20,7 +20,7 @@ class SJConf:
         self.etc_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['etc_dir'])
         self.base_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['base_dir'])
 
-        self.confs = self._load_confs()
+        self.confs = None
 
         self.temp_file_path = "/tmp/sjconf_tempfile.conf"
 
@@ -38,6 +38,7 @@ class SJConf:
         self.logger = logger
 
     def conf(self):
+        self._load_confs()
         conf = Conf(self.confs['base'])
         if 'distrib' in self.confs:
             conf.update(self.confs['distrib'])
@@ -65,34 +66,40 @@ class SJConf:
             plugins_hash[service_to_restart].restart_all_services()
 
     def delete_section(self, section):
+        self._load_conf_local()
         conf = self.confs['local']
         if section in conf:
             del(conf[section])
         self._logger('delete section : %s' % (section))
 
     def delete_key(self, section, key):
+        self._load_conf_local()
         conf = self.confs['local']
         if section in conf and key in conf[section]:
                 del(conf[section][key])
         self._logger('delete key     : %s: %s' % (section, key))
 
     def set(self, section, key, value):
+        self._load_conf_local()
         conf = self.confs['local']
         conf.setdefault(section, conf.conf_section_class({}))
         conf[section][key] = value
         self._logger('set            : %s: %s = %s' % (section, key, value))
 
     def list_add(self, section, key, value):
+        self._load_conf_local()
         conf = self.confs['local']
         self._generic_list_add(section, key, 'list', value)
         self._logger('set            : %s: %s = %s' % (section, key, conf[section][key]))
 
     def list_remove(self, section, key, value):
+        self._load_conf_local()
         conf = self.confs['local']
         self._generic_list_remove(section, key, 'list', value)
         self._logger('set            : %s: %s = %s' % (section, key, conf[section][key]))
 
     def sequence_add(self, section, key, value):
+        self._load_conf_local()
         conf = self.confs['local']
         regexp = Type.Sequence.key_for_search(key)
         old_keys = dict([(key_to_test, value_to_test) for (key_to_test, value_to_test) in conf[section].iteritems() if regexp.match(key_to_test)])
@@ -101,6 +108,7 @@ class SJConf:
         self._sequence_diff(section, key, old_keys, new_keys)
 
     def sequence_remove(self, section, key, value):
+        self._load_conf_local()
         conf = self.confs['local']
         regexp = re.compile('^%s-\d+$' % (key))
         old_keys = dict([(key_to_test, value_to_test) for (key_to_test, value_to_test) in conf[section].iteritems() if regexp.match(key_to_test)])
@@ -109,6 +117,7 @@ class SJConf:
         self._sequence_diff(section, key, old_keys, new_keys)
 
     def apply_conf_modifications(self, temp = False, **kw):
+        self._load_conf_local()
         conf = self.confs['local']
         for (key, value) in kw.items(): # We use “items” since we are modifying the dictionary
             if len(value) == 0:
@@ -237,6 +246,7 @@ class SJConf:
         return plugins_list
 
     def backup_files(self, files_to_backup = None, plugins = None):
+        self._load_conf_local()
         if files_to_backup == None:
             if plugins == None:
                 plugins = self._plugins_load()
@@ -358,12 +368,29 @@ class SJConf:
                 except shutil.Error, exception:
                     raise RestoreError(exception, self.backup_dir)
 
-    def _load_confs(self):
-        confs = {}
-        confs['local'] = self._load_conf_part('local', 'raw')
-        confs['distrib'] = self._load_conf([[('distrib/' + distrib, 'magic') for distrib in Type.convert('str', 'list', {'distrib' : distrib}, {}, 'distrib')['distrib']] for distrib in self.confs_internal['sjconf']['conf']['distrib_sequence']], confs['local'])
-        confs['base'] = self._load_conf_part('base', 'magic')
-        return confs
+    def _load_confs(self, force = False):
+        self._load_conf_local(force)
+        self._load_conf_distrib(force)
+        self._load_conf_base(force)
+
+    def _load_conf_local(self, force = False):
+        if not self.confs:
+            self.confs = {}
+        if not 'local' in self.confs or force:
+            self.confs['local'] = self._load_conf_part('local', 'raw')
+
+    def _load_conf_distrib(self, force = False):
+        if not self.confs:
+            self.confs = {}
+        self._load_conf_local(force)
+        if not 'distrib' in self.confs or force:
+            self.confs['distrib'] = self._load_conf([[('distrib/' + distrib, 'magic') for distrib in Type.convert('str', 'list', {'distrib' : distrib}, {}, 'distrib')['distrib']] for distrib in self.confs_internal['sjconf']['conf']['distrib_sequence']], self.confs['local'])
+
+    def _load_conf_base(self, force = False):
+        if not self.confs:
+            self.confs = {}
+        if not 'base' in self.confs or force:
+            self.confs['base'] = self._load_conf_part('base', 'magic')
 
     def _load_conf(self, conf_files, conf_local):
         conf = Conf()
@@ -465,6 +492,8 @@ class SJConf:
         return file_path
 
     def _generic_list_add(self, section, key, type, value):
+        if not self.confs:
+            self._load_confs()
         conf = self.confs['local']
         if section not in conf:
             conf[section] = conf.conf_section_class()
@@ -491,6 +520,8 @@ class SJConf:
         conf[section][key_typed].append(value)
 
     def _generic_list_remove(self, section, key, type, value):
+        if not self.confs:
+            self._load_confs()
         conf = self.confs['local']
         conf.set_type(section, key, type)
         conf[section][key + '_' + type].remove(value)

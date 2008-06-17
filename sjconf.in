@@ -172,6 +172,7 @@ class SJConfCLI:
             self._my_print('')
 
         if self.show_local_conf:
+            self.sjconf._load_conf_local()
             self._my_print(open(self.sjconf.confs['local'].file_path).read())
 
         if self.files_to_install:
