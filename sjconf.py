@@ -201,15 +201,6 @@ class SJConf:
             raise Plugin.NotEnabledError(plugin_to_disable)
         self.confs_internal['sjconf'].save()
 
-    def _distrib_level(self, distrib):
-        regexp = re.compile('^distrib-(\d+)$')
-        for key in self.confs_internal['sjconf']['conf']:
-            match_results = regexp.match(key)
-            if match_results and distrib in Type.convert('str', 'list', self.confs_internal['sjconf']['conf'], {}, key)[key]:
-                return int(match_results.group(1))
-        return None
-
-
     def distrib_enable(self, distrib_to_enable, level = 1):
         # ensure the distrib in installed
         self._file_path('distrib', distrib_to_enable)
@@ -244,6 +235,26 @@ class SJConf:
         for plugin in plugins:
             plugins_list[plugin.name()] = self._plugin_list(plugin, plugins_hash)
         return plugins_list
+
+    def backup_files(self, files_to_backup = None, plugins = None):
+        if files_to_backup == None:
+            if plugins == None:
+                plugins = self._plugins_load()
+            files_to_backup = self._files_to_backup(plugins) + self._conf_files(plugins)
+        self._logger( "Backup folder : %s" % self.backup_dir )
+        os.makedirs(self.backup_dir)
+        os.makedirs(self.backup_dir + '/sjconf/')
+        shutil.copy(self.confs['local'].file_path, self.backup_dir + '/sjconf')
+        # Store all files into a service dedicated folder
+        for file_to_backup in files_to_backup:
+            if not os.path.isfile(file_to_backup.path):
+                continue
+            if not os.path.isdir(self.backup_dir + '/' + file_to_backup.plugin_name):
+                os.makedirs(self.backup_dir + '/' + file_to_backup.plugin_name)
+            file_to_backup.backup_path = self.backup_dir + '/' + file_to_backup.plugin_name + '/' + os.path.basename(file_to_backup.path)
+            shutil.move(file_to_backup.path, file_to_backup.backup_path)
+            file_to_backup.backed_up = True
+        return files_to_backup
 
     def _logger(self, str):
         if self.logger:
@@ -309,26 +320,6 @@ class SJConf:
 
     def _files_to_backup(self, plugins):
         return reduce(lambda files_to_backup, plugin: files_to_backup + plugin.files_to_backup(), plugins, [])
-
-    def backup_files(self, files_to_backup = None, plugins = None):
-        if files_to_backup == None:
-            if plugins == None:
-                plugins = self._plugins_load()
-            files_to_backup = self._files_to_backup(plugins) + self._conf_files(plugins)
-        self._logger( "Backup folder : %s" % self.backup_dir )
-        os.makedirs(self.backup_dir)
-        os.makedirs(self.backup_dir + '/sjconf/')
-        shutil.copy(self.confs['local'].file_path, self.backup_dir + '/sjconf')
-        # Store all files into a service dedicated folder
-        for file_to_backup in files_to_backup:
-            if not os.path.isfile(file_to_backup.path):
-                continue
-            if not os.path.isdir(self.backup_dir + '/' + file_to_backup.plugin_name):
-                os.makedirs(self.backup_dir + '/' + file_to_backup.plugin_name)
-            file_to_backup.backup_path = self.backup_dir + '/' + file_to_backup.plugin_name + '/' + os.path.basename(file_to_backup.path)
-            shutil.move(file_to_backup.path, file_to_backup.backup_path)
-            file_to_backup.backed_up = True
-        return files_to_backup
 
     def _archive_backup(self):
         # Once configuration is saved, we can archive backup into a tgz
@@ -425,6 +416,14 @@ class SJConf:
                         conf_part_name = os.path.basename(conf_part.file_path).replace('.conf', '')
                         other_conf_part_name = os.path.basename(other_conf_part.file_path).replace('.conf', '')
                         raise Conf.DistribConflictError(conf_part_name, other_conf_part_name, section, key)
+
+    def _distrib_level(self, distrib):
+        regexp = re.compile('^distrib-(\d+)$')
+        for key in self.confs_internal['sjconf']['conf']:
+            match_results = regexp.match(key)
+            if match_results and distrib in Type.convert('str', 'list', self.confs_internal['sjconf']['conf'], {}, key)[key]:
+                return int(match_results.group(1))
+        return None
 
     def _apply_confs(self, conf_files = None, plugins = None):
         # Open and write all configuration files
