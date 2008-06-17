@@ -17,12 +17,12 @@ class DistribError(Error):
     pass
 
 class DistribAlreadyEnabledError(DistribError):
-    def __init__(self, distrib_name):
-        self.msg = "A distribution is already enabled: %s" % (distrib_name)
+    def __init__(self, distrib, level):
+        self.msg = "The distribution %s is already enabled at level %s" % (distrib, level)
 
 class DistribNotEnabledError(DistribError):
-    def __init__(self, distrib_name):
-        self.msg = "Distribution not enabled: %s" % (distrib_name)
+    def __init__(self, distrib):
+        self.msg = "The distribution %s is not enabled" % (distrib)
 
 class RestoreError(Error):
     def __init__(self, exception, backup_dir):

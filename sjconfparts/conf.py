@@ -22,6 +22,10 @@ class Conf:
         def __init__(self, section, conf_file):
             self.msg = 'Unauthorized section "%s": all sections should be either "%s" or "%s:<subsection>"' % (section, conf_file, conf_file)
 
+    class DistribConflictError(Error):
+        def __init__(self, conf_name1, conf_name2, section, key):
+            self.msg = 'The distributions "%s" and "%s" are enabled on the same level, but have a conflicting value for key "%s" in section "%s", please set it to the appropriate value in local.conf or disable one of the distributions' % (conf_name1, conf_name2, key, section)
+
     class SafeConfigParser(ConfigParser.SafeConfigParser):
         def optionxform(self, optionstr):
             return optionstr
@@ -150,6 +154,14 @@ class Conf:
         if hasattr(other_dict, 'get_types'):
             for (key, type) in other_dict.get_types().iteritems():
                 self.set_type(self, key, type)
+
+    def update_verify_conflict(self, other_dict):
+        conflicting_values = []
+        for (section_name, section) in self.dict.iteritems():
+            for key, value in section.iteritems():
+                if section_name in other_dict and key in other_dict[section_name] and value != other_dict[section_name][key]:
+                    conflicting_values.append((section_name, key))
+        return conflicting_values
 
     def load_from_dict(self, dictionary):
         for section in dictionary:

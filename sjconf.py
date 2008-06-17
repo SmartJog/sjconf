@@ -14,24 +14,13 @@ class SJConf:
 
         self.confs_internal = {'sjconf' : Conf(file_path = sjconf_file_path)}
         self.confs_internal['sjconf'].set_type('conf', 'plugins', 'list')
+        self.confs_internal['sjconf'].set_type('conf', 'distrib', 'sequence')
 
         self.backup_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['backup_dir'] + '/' + time.strftime('%F-%R:%S', time.localtime()))
         self.etc_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['etc_dir'])
         self.base_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['base_dir'])
 
-        conf_files = {}
-        conf_files['base'] = ['base', 'magic']
-        distrib = self.confs_internal['sjconf']['conf']['distrib']
-        if distrib != '':
-            conf_files['distrib'] = [distrib, 'magic']
-        conf_files['local'] = ['local', 'raw']
-
-        self.confs = {}
-        for conf in conf_files:
-            conf_file_path = os.path.realpath(self.base_dir + '/' + conf_files[conf][0])
-            if not os.path.exists(conf_file_path):
-                conf_file_path += '.conf'
-            self.confs[conf] = Conf(file_path = conf_file_path, parser_type = conf_files[conf][1])
+        self.confs = self._load_confs()
 
         self.temp_file_path = "/tmp/sjconf_tempfile.conf"
 
@@ -212,20 +201,36 @@ class SJConf:
             raise Plugin.NotEnabledError(plugin_to_disable)
         self.confs_internal['sjconf'].save()
 
-    def distrib_enable(self, distrib_to_enable):
+    def _distrib_level(self, distrib):
+        regexp = re.compile('^distrib-(\d+)$')
+        for key in self.confs_internal['sjconf']['conf']:
+            match_results = regexp.match(key)
+            if match_results and distrib in Type.convert('str', 'list', self.confs_internal['sjconf']['conf'], {}, key)[key]:
+                return int(match_results.group(1))
+        return None
+
+
+    def distrib_enable(self, distrib_to_enable, level = 1):
         # ensure the distrib in installed
         self._file_path('distrib', distrib_to_enable)
-        if self.confs_internal['sjconf']['conf']['distrib'] != '':
-            raise DistribAlreadyEnabledError(self.confs_internal['sjconf']['conf']['distrib'])
-        self.confs_internal['sjconf']['conf']['distrib'] = distrib_to_enable
+        enabled_level =  self._distrib_level(distrib_to_enable)
+        if enabled_level != None:
+            raise DistribAlreadyEnabledError(distrib_to_enable, enabled_level)
+        key = 'distrib-' + str(level)
+        self.confs_internal['sjconf']['conf'].setdefault(key, '')
+        Type.convert('str', 'list', self.confs_internal['sjconf']['conf'], {}, key)[key].append(distrib_to_enable)
         self.confs_internal['sjconf'].save()
 
     def distrib_disable(self, distrib_to_disable):
         # ensure the distrib in installed
         self._file_path('distrib', distrib_to_disable)
-        if self.confs_internal['sjconf']['conf']['distrib'] != distrib_to_disable:
+        level = self._distrib_level(distrib_to_disable)
+        if level == None:
             raise DistribNotEnabledError(distrib_to_disable)
-        self.confs_internal['sjconf']['conf']['distrib'] = ''
+        key = 'distrib-' + str(level)
+        Type.convert('str', 'list', self.confs_internal['sjconf']['conf'], {}, key)[key].remove(distrib_to_disable)
+        if self.confs_internal['sjconf']['conf'][key] == '':
+            del self.confs_internal['sjconf']['conf'][key]
         self.confs_internal['sjconf'].save()
 
     def plugins_list(self, plugins_to_list = None):
@@ -361,6 +366,65 @@ class SJConf:
                     shutil.move(backed_up_file.backup_path, backed_up_file.path)
                 except shutil.Error, exception:
                     raise RestoreError(exception, self.backup_dir)
+
+    def _load_confs(self):
+        confs = {}
+        confs['local'] = self._load_conf_part('local', 'raw')
+        confs['distrib'] = self._load_conf([[(distrib, 'magic') for distrib in Type.convert('str', 'list', {'distrib' : distrib}, {}, 'distrib')['distrib']] for distrib in self.confs_internal['sjconf']['conf']['distrib_sequence']], confs['local'])
+        confs['base'] = self._load_conf_part('base', 'magic')
+        return confs
+
+    def _load_conf(self, conf_files, conf_local):
+        conf = Conf()
+        conf_level_parts = []
+        conf_files.reverse()
+        for conf_level_files in conf_files:
+            conf_level_parts.append(self._load_conf_level(conf_level_files, conf_level_parts  + [conf_local]))
+        conf_level_parts.reverse()
+        for conf_level_part in conf_level_parts:
+            conf.update(conf_level_part)
+        if len(conf_level_parts) == 1:
+            conf.file_path = conf_level_parts[0].file_path
+        conf_files.reverse()
+        return conf
+
+    def _load_conf_level(self, conf_level_files, conf_level_parts):
+        conf_level = Conf()
+        conf_parts = []
+        for (conf_file, conf_type) in conf_level_files:
+            conf_part = self._load_conf_part(conf_file, conf_type)
+            self._verify_conflict(conf_part, conf_parts, conf_level_parts)
+            conf_parts.append(conf_part)
+        for conf_part in conf_parts:
+            conf_level.update(conf_part)
+        if len(conf_parts) == 1:
+            conf_level.file_path = conf_parts[0].file_path
+        return conf_level
+
+
+    def _load_conf_part(self, conf_file, conf_type):
+        conf_file_path = os.path.realpath(self.base_dir + '/' + conf_file)
+        if not os.path.exists(conf_file_path):
+            conf_file_path += '.conf'
+        return Conf(file_path = conf_file_path, parser_type = conf_type)
+
+    def _overriden_in_level(self, conf_level_parts, section, key):
+        for other_conf_level_part in conf_level_parts:
+            if section in other_conf_level_part and key in other_conf_level_part[section]:
+                return True
+        return False
+
+    def _verify_conflict(self, conf_part, conf_parts, conf_level_parts):
+        for other_conf_part in conf_parts:
+            conflicting_values = conf_part.update_verify_conflict(other_conf_part)
+            if len(conflicting_values) != 0:
+                for conflicting_value in conflicting_values:
+                    section = conflicting_value[0]
+                    key = conflicting_value[1]
+                    if not self._overriden_in_level(conf_level_parts, section, key):
+                        conf_part_name = os.path.basename(conf_part.file_path).replace('.conf', '')
+                        other_conf_part_name = os.path.basename(other_conf_part.file_path).replace('.conf', '')
+                        raise Conf.DistribConflictError(conf_part_name, other_conf_part_name, section, key)
 
     def _apply_confs(self, conf_files = None, plugins = None):
         # Open and write all configuration files

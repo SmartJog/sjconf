@@ -76,8 +76,8 @@ class SJConfCLI:
         --uninstall-conf conf                    : uninstall “conf” from the base.conf file, “conf” should be the basename of a conf file previously installed
         --install-distrib [--link] distrib       : install “distrib” file into the configuration directory; if --link is given, use a symbolic link
         --uninstall-distrib distrib              : uninstall “distrib” file, “distrib” should be the basename of a distrib file previously installed
-        --enable-distrib distrib                 : use the distrib “distrib”
-        --disable-distrib distrib                : do not use the distrib “distrib”
+        --enable-distrib distrib level           : enable the distrib “distrib” at level “level”
+        --disable-distrib distrib                : disable the distrib “distrib”
 ''' % (bin)
         if exit_code:
             self._my_print("No modification done on configuration")
@@ -142,7 +142,7 @@ class SJConfCLI:
                 elif cmd == '--list-plugins':
                     self.plugins_list = True
                 elif cmd == '--enable-distrib':
-                    self.distribs_to_enable += self._get_params(argv, 1)
+                    self.distribs_to_enable.append(self._get_params(argv, 2))
                 elif cmd == '--disable-distrib':
                     self.distribs_to_disable += self._get_params(argv, 1)
                 else:
@@ -209,7 +209,7 @@ class SJConfCLI:
 
         if self.distribs_to_enable:
             for self.distrib_to_enable in self.distribs_to_enable:
-                self.sjconf.distrib_enable(self.distrib_to_enable)
+                self.sjconf.distrib_enable(*self.distrib_to_enable)
 
         if self.distribs_to_disable:
             for self.distrib_to_disable in self.distribs_to_disable:
@@ -241,8 +241,8 @@ class SJConfCLI:
             self.sjconf.deploy_conf(self.services_to_restart)
 
 if __name__ == '__main__':
-    sjconf_cli = SJConfCLI()
     try:
+        sjconf_cli = SJConfCLI()
         sjconf_cli.run()
     except sjconf.Error, exception:
         if '--verbose' in sys.argv:
