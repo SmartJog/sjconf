@@ -28,7 +28,7 @@ class SJConf:
             'plugin' : os.path.realpath(self.confs_internal['sjconf']['conf']['plugins_path']),
             'template' : os.path.realpath(self.confs_internal['sjconf']['conf']['templates_path']),
             'conf' : self.base_dir + '/base',
-            'distrib' : self.base_dir
+            'distrib' : self.base_dir + '/distrib'
         }
         self.files_extensions = {'plugin' : ('.py',), 'template' : ('.conf',), 'conf' : ('.conf',), 'distrib' : ('.conf',)}
 
@@ -361,7 +361,7 @@ class SJConf:
     def _load_confs(self):
         confs = {}
         confs['local'] = self._load_conf_part('local', 'raw')
-        confs['distrib'] = self._load_conf([[(distrib, 'magic') for distrib in Type.convert('str', 'list', {'distrib' : distrib}, {}, 'distrib')['distrib']] for distrib in self.confs_internal['sjconf']['conf']['distrib_sequence']], confs['local'])
+        confs['distrib'] = self._load_conf([[('distrib/' + distrib, 'magic') for distrib in Type.convert('str', 'list', {'distrib' : distrib}, {}, 'distrib')['distrib']] for distrib in self.confs_internal['sjconf']['conf']['distrib_sequence']], confs['local'])
         confs['base'] = self._load_conf_part('base', 'magic')
         return confs
 
