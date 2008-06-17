@@ -7,11 +7,11 @@ class FileError(Error):
 
 class FileAlreadyInstalledError(FileError):
     def __init__(self, file_path):
-        self.msg = "File already installed %s" % (file_path)
+        self.msg = "The file %s already installed" % (file_path)
 
 class FileNotInstalledError(FileError):
     def __init__(self, file_path):
-        self.msg = "File not installed %s" % (file_path)
+        self.msg = "The file %s is not installed" % (file_path)
 
 class DistribError(Error):
     pass
