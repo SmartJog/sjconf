@@ -498,8 +498,7 @@ class SJConf:
         return file_path
 
     def _generic_list_add(self, section, key, type, value):
-        if not self.confs:
-            self._load_confs()
+        self._load_confs()
         conf = self.confs['local']
         if section not in conf:
             conf[section] = conf.conf_section_class()
