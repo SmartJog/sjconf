@@ -498,7 +498,7 @@ class SJConf:
         return file_path
 
     def _generic_list_add(self, section, key, type, value):
-        self._load_confs()
+        self._load_conf_local()
         conf = self.confs['local']
         if section not in conf:
             conf[section] = conf.conf_section_class()
@@ -525,8 +525,7 @@ class SJConf:
         conf[section][key_typed].append(value)
 
     def _generic_list_remove(self, section, key, type, value):
-        if not self.confs:
-            self._load_confs()
+        self._load_conf_local()
         conf = self.confs['local']
         conf.set_type(section, key, type)
         conf[section][key + '_' + type].remove(value)
