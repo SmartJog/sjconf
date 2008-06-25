@@ -110,6 +110,13 @@ class SJConf:
         old_keys = section in conf and dict([(key_to_test, value_to_test) for (key_to_test, value_to_test) in conf[section].iteritems() if regexp.match(key_to_test)]) or []
         self._generic_list_add(section, key, 'sequence', value)
         new_keys = dict([(key_to_test, value_to_test) for (key_to_test, value_to_test) in conf[section].iteritems() if regexp.match(key_to_test)])
+        conf_base = self.conf_base()
+        if section in conf_base and key in conf_base[section] and key not in new_keys:
+            new_keys[key] = ''
+        for new_key in new_keys.keys(): # Do not use iterkeys since we are changing the dictionnary
+            if section in conf_base and new_key in conf_base[section] and conf_base[section][new_key] == new_keys[new_key]:
+                del conf[section][new_key]
+                del new_keys[new_key]
         self._sequence_diff(section, key, old_keys, new_keys)
 
     def sequence_remove(self, section, key, value):
@@ -513,19 +520,13 @@ class SJConf:
         try:
             conf[section][key_typed]
         except KeyError:
-            confs_to_test = ['base']
-            if 'profile' in self.confs:
-                confs_to_test.append('profile')
-            for conf_to_test in confs_to_test:
-                self.confs[conf_to_test].set_type(section, key, type)
-                if section in self.confs[conf_to_test]:
-                    try:
-                        self.confs[conf_to_test][section][key_typed]
-                        if len(self.confs[conf_to_test][section][key_typed]) > 0:
-                            raise KeyError
-                    except KeyError:
-                        raise Conf.ListExistInParentError(section, key, conf_to_test)
-            conf[section][key_typed] = []
+            conf_base = self.conf_base()
+            conf_base.set_type(section, key, type)
+            try:
+                conf[section][key_typed] = list(conf_base[section][key_typed])
+                self._logger('The key "%s" in section "%s" does not exist in local configuration, but exist in base or profile configuration, the new value will be appended to "%s".' % (key, section, repr(conf[section][key_typed])))
+            except KeyError:
+                conf[section][key_typed] = []
         if value in conf[section][key_typed]:
             raise Conf.ListValueAlreadyExistError(section, key, value)
         conf[section][key_typed].append(value)

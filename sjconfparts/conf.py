@@ -14,10 +14,6 @@ class Conf:
         def __init__(self, section, key, value):
             self.msg = "The value \"%s\" is already in key %s of section %s" % (value, section, key)
 
-    class ListExistInParentError(ListError):
-        def __init__(self, section, key, conf_parent):
-            self.msg = 'The key "%s" in section "%s" does not exist in local configuration, but exist in %s configuration. To force, first set the value to "" before adding to the list' % (key, section, conf_parent)
-
     class UnauthorizedSectionError(Error):
         def __init__(self, section, conf_file):
             self.msg = 'Unauthorized section "%s": all sections should be either "%s" or "%s:<subsection>"' % (section, conf_file, conf_file)
