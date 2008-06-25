@@ -1,4 +1,4 @@
-SUBDIRS = doc conf
+SUBDIRS = doc conf sjconfparts
 
 sjconfpluginslocalstate_DATA =
 
@@ -6,5 +6,4 @@ dist_bin_SCRIPTS = sjconf
 
 EXTRA_DIST = sjconf.py sjconfparts
 
-install-exec-hook:
-	python setup.py install --root "$(DESTDIR)" --prefix "@prefix@"
+python_PYTHON = sjconf.py

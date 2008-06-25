@@ -6,6 +6,8 @@ AC_PREREQ(2.52)
 
 AM_INIT_AUTOMAKE([foreign])
 
+AM_PATH_PYTHON([2.3])
+
 sjconflocalstatedir=$localstatedir/lib/sjconf
 AC_SUBST([sjconflocalstatedir])
 
@@ -27,6 +29,9 @@ AC_SUBST([sjconfcustomconfdir])
 sjconftemplatesconfdir=$sjconfconfdir/templates
 AC_SUBST([sjconftemplatesconfdir])
 
+sjconfpartspythondir=$pythondir/sjconfparts
+AC_SUBST([sjconfpartspythondir])
+
 AC_CONFIG_FILES([Makefile \
                  doc/Makefile \
                  conf/Makefile \
@@ -34,7 +39,7 @@ AC_CONFIG_FILES([Makefile \
                  conf/profiles/Makefile \
                  conf/custom/Makefile \
                  conf/templates/Makefile \
-                 setup.py \
+                 sjconfparts/Makefile \
                  sjconf \
                  ])
 
