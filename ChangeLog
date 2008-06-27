@@ -1,4 +1,4 @@
-Version 1.4.0~dev
+Version 1.4.0 Released on 2008/06/27
 
 	* Improve building system: use autotools instead of setup.py.
 	* Add sjconf manual page. Closes: #820.
