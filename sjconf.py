@@ -58,6 +58,10 @@ class SJConf:
                         conf[section_name][key_converted] = section[key_converted + '_' + type]
         return conf
 
+    def conf_local(self):
+        self._load_conf_local()
+        return Conf(self.confs['local'])
+
     def conf_base(self):
         self._load_conf_base()
         conf = Conf(self.confs['base'])
