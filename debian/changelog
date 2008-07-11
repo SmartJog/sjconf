@@ -1,6 +1,7 @@
-sjconf (1.4.0-2~dev) unstable; urgency=low
+sjconf (1.4.1~dev-1) unstable; urgency=low
 
   * Remove useless build dependencies.
+  * New release.
 
  -- Jean-Philippe Garcia Ballester <jeanphilippe.garciaballester@smartjog.com>  Mon, 30 Jun 2008 12:31:56 +0200
 

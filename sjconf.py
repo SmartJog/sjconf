@@ -47,7 +47,8 @@ class SJConf:
         self._load_conf_base()
         conf = Conf(self.confs['base'])
         self._load_conf_profile()
-        conf.update(self.confs['profile'])
+        if 'profile' in self.confs:
+            conf.update(self.confs['profile'])
         return conf
 
     def plugin_conf(self, plugin_name):
