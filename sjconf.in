@@ -217,8 +217,8 @@ class SJConfCLI:
                 self.sjconf.profile_disable(self.profile_to_disable)
 
         if self.get:
-            if self.get[0] in self.sjconf.confs['local'] and self.get[1] in self.sjconf.confs['local'][self.get[0]]:
-                print self.sjconf.confs['local'][self.get[0]][self.get[1]]
+            if self.get[0] in self.sjconf.conf_local() and self.get[1] in self.sjconf.conf_local()[self.get[0]]:
+                print self.sjconf.conf_local()[self.get[0]][self.get[1]]
             else:
                 sys.exit(1)
 
