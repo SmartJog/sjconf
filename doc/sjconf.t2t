@@ -53,6 +53,9 @@ Deploy configuration.
 : --**restart** //<plugin>// | //all//
 Restart all services of "plugin". If "plugin" is "all", then restart all services of all plugins.
 
+: --**get** //<section>// //<key>//
+Get a configuration key in "local.conf".
+
 : --**set** //<section>// //<key>// //<value>//
 Set a configuration key in "local.conf".
 
