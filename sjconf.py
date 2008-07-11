@@ -44,6 +44,20 @@ class SJConf:
         conf.update(self.confs['local'])
         return conf
 
+    def conf_typed(self):
+        self._plugins_load()
+        conf = self.conf()
+        for plugin in self.plugins:
+            for (section_name, section) in plugin.conf.iteritems():
+                section = Conf.ConfSection(section) # Bypass plugin's class because we don't want the plugin to convert the key to its configuration file syntax
+                for key in section:
+                    type = section.get_type(key)
+                    if type:
+                        key_converted = Type.convert_key(key, type)
+                        del conf[section_name][key]
+                        conf[section_name][key_converted] = section[key_converted + '_' + type]
+        return conf
+
     def conf_base(self):
         self._load_conf_base()
         conf = Conf(self.confs['base'])

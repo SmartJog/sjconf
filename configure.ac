@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-    stat AC_INIT(sjconf, 1.4.1~dev)
+    stat AC_INIT(sjconf, 1.5.0~dev)
 
 dnl 2.52 is quite realistic
 AC_PREREQ(2.52)

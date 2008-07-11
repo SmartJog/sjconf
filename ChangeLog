@@ -1,4 +1,4 @@
-Version 1.4.1~dev
+Version 1.5.0~dev
 
 	* Fix bug: previous version does not work when no profile is enabled.
 
