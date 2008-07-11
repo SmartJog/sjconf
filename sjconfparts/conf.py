@@ -200,10 +200,14 @@ class Conf:
                output_file.write('# ' + comment + '\n')
             output_file.write('\n')
         cp = self.config_parser_class()
-        for section in self.dict:
+        sections = self.dict.keys()
+        sections.sort(lambda x, y: - cmp(x, y))
+        for section in sections:
             cp.add_section(section)
-            for (key, value) in self.dict[section].iteritems():
-                cp.set(section, key, value)
+            keys = self.dict[section].keys()
+            keys.sort(lambda x, y: - cmp(x, y))
+            for key in keys:
+                cp.set(section, key, self.dict[section][key])
         cp.write(output_file)
 
     def set_type(self, section, key, type):
