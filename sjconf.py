@@ -46,7 +46,10 @@ class SJConf:
 
     def conf_typed(self):
         self._plugins_load()
-        conf = self.conf()
+        # We want a normal dictionary
+        conf = dict(self.conf())
+        for section_name, section in conf.iteritems():
+            conf[section_name] = dict(section)
         for plugin in self.plugins_list:
             for (section_name, section) in plugin.conf.iteritems():
                 section = Conf.ConfSection(section) # Bypass plugin's class because we don't want the plugin to convert the key to its configuration file syntax
