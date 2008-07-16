@@ -20,7 +20,7 @@ class SJConf:
         self.base_dir = os.path.realpath(self.confs_internal['sjconf']['conf']['base_dir'])
 
         self.confs = None
-        self.plugins = None
+        self.plugins_list = None
 
         self.temp_file_path = "/tmp/sjconf_tempfile.conf"
 
@@ -47,7 +47,7 @@ class SJConf:
     def conf_typed(self):
         self._plugins_load()
         conf = self.conf()
-        for plugin in self.plugins:
+        for plugin in self.plugins_list:
             for (section_name, section) in plugin.conf.iteritems():
                 section = Conf.ConfSection(section) # Bypass plugin's class because we don't want the plugin to convert the key to its configuration file syntax
                 for key in section:
@@ -78,9 +78,16 @@ class SJConf:
                 plugin_conf[section] = conf[section]
         return plugin_conf
 
+    def plugins(self):
+        self._plugins_load()
+        plugins = {}
+        for plugin in self.plugins_list:
+            plugins[plugin.name()] = plugin
+        return plugins
+
     def restart_services(self, services_to_restart):
         self._plugins_load()
-        plugins_hash = dict([(plugin.name(), plugin) for plugin in self.plugins])
+        plugins_hash = dict([(plugin.name(), plugin) for plugin in self.plugins_list])
         if 'all' in services_to_restart:
             services_to_restart.remove('all')
             for plugin_name in plugins_hash.keys():
@@ -282,7 +289,7 @@ class SJConf:
         self._load_conf_local()
         if files_to_backup == None:
             self._plugins_load()
-            files_to_backup = self._files_to_backup(self.plugins) + self._conf_files(self.plugins)
+            files_to_backup = self._files_to_backup(self.plugins_list) + self._conf_files(self.plugins_list)
         self._logger( "Backup folder : %s" % self.backup_dir )
         os.makedirs(self.backup_dir)
         os.makedirs(self.backup_dir + '/sjconf/')
@@ -356,9 +363,9 @@ class SJConf:
         return plugins
 
     def _plugins_load(self):
-        if self.plugins == None:
-            self.plugins = self._plugins_init()
-            self._plugins_dependencies(self.plugins)
+        if self.plugins_list == None:
+            self.plugins_list = self._plugins_init()
+            self._plugins_dependencies(self.plugins_list)
 
     def _files_to_backup(self, plugins):
         return reduce(lambda files_to_backup, plugin: files_to_backup + plugin.files_to_backup(), plugins, [])
@@ -492,7 +499,7 @@ class SJConf:
         # Open and write all configuration files
         if conf_files == None:
             self._plugins_load()
-            conf_files = self._conf_files(self.plugins)
+            conf_files = self._conf_files(self.plugins_list)
         for conf_file in conf_files:
             self._logger("Writing configuration file %s (%s)" % (conf_file.path, conf_file.plugin_name))
             # checking if the dirname exists
