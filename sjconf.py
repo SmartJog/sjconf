@@ -178,7 +178,7 @@ class SJConf:
             output_file = conf.file_path
         conf.save(output_file)
 
-    def deploy_conf(self, services_to_restart):
+    def deploy_conf(self, services_to_restart = ()):
         self._plugins_load()
         conf_files = self._conf_files(self.plugins_list)
         files_to_backup = self._files_to_backup(self.plugins_list) + conf_files

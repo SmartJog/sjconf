@@ -2,6 +2,7 @@ Version 1.5.0~dev
 
 	* Fix bug: previous version does not work when no profile is enabled.
 	* Fix regression: “--get option” was broken. Closes: #870.
+	* deploy_conf now has an empty list as default argument.
 
 Version 1.4.0 Released on 2008/06/27
 
