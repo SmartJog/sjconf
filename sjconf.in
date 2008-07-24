@@ -193,7 +193,7 @@ class SJConfCLI:
                 self.sjconf.plugin_disable(self.plugin_to_disable)
 
         if self.plugins_list:
-            plugins_list = self.sjconf.plugins_list()
+            plugins_list = self.sjconf.plugins_infos()
             for plugin_info in plugins_list.values():
                 self._my_print('Plugin %s' % (plugin_info['plugin'].name()))
                 self._my_print('  Version: %s' % (plugin_info['plugin'].version()))

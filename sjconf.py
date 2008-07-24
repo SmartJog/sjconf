@@ -277,7 +277,7 @@ class SJConf:
             del self.confs['local']['sjconf'][key]
         self.confs['local'].save()
 
-    def plugins_list(self, plugins_to_list = None):
+    def plugins_infos(self, plugins_to_list = None):
         if plugins_to_list == None:
             plugins_to_list = map(lambda plugin_path: os.path.basename(plugin_path).replace('.py', ''), glob.glob(self.confs_internal['sjconf']['conf']['plugins_path'] + '/*.py'))
         plugins = self._plugins_init(plugins_to_list)
