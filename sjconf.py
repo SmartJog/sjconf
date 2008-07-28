@@ -55,13 +55,10 @@ class SJConf:
         for section_name, section in conf.iteritems():
             conf[section_name] = dict(section)
         for plugin in self.plugins_list:
+            plugin.set_conf(conf)
             for (section_name, section) in plugin.conf.iteritems():
-                if section_name not in conf:
-                    continue
                 section = Conf.ConfSection(section) # Bypass plugin's class because we don't want the plugin to convert the key to its configuration file syntax
                 for key in section:
-                    if key not in conf[section_name]:
-                        continue
                     type = section.get_type(key)
                     if type:
                         key_converted = Type.convert_key(key, type)
