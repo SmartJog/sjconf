@@ -37,23 +37,31 @@ class SJConf:
         self.verbose = verbose
         self.logger = logger
 
-    def conf(self):
+    def conf(self, typed = False):
         self._load_confs()
         conf = self.conf_base()
         self._load_conf_local()
         conf.update(self.confs['local'])
+        if typed:
+            conf = self.conf_typed(conf)
         return conf
 
-    def conf_typed(self):
+    def conf_typed(self, conf = None):
         self._plugins_load()
         # We want a normal dictionary
-        conf = dict(self.conf())
+        if conf is None:
+            conf = self.conf()
+        conf = dict(conf)
         for section_name, section in conf.iteritems():
             conf[section_name] = dict(section)
         for plugin in self.plugins_list:
             for (section_name, section) in plugin.conf.iteritems():
+                if section_name not in conf:
+                    continue
                 section = Conf.ConfSection(section) # Bypass plugin's class because we don't want the plugin to convert the key to its configuration file syntax
                 for key in section:
+                    if key not in conf[section_name]:
+                        continue
                     type = section.get_type(key)
                     if type:
                         key_converted = Type.convert_key(key, type)
@@ -61,16 +69,21 @@ class SJConf:
                         conf[section_name][key_converted] = section[key_converted + '_' + type]
         return conf
 
-    def conf_local(self):
+    def conf_local(self, typed = False):
         self._load_conf_local()
-        return Conf(self.confs['local'])
+        conf = Conf(self.confs['local'])
+        if typed:
+            conf = self.conf_typed(conf)
+        return conf
 
-    def conf_base(self):
+    def conf_base(self, typed = False):
         self._load_conf_base()
         conf = Conf(self.confs['base'])
         self._load_conf_profile()
         if 'profile' in self.confs:
             conf.update(self.confs['profile'])
+        if typed:
+            conf = self.conf_typed(conf)
         return conf
 
     def plugin_conf(self, plugin_name):
