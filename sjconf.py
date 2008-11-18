@@ -55,7 +55,7 @@ class SJConf:
         for section_name, section in conf.iteritems():
             conf[section_name] = dict(section)
         for plugin in self.plugins_list:
-            plugin.set_conf(conf)
+            plugin.set_conf(self.plugin_conf(plugin.name(), conf))
             for (section_name, section) in plugin.conf.iteritems():
                 def section_getitem(*args, **kw):
                     return Conf.ConfSection.__getitem__(section, *args, **kw)
@@ -85,8 +85,9 @@ class SJConf:
             conf = self.conf_typed(conf)
         return conf
 
-    def plugin_conf(self, plugin_name):
-        conf = self.conf()
+    def plugin_conf(self, plugin_name, conf = None):
+        if conf is None:
+            conf = self.conf()
         plugin_conf = Conf()
         for section in conf:
             if re.compile(plugin_name + ':?.*').match(section):
