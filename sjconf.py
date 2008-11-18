@@ -57,7 +57,9 @@ class SJConf:
         for plugin in self.plugins_list:
             plugin.set_conf(conf)
             for (section_name, section) in plugin.conf.iteritems():
-                section = Conf.ConfSection(section) # Bypass plugin's class because we don't want the plugin to convert the key to its configuration file syntax
+                def section_getitem(*args, **kw):
+                    return Conf.ConfSection.__getitem__(section, *args, **kw)
+                section.__getitem__ = section_getitem # Bypass plugin's getitem method because we don't want the plugin to convert the key to its configuration file syntax
                 for key in section:
                     type = section.get_type(key)
                     if type:
