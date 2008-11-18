@@ -48,9 +48,9 @@ class SJConf:
 
     def conf_typed(self, conf = None):
         self._plugins_load()
-        # We want a normal dictionary
         if conf is None:
             conf = self.conf()
+        # We want a normal dictionary
         conf = dict(conf)
         for section_name, section in conf.iteritems():
             conf[section_name] = dict(section)
