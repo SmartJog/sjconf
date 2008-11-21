@@ -1,4 +1,4 @@
-Version 1.6.1~dev
+Version 1.6.1 Released on 2008/11/21
 
 	* Fix the “conf_typed” method, that was returning values transformed by plugins for their configuration files. Closes: #1137.
 
