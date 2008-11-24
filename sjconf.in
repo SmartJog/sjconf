@@ -43,6 +43,7 @@ class SJConfCLI:
         self.deploy = False
         self.show_local_conf = False
         self.plugins_list = False
+        self.profiles_list = False
         if argv == None:
             argv = list(sys.argv)
         bin, argv = argv[0], argv[1:]
@@ -71,6 +72,7 @@ class SJConfCLI:
         --enable-plugin plugin                   : add “plugin” to the list of plugins to use
         --disable-plugin plugin                  : remove “plugin” from the list of plugins to use
         --list-plugins                           : list installed plugins
+        --list-profiles                          : list installed profiles
         --install-template [--link] template     : install “template” into the templates path; if --link is given, use a symbolic link
         --uninstall-template template            : uninstall “plugin” from the templates path
         --install-conf [--link] conf             : install “conf” into the “base” configuration directory; if --link is given, use a symbolic link
@@ -142,6 +144,8 @@ class SJConfCLI:
                     self.plugins_to_disable += self._get_params(argv, 1)
                 elif cmd == '--list-plugins':
                     self.plugins_list = True
+                elif cmd == '--list-profiles':
+                    self.profiles_list = True
                 elif cmd == '--enable-profile':
                     self.profiles_to_enable.append(self._get_params(argv, 2))
                 elif cmd == '--disable-profile':
@@ -216,6 +220,15 @@ class SJConfCLI:
         if self.profiles_to_disable:
             for self.profile_to_disable in self.profiles_to_disable:
                 self.sjconf.profile_disable(self.profile_to_disable)
+
+        if self.profiles_list:
+            profiles_list = self.sjconf.profiles_infos()
+            for profile, level in profiles_list.iteritems():
+                self._my_print('Profile %s' % (profile,))
+                if level is not None:
+                    self._my_print('  Enabled at level %s' % level)
+                else:
+                    self._my_print('  Not enabled')
 
         if self.get:
             if self.get[0] in self.sjconf.conf_local() and self.get[1] in self.sjconf.conf_local()[self.get[0]]:

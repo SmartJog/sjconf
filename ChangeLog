@@ -1,3 +1,7 @@
+Version 1.7.0~dev
+
+	* Add “profiles_infos” method and “--list-profiles” option that list installed profiles. Closes: #1164.
+
 Version 1.6.1 Released on 2008/11/21
 
 	* Fix the “conf_typed” method, that was returning values transformed by plugins for their configuration files. Closes: #1137.

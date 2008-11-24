@@ -302,6 +302,15 @@ class SJConf:
             plugins_list[plugin.name()] = self._plugin_list(plugin, plugins_hash)
         return plugins_list
 
+    def profiles_infos(self, profiles_to_list = None):
+        if profiles_to_list == None:
+            profiles_to_list = map(lambda profile_path: os.path.basename(profile_path).replace('.conf', ''), glob.glob(self.files_path['profile'] + '/*.conf'))
+        profiles_hash = {}
+        for profile in profiles_to_list:
+            level =  self._profile_level(profile)
+            profiles_hash[profile] = level
+        return profiles_hash
+
     def backup_files(self, files_to_backup = None):
         self._load_conf_local()
         if files_to_backup == None:
