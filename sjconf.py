@@ -560,8 +560,7 @@ class SJConf:
         return file_path
 
     def _generic_list_add(self, section, key, type, value):
-        self._load_conf_local()
-        conf = self.confs['local']
+        conf = self.conf()
         if section not in conf:
             conf[section] = conf.conf_section_class()
         conf.set_type(section, key, type)
@@ -569,22 +568,30 @@ class SJConf:
         try:
             conf[section][key_typed]
         except KeyError:
-            conf_base = self.conf_base()
-            conf_base.set_type(section, key, type)
-            try:
-                conf[section][key_typed] = list(conf_base[section][key_typed])
-                self._logger('The key "%s" in section "%s" does not exist in local configuration, but exist in base or profile configuration, the new value will be appended to "%s".' % (key, section, repr(conf[section][key_typed])))
-            except KeyError:
-                conf[section][key_typed] = []
+            conf[section][key_typed] = []
         if value in conf[section][key_typed]:
             raise Conf.ListValueAlreadyExistError(section, key, value)
         conf[section][key_typed].append(value)
+        if section not in self.confs['local']:
+            self.confs['local'][section] = conf.conf_section_class()
+        self.confs['local'].set_type(section, key, type)
+        self.confs['local'][section][key_typed] = conf[section][key_typed]
+        try:
+            self.conf_local()[section][key_typed]
+        except KeyError:
+            try:
+                self.conf_base()[section][key_typed]
+                self._logger('The key "%s" in section "%s" does not exist in local configuration, but exist in base or profile configuration, the new value will be appended to "%s".' % (key, section, repr(conf[section][key_typed])))
+            except KeyError:
+                pass
 
     def _generic_list_remove(self, section, key, type, value):
-        self._load_conf_local()
-        conf = self.confs['local']
+        conf = self.conf()
         conf.set_type(section, key, type)
-        conf[section][key + '_' + type].remove(value)
+        key_typed = key + '_' + type
+        conf[section][key_typed].remove(value)
+        self.confs['local'].set_type(section, key, type)
+        self.confs['local'][section][key_typed] = conf[section][key_typed]
 
     def _sequence_diff(self, section, key, old_keys, new_keys):
         for key in old_keys:
