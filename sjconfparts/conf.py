@@ -224,6 +224,14 @@ class Conf:
     def get_type(self, section, key):
         return self.dict[section].get_type(key)
 
+    def del_type(self, section, key, type = None):
+        if hasattr(section, 'search'):
+            sections = [section_matched for section_matched in self.dict if section.search(section_matched)]
+        else:
+            sections = (section,)
+        for section in sections:
+            self.dict[section].del_type(key, type)
+
     def __getattr__(self, *args, **kw):
         return getattr(self.dict, *args, **kw)
 
