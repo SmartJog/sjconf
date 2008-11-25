@@ -92,8 +92,6 @@ class Conf:
                     type = other_dict._find_type_for(key)
                     if type:
                         self.set_type(key, type)
-                        key = Type.convert_key(key, type) + '_' + type
-                        value = other_dict[key]
                 self[key] = value
 
         def set_type(self, key, type):
