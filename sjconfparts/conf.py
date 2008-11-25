@@ -105,7 +105,9 @@ class Conf:
             self.dict[key]
             return self._find_type_for(key)
 
-        def del_type(self, key):
+        def del_type(self, key, type = None):
+            if not key in self.types and type is not None:
+                key = Type.convert_key_for_search(key, type)
             del self.types[key]
 
         def get_types(self):
