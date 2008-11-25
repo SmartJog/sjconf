@@ -217,28 +217,42 @@ class Type(TypePythonIsCrappy):
             return dict_dest
 
         @classmethod
+        def assign_elts(xcls, elts, assignments_old):
+            elts_unassigned = []
+            indices = []
+            index_prev = 0
+            for elt in elts:
+                elt_assigned = False
+                if elt in assignments_old:
+                    index = assignments_old[elt]
+                    if index > index_prev and (len(elts_unassigned) == 0 or len(elts_unassigned) <= index - index_prev - 1):
+                        elt_assigned = True
+                        while len(elts_unassigned) > 0:
+                            elts_unassigned.pop(0)
+                            index_prev += 1
+                            indices.append(index_prev)
+                        indices.append(index)
+                        index_prev = index
+                if not elt_assigned:
+                    elts_unassigned.append(elt)
+            for elt in elts_unassigned:
+                index_prev += 1
+                indices.append(index_prev)
+            return indices
+
+        @classmethod
         def sequence_to_str(xcls, dict_source, dict_dest, key):
             key = xcls.key(key)
             sequence_object = list(dict_source[key])
             str_keys = []
             regexp = re.compile('^%s-\d+$' % (key))
-            for key_to_test in dict_dest:
-                if regexp.match(key_to_test):
-                    str_keys.append(key_to_test)
-            str_keys.sort(key = lambda key_to_convert: xcls.key_to_index(key, key_to_convert))
-            if key in dict_dest and len(str_keys) == 0 and len(sequence_object) == 1:
-                str_keys = [key,]
-            elif len(str_keys) > 0:
-                index = int(str_keys[-1].replace(key + '-', ''))
-            else:
-                index = 0
-            if key in dict_dest and not key in str_keys:
-                del dict_dest[key]
-            while len(str_keys) > 0 and len(sequence_object) > 0:
-                dict_dest[str_keys.pop(0)] = sequence_object.pop(0)
-            for str_key in str_keys:
-                del dict_dest[str_key]
-            for elt in sequence_object:
-                index += 1
+            assignments_old = dict([(dict_dest[str_key], xcls.key_to_index(key, str_key)) for str_key in sorted(
+                [key_to_test for key_to_test in dict_dest if regexp.match(key_to_test)],
+                key = lambda key_to_convert: xcls.key_to_index(key, key_to_convert)
+                )])
+            indices = xcls.assign_elts(sequence_object, assignments_old)
+            while len(sequence_object) > 0:
+                elt = sequence_object.pop(0)
+                index = indices.pop(0)
                 dict_dest[key + '-' + str(index)] = elt
             return dict_dest
