@@ -193,6 +193,15 @@ class Type(TypePythonIsCrappy):
             return ConversionList(conversion_method, value)
 
         @classmethod
+        def key_to_index(xcls, key, key_to_convert):
+            index = key_to_convert[len(key) + 1:]
+            if index == '':
+                index = -1
+            else:
+                index = int(index)
+            return index
+
+        @classmethod
         def str_to_sequence(xcls, dict_source, dict_dest, key):
             def conversion_method():
                 Type.Sequence.sequence_to_str(dict_dest, dict_source, key)
@@ -202,7 +211,7 @@ class Type(TypePythonIsCrappy):
             for (key_to_test, value) in dict_source.iteritems():
                 if key_to_test == key or regexp.match(key_to_test):
                     str_object.append((key_to_test, value))
-            str_object.sort()
+            str_object.sort(key = lambda str_object: xcls.key_to_index(key, str_object[0]))
             sequence_object = ConversionList(conversion_method, [value for (str_key, value) in str_object])
             dict_dest[key] = sequence_object
             return dict_dest
@@ -216,7 +225,7 @@ class Type(TypePythonIsCrappy):
             for key_to_test in dict_dest:
                 if regexp.match(key_to_test):
                     str_keys.append(key_to_test)
-            str_keys.sort()
+            str_keys.sort(key = lambda key_to_convert: xcls.key_to_index(key, key_to_convert))
             if key in dict_dest and len(str_keys) == 0 and len(sequence_object) == 1:
                 str_keys = [key,]
             elif len(str_keys) > 0:

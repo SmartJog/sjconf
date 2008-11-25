@@ -1,6 +1,7 @@
 Version 1.7.0~dev
 
 	* Add “profiles_infos” method and “--list-profiles” option that list installed profiles. Closes: #1164.
+	* Fix adding an element to a sequence of more than ten elements (newly added element was always given the index 10 and overwrote the old value). Closes: #1165.
 
 Version 1.6.1 Released on 2008/11/21
 
