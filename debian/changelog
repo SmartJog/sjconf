@@ -1,8 +1,8 @@
-sjconf (1.7.1~dev-1) unstable; urgency=low
+sjconf (1.7.1-1) unstable; urgency=low
 
   * New upstream release.
 
- -- Jean-Philippe Garcia Ballester <jeanphilippe.garciaballester@smartjog.com>  Wed, 26 Nov 2008 14:14:51 +0100
+ -- Jean-Philippe Garcia Ballester <jeanphilippe.garciaballester@smartjog.com>  Wed, 26 Nov 2008 18:53:15 +0100
 
 sjconf (1.7.0-1) unstable; urgency=low
 
