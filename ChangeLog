@@ -1,6 +1,7 @@
 Version 1.7.1~dev
 
 	* Fix “sequence_add” method when the base configuration contains non-sequential key numbers (i.e. key-1, key-3): the value of key-3 was added to the local configuration as key-2. Closes: #1172.
+	* Allow removing values from sequences defined in base configuration. The value is replaced in the local configuration by the empty string. Closes: #1171.
 
 Version 1.7.0 Released on 2008/11/25
 

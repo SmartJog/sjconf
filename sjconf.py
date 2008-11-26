@@ -578,12 +578,17 @@ class SJConf:
         self._generic_list_modify(section, key, type, value, 'append')
 
     def _generic_list_remove(self, section, key, type, value):
-        conf = self.conf()
-        conf.set_type(section, key, type)
         key_typed = key + '_' + type
-        conf[section][key_typed].remove(value)
-        self.confs['local'].set_type(section, key, type)
-        self.confs['local'][section][key_typed] = conf[section][key_typed]
+        try:
+            conf = self.conf_local()
+            conf.set_type(section, key, type)
+            conf[section][key_typed]
+        except KeyError:
+            conf = self.conf_base()
+            conf.set_type(section, key, type)
+            value_base = conf[section][key_typed]
+            self._logger('The key "%s" in section "%s" does not exist in local configuration, but exist in base or profile configuration, the new value will be removed from "%s".' % (key, section, repr(value_base)))
+        self._generic_list_modify(section, key, type, value, 'remove')
 
     def _generic_list_modify(self, section, key, type, value, method):
         conf = self.conf()
