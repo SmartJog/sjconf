@@ -560,6 +560,19 @@ class SJConf:
         return file_path
 
     def _generic_list_add(self, section, key, type, value):
+        key_typed = key + '_' + type
+        try:
+            conf = self.conf_local()
+            conf.set_type(section, key, type)
+            value_old = conf[section][key_typed]
+        except KeyError:
+            try:
+                conf = self.conf_base()
+                conf.set_type(section, key, type)
+                value_old = conf[section][key_typed]
+                self._logger('The key "%s" in section "%s" does not exist in local configuration, but exist in base or profile configuration, the new value will be appended to "%s".' % (key, section, repr(value_old)))
+            except KeyError:
+                pass
         conf = self.conf()
         if section not in conf:
             conf[section] = conf.conf_section_class()
@@ -585,14 +598,6 @@ class SJConf:
                     self.confs['local'][section][old_key] = ''
                 else:
                     del self.confs['local'][section][old_key]
-        try:
-            self.conf_local()[section][key_typed]
-        except KeyError:
-            try:
-                self.conf_base()[section][key_typed]
-                self._logger('The key "%s" in section "%s" does not exist in local configuration, but exist in base or profile configuration, the new value will be appended to "%s".' % (key, section, repr(conf[section][key_typed])))
-            except KeyError:
-                pass
 
     def _generic_list_remove(self, section, key, type, value):
         conf = self.conf()
