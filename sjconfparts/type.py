@@ -217,40 +217,52 @@ class Type(TypePythonIsCrappy):
             return dict_dest
 
         @classmethod
-        def assign_elts(xcls, elts, assignments_old):
+        def assign_elts(xcls, elts, assignments_old, indices_unassigned):
+
+            def _assign_unassigned(indices, elts_unassigned, indices_unassigned, index_prev, index):
+                indices_available = [index_unassigned for index_unassigned in indices_unassigned if index_unassigned > index_prev and (index_unassigned < index or index < -1)]
+                for index_available in indices_available:
+                    indices_unassigned.remove(index_available)
+                indices_available.append(index)
+                indices_to_assign = []
+                for index_available in indices_available:
+                    while len(indices_to_assign) < len(elts_unassigned) - (index_available >= -1 and 1 or 0):
+                        if index_prev < index_available - 1 or index_available < -1:
+                            index_prev += 1
+                            indices_to_assign.append(index_prev)
+                    if index_available >= -1:
+                        indices_to_assign.append(index_available)
+                        index_prev = index_available
+                while len(elts_unassigned) > 0:
+                    elts_unassigned.pop(0)
+                    index_prev = indices_to_assign.pop(0)
+                    indices.append(index_prev)
+                return index_prev
+
             elts_unassigned = []
             indices = []
             index_prev = 0
             for elt in elts:
-                elt_assigned = False
+                elts_unassigned.append(elt)
                 if elt in assignments_old:
                     index = assignments_old[elt]
-                    if index > index_prev and (len(elts_unassigned) == 0 or len(elts_unassigned) <= index - index_prev - 1):
-                        elt_assigned = True
-                        while len(elts_unassigned) > 0:
-                            elts_unassigned.pop(0)
-                            index_prev += 1
-                            indices.append(index_prev)
-                        indices.append(index)
-                        index_prev = index
-                if not elt_assigned:
-                    elts_unassigned.append(elt)
-            for elt in elts_unassigned:
-                index_prev += 1
-                indices.append(index_prev)
+                    if index > index_prev and (len(elts_unassigned) == 1 or len(elts_unassigned) <= index - index_prev):
+                        index_prev = _assign_unassigned(indices, elts_unassigned, indices_unassigned, index_prev, index)
+            index_prev = _assign_unassigned(indices, elts_unassigned, indices_unassigned, index_prev, -2)
             return indices
 
         @classmethod
         def sequence_to_str(xcls, dict_source, dict_dest, key):
             key = xcls.key(key)
-            sequence_object = list(dict_source[key])
-            str_keys = []
+            sequence_object = [elt for elt in list(dict_source[key]) if elt != '']
             regexp = re.compile('^%s-\d+$' % (key))
-            assignments_old = dict([(dict_dest[str_key], xcls.key_to_index(key, str_key)) for str_key in sorted(
-                [key_to_test for key_to_test in dict_dest if regexp.match(key_to_test)],
-                key = lambda key_to_convert: xcls.key_to_index(key, key_to_convert)
-                )])
-            indices = xcls.assign_elts(sequence_object, assignments_old)
+            str_keys = [key_to_test for key_to_test in dict_dest if regexp.match(key_to_test)]
+            keys_unassigned = [str_key for str_key in str_keys if dict_dest[str_key] == '']
+            str_keys = [str_key for str_key in str_keys if str_key not in keys_unassigned]
+            assignments_old = dict([(dict_dest[str_key], xcls.key_to_index(key, str_key)) for str_key in sorted(str_keys, key = lambda key_to_convert: xcls.key_to_index(key, key_to_convert))])
+            indices = xcls.assign_elts(sequence_object, assignments_old, [xcls.key_to_index(key, key_to_convert) for key_to_convert in keys_unassigned])
+            for str_key in str_keys:
+                del dict_dest[str_key]
             while len(sequence_object) > 0:
                 elt = sequence_object.pop(0)
                 index = indices.pop(0)
