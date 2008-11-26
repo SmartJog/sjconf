@@ -165,7 +165,7 @@ class SJConf:
         self._load_conf_local()
         conf = self.confs['local']
         regexp = re.compile('^%s-\d+$' % (key))
-        old_keys = dict([(key_to_test, value_to_test) for (key_to_test, value_to_test) in conf[section].iteritems() if regexp.match(key_to_test)])
+        old_keys = section in conf and dict([(key_to_test, value_to_test) for (key_to_test, value_to_test) in conf[section].iteritems() if regexp.match(key_to_test)]) or {}
         self._generic_list_remove(section, key, 'sequence', value)
         new_keys = dict([(key_to_test, value_to_test) for (key_to_test, value_to_test) in conf[section].iteritems() if regexp.match(key_to_test)])
         self._sequence_diff(section, key, old_keys, new_keys)
@@ -572,20 +572,31 @@ class SJConf:
                 value_old = conf[section][key_typed]
                 self._logger('The key "%s" in section "%s" does not exist in local configuration, but exist in base or profile configuration, the new value will be appended to "%s".' % (key, section, repr(value_old)))
             except KeyError:
-                pass
+                value_old = []
+        if value in value_old:
+            raise Conf.ListValueAlreadyExistError(section, key, value)
+        self._generic_list_modify(section, key, type, value, 'append')
+
+    def _generic_list_remove(self, section, key, type, value):
         conf = self.conf()
+        conf.set_type(section, key, type)
+        key_typed = key + '_' + type
+        conf[section][key_typed].remove(value)
+        self.confs['local'].set_type(section, key, type)
+        self.confs['local'][section][key_typed] = conf[section][key_typed]
+
+    def _generic_list_modify(self, section, key, type, value, method):
+        conf = self.conf()
+        key_typed = key + '_' + type
         if section not in conf:
             conf[section] = conf.conf_section_class()
         conf.set_type(section, key, type)
-        key_typed = key + '_' + type
         try:
             conf[section][key_typed]
         except KeyError:
             conf[section][key_typed] = []
-        if value in conf[section][key_typed]:
-            raise Conf.ListValueAlreadyExistError(section, key, value)
         old_keys = dict(conf[section])
-        conf[section][key_typed].append(value)
+        getattr(conf[section][key_typed], method)(value)
         if section not in self.confs['local']:
             self.confs['local'][section] = conf.conf_section_class()
         for new_key, new_value in conf[section].iteritems():
@@ -598,14 +609,6 @@ class SJConf:
                     self.confs['local'][section][old_key] = ''
                 else:
                     del self.confs['local'][section][old_key]
-
-    def _generic_list_remove(self, section, key, type, value):
-        conf = self.conf()
-        conf.set_type(section, key, type)
-        key_typed = key + '_' + type
-        conf[section][key_typed].remove(value)
-        self.confs['local'].set_type(section, key, type)
-        self.confs['local'][section][key_typed] = conf[section][key_typed]
 
     def _sequence_diff(self, section, key, old_keys, new_keys):
         for key in old_keys:
