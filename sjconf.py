@@ -571,11 +571,20 @@ class SJConf:
             conf[section][key_typed] = []
         if value in conf[section][key_typed]:
             raise Conf.ListValueAlreadyExistError(section, key, value)
+        old_keys = dict(conf[section])
         conf[section][key_typed].append(value)
         if section not in self.confs['local']:
             self.confs['local'][section] = conf.conf_section_class()
-        self.confs['local'].set_type(section, key, type)
-        self.confs['local'][section][key_typed] = conf[section][key_typed]
+        for new_key, new_value in conf[section].iteritems():
+            if new_value != old_keys.get(new_key):
+                self.confs['local'][section][new_key] = new_value
+        conf_base = self.conf_base().get(section)
+        for old_key in old_keys:
+            if old_key not in conf[section]:
+                if conf_base and old_key in conf_base:
+                    self.confs['local'][section][old_key] = ''
+                else:
+                    del self.confs['local'][section][old_key]
         try:
             self.conf_local()[section][key_typed]
         except KeyError:
