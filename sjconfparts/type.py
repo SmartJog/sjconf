@@ -223,6 +223,8 @@ class Type(TypePythonIsCrappy):
                 indices_available = [index_unassigned for index_unassigned in indices_unassigned if index_unassigned > index_prev and (index_unassigned < index or index < -1)]
                 for index_available in indices_available:
                     indices_unassigned.remove(index_available)
+                while len(indices_available) > len(elts_unassigned) - (index >= -1 and 1 or 0):
+                    indices_available.pop()
                 indices_available.append(index)
                 indices_to_assign = []
                 for index_available in indices_available:
