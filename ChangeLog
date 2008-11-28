@@ -1,4 +1,4 @@
-Version 1.7.2~dev
+Version 1.7.2 Released on 2008/11/28
 
 	* Fix wrong use of “available” keys. If a key was set to the empty string in the local configuration to delete a key, when appending a new value, the key right after the available one was assigned to it (thus “shifted”). Closes: #1179.
 
