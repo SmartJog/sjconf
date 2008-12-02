@@ -27,3 +27,11 @@ class DistribNotEnabledError(DistribError):
 class RestoreError(Error):
     def __init__(self, exception, backup_dir):
         self.msg = "Error during restore: %s, please restore files manually from %s" % (str(exception), backup_dir)
+
+class ProfileAlreadyEnabledError(Error):
+    def __init__(self, profile_name, profile_level):
+	self.msg = "Profile already enabled: %s, level: %s" % (profile_name, profile_level)
+
+class ProfileNotEnabledError(Error):
+    def __init__(self, profile_name):
+	self.msg = "Profile not enabled: %s" % (profile_name)
