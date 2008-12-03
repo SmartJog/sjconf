@@ -30,8 +30,8 @@ class RestoreError(Error):
 
 class ProfileAlreadyEnabledError(Error):
     def __init__(self, profile_name, profile_level):
-	self.msg = "Profile already enabled: %s, level: %s" % (profile_name, profile_level)
+    	self.msg = "Profile already enabled: %s, level: %s" % (profile_name, profile_level)
 
 class ProfileNotEnabledError(Error):
     def __init__(self, profile_name):
-	self.msg = "Profile not enabled: %s" % (profile_name)
+    	self.msg = "Profile not enabled: %s" % (profile_name)
