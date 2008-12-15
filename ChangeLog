@@ -1,4 +1,4 @@
-Version 1.7.3~dev
+Version 1.7.3 Released on 2008/12/15
 
     * Fix problem about some exceptions not declared. Closes: #1167.
 
