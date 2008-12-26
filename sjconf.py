@@ -240,6 +240,7 @@ class SJConf:
     def file_uninstall(self, file_type, file_to_uninstall):
         if self.verbose:
             self._logger("Uninstalling file: %s" % (file_to_uninstall))
+        self._file_uninstall_cleanup(file_type, file_to_uninstall)
         file_to_uninstall_path = self._file_path(file_type, file_to_uninstall)
         if not os.path.islink(file_to_uninstall_path) and os.path.isdir(file_to_uninstall_path):
             shutil.rmtree(file_to_uninstall_path)
@@ -558,6 +559,22 @@ class SJConf:
         if not os.path.exists(file_path):
             raise FileNotInstalledError(file_path)
         return file_path
+
+    def _file_uninstall_cleanup(self, type, file):
+        """
+        function        _file_uninstall_cleanup
+        description     remove references about a file in the configuration
+                        (e.g. disable file usage) in order to get a proper
+                        state before uninstall this file
+        arguments       type - type of file to delete
+                        file - name of file to delete
+        return          none
+        """
+
+        if type == 'profile' and self.profiles_infos([file])[file] != None:   # Profile file currenly used
+            self.profile_disable(file)
+        elif type == 'plugin' and self.plugins_infos([file])[file]['is_enabled']:   # Plugin file currently used
+            self.plugin_disable(file)
 
     def _generic_list_add(self, section, key, type, value):
         key_typed = key + '_' + type

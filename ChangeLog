@@ -1,3 +1,7 @@
+Version 1.7.4~dev
+
+	* Fix bug about uninstalling enabled profiles. Closes: #1184.
+
 Version 1.7.3 Released on 2008/12/15
 
     * Fix problem about some exceptions not declared. Closes: #1167.

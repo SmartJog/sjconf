@@ -1,3 +1,9 @@
+sjconf (1.7.4~dev) unstable; urgency=low
+
+  * New upstream release. 
+
+ -- Clement Gauthey <clement.gauthey@smartjog.com>  Fri, 26 Dec 2008 09:58:40 +0100
+
 sjconf (1.7.3-1) unstable; urgency=low
 
   * New upstream release.
