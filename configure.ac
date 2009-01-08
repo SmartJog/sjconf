@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-    stat AC_INIT(sjconf, 1.7.4~dev)
+    stat AC_INIT(sjconf, 1.8.0~dev)
 
 dnl 2.52 is quite realistic
 AC_PREREQ(2.52)
@@ -32,6 +32,9 @@ AC_SUBST([sjconftemplatesconfdir])
 sjconfpartspythondir=$pythondir/sjconfparts
 AC_SUBST([sjconfpartspythondir])
 
+autotoolspkgdatadir=\$\(pkgdatadir\)/autotools
+AC_SUBST([autotoolspkgdatadir])
+
 AC_CONFIG_FILES([Makefile \
                  doc/Makefile \
                  conf/Makefile \
@@ -40,6 +43,7 @@ AC_CONFIG_FILES([Makefile \
                  conf/custom/Makefile \
                  conf/templates/Makefile \
                  sjconfparts/Makefile \
+                 autotools/Makefile \
                  sjconf \
                  ])
 

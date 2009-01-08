@@ -1,0 +1,19 @@
+AC_DEFUN([AC_PROG_SJCONF], [
+dnl Default value for sjconf
+DEFAULT_SJCONF=sjconf
+
+AC_ARG_WITH([sjconf],
+            [AS_HELP_STRING([--with-sjconf], [specifies path to sjconf binary])],
+            [SJCONF=$withval],
+            [SJCONF=$DEFAULT_SJCONF])
+
+AS_IF([test "x$SJCONF" = xno], [SJCONF=true], [ : ])
+AS_IF([test "x$SJCONF" = xyes], [SJCONF=$DEFAULT_SJCONF], [ : ])
+
+AC_CHECK_PROG(SJCONF_EXISTS, $SJCONF, yes, no)
+AS_IF([test "x$SJCONF_EXISTS" = xno], [AC_MSG_ERROR([$SJCONF not found])])
+
+AC_SUBST([SJCONF])
+AC_SUBST_FILE([AM_SJCONF])
+AM_SJCONF=@autotoolspkgdatadir@/sjconf.am
+])

@@ -1,0 +1,84 @@
+ifdef SJCONF_PLUGINS_WITH_TEMPLATE
+SJCONF_PLUGINS += $(SJCONF_PLUGINS_WITH_TEMPLATE)
+endif
+
+ifdef SJCONF_PLUGINS
+SUBDIRS += confs
+endif
+
+ifdef SJCONF_PLUGINS_WITH_TEMPLATE
+SUBDIRS += templates
+endif
+
+ifdef SJCONF_PLUGINS
+all:
+	make -C $(top_builddir) $(patsubst %,$(subdir)/plugins/%.py,$(SJCONF_PLUGINS))
+endif
+
+install-data-am: install-sjconf-plugins
+
+SJCONF_PLUGINS_INSTALL_TARGETS = $(patsubst %,install-sjconf-plugin-%,$(SJCONF_PLUGINS))
+
+.PHONY: install-sjconf-plugins
+install-sjconf-plugins: $(SJCONF_PLUGINS_INSTALL)
+
+.PHONY: $(SJCONF_PLUGINS_INSTALL)
+$(SJCONF_PLUGINS_INSTALL): SJCONF_PLUGIN = $(patsubst install-sjconf-plugin-%,%,$@)
+$(SJCONF_PLUGINS_INSTALL):
+ifeq ($(findstring $(SJCONF_PLUGIN),$(SJCONF_PLUGINS_WITH_TEMPLATE)),$(SJCONF_PLUGIN))
+	$(SJCONF) --install-template templates/$(SJCONF_PLUGIN)
+endif
+	$(SJCONF) --install-conf confs/$(SJCONF_PLUGIN).conf
+	$(SJCONF) --install-plugin plugins/$(SJCONF_PLUGIN).py
+	$(SJCONF) --enable-plugin $(SJCONF_PLUGIN)
+
+uninstall-am: uninstall-sjconf-plugins
+
+UNINSTALL_TARGETS = $(patsubst %,uninstall-sjconf-plugin-%,$(SJCONF_PLUGINS))
+
+.PHONY: uninstall-sjconf-plugins
+uninstall-sjconf-plugins: $(SJCONF_PLUGINS_UNINSTALL)
+
+.PHONY: $(SJCONF_PLUGINS_UNINSTALL)
+$(SJCONF_PLUGINS_UNINSTALL): SJCONF_PLUGIN = $(patsubst uninstall-sjconf-plugin-%,%,$@)
+$(SJCONF_PLUGINS_UNINSTALL):
+	$(SJCONF) --disable-plugin $(SJCONF_PLUGIN)
+	$(SJCONF) --uninstall-plugin $(SJCONF_PLUGIN)
+	$(SJCONF) --uninstall-conf $(SJCONF_PLUGIN)
+ifeq ($(findstring $(SJCONF_PLUGIN),$(SJCONF_PLUGINS_WITH_TEMPLATE)),$(SJCONF_PLUGIN))
+	$(SJCONF) --uninstall-template $(SJCONF_PLUGIN)
+endif
+
+ifdef SJCONF_PROFILES
+EXTRA_DIST += $(patsubst %,%.conf,$(SJCONF_PROFILES))
+endif
+
+install-data-am: install-sjconf-profiles
+
+SJCONF_PROFILES_INSTALL = $(patsubst %,install-sjconf-profile-%,$(SJCONF_PROFILES))
+
+.PHONY: install-sjconf-profiles
+install-sjconf-profiles: $(SJCONF_PROFILES_INSTALL)
+
+.PHONY: $(SJCONF_PROFILES_INSTALL)
+$(SJCONF_PROFILES_INSTALL): SJCONF_PROFILE = $(patsubst install-sjconf-profile-%,%,$@)
+$(SJCONF_PROFILES_INSTALL):
+ifndef SJCONF_PROFILE_VARIABLE
+	@$(MAKE) SJCONF_PROFILE_VARIABLE="`echo $(SJCONF_PROFILE) | sed -e 's/[^a-zA-Z0-9_@]/_/'`" $@
+else
+	$(SJCONF) --install-profile $(SJCONF_PROFILE).conf
+	$(SJCONF) --enable-profile $(SJCONF_PROFILE) $($(SJCONF_PROFILE_VARIABLE)_LEVEL)
+endif
+
+uninstall-am: uninstall-sjconf-profiles
+
+SJCONF_PROFILES_UNINSTALL = $(patsubst %,uninstall-sjconf-profile-%,$(SJCONF_PROFILES))
+
+.PHONY: uninstall-sjconf-profiles
+uninstall-sjconf-profiles: $(SJCONF_PROFILES_UNINSTALL)
+
+.PHONY: $(SJCONF_PROFILES_UNINSTALL)
+$(SJCONF_PROFILES_UNINSTALL): SJCONF_PROFILE = $(patsubst uninstall-sjconf-profile-%,%,$@)
+$(SJCONF_PROFILES_UNINSTALL):
+	$(SJCONF) --disable-profile $(SJCONF_PROFILE)
+	$(SJCONF) --uninstall-profile $(SJCONF_PROFILE)

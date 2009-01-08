@@ -1,4 +1,4 @@
-SUBDIRS = doc conf sjconfparts
+SUBDIRS = doc conf sjconfparts autotools
 
 sjconfpluginslocalstate_DATA =
 
