@@ -1,4 +1,4 @@
-Version 1.8.0~dev
+Version 1.8.0 Released on 2009/01/12
 
 	* Fix bug about uninstalling enabled profiles. Closes: #1184.
 	* Add autotools macros for plugins.
