@@ -116,6 +116,9 @@ Enable the profile "profile" at level "level".
 : --**disable-profile** //<profile>//
 Disable the profile "profile".
 
+: --**list-profiles** //<profile>//
+List installed profiles.
+
 
 = TYPES =
 
