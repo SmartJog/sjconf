@@ -18,7 +18,7 @@ sjconf in itself does not have any knowledge of configuration files and their se
 
 sjconf is based on the concept of levels of configuration files:
 
-  - The first level is the "base" directory. It contains one file per plugin. Deploying configuration with only this configuration *must* result in a configuration strictly jjequivalent to the program's default one. For example, a plugin configuring /etc/apt/sources.list must put only the one given by a default debian installation.
+  - The first level is the "base" directory. It contains one file per plugin. Deploying configuration with only this configuration *must* result in a configuration strictly equivalent to the program's default one. For example, a plugin configuring /etc/apt/sources.list must put only the one given by a default debian installation.
 
   - The other levels are the "profile" files. They are defined using the "profile-<level number>" configuration variables of the "sjconf" section in the "local.conf" file (see below). Each profile configuration file  must be provided by a unique sjconf-profile-<profile> package, which should install the file in the correct level and depend on the correct lower-level profile packages, if any. The rules are simple: each configuration file of a given level has precedence over all the lower levels (including "base"). For a given level, several configuration files can co-exist, provided they do not define a different value for the same configuration key. If there is a conflict, it must be resolved by defining the conflicting key in higher level configuration file.
 
