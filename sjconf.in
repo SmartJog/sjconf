@@ -172,6 +172,8 @@ class SJConfCLI:
 
     def run(self):
         if self.verbose:
+            self.sjconf._load_conf_base()
+            self.sjconf._load_conf_local()
             self._my_print('Using base configuration file: %s' % self.sjconf.confs['base'].file_path)
             self._my_print('Using local configuration file: %s' % self.sjconf.confs['local'].file_path)
             self._my_print('')
