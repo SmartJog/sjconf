@@ -378,7 +378,7 @@ class SJConf:
             plugins_hash[plugin.name()] = plugin
         for plugin in plugins:
             plugin_dependencies_hash = self._plugin_dependencies(plugin, plugins_hash)
-            if len(plugin_dependencies_hash) > 0: 
+            if len(plugin_dependencies_hash) > 0:
                 plugin.set_plugins(plugin_dependencies_hash)
 
     def _plugins_init(self, plugins_list = None):

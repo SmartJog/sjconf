@@ -7,7 +7,7 @@ sjconf (1.8.1~dev-1) unstable; urgency=low
 sjconf (1.8.0-1) unstable; urgency=low
 
   [ Clement Gauthey ]
-  * New upstream release. 
+  * New upstream release.
 
  -- Jean-Philippe Garcia Ballester <jeanphilippe.garciaballester@smartjog.com>  Thu, 08 Jan 2009 17:39:26 +0100
 

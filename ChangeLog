@@ -9,7 +9,7 @@ Version 1.8.0 Released on 2009/01/12
 
 Version 1.7.3 Released on 2008/12/15
 
-    * Fix problem about some exceptions not declared. Closes: #1167.
+	* Fix problem about some exceptions not declared. Closes: #1167.
 
 Version 1.7.2 Released on 2008/11/28
 
