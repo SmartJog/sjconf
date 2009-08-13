@@ -109,6 +109,11 @@ class SJConf:
             for plugin_name in plugins_hash.keys():
                 if not plugin_name in services_to_restart:
                     services_to_restart.append(plugin_name)
+
+        invalid_plugins = [plugin for plugin in services_to_restart if plugin not in plugins_hash]
+        if invalid_plugins:
+            raise PluginsNotExistError(*invalid_plugins)
+
         for service_to_restart in services_to_restart:
             if reload:
                 plugins_hash[service_to_restart].reload_all_services()

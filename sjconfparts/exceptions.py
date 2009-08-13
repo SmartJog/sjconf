@@ -35,3 +35,10 @@ class ProfileAlreadyEnabledError(Error):
 class ProfileNotEnabledError(Error):
     def __init__(self, profile_name):
     	self.msg = "Profile not enabled: %s" % (profile_name)
+
+class PluginsNotExistError(Error):
+    def __init__(self, *plugins):
+        if len(plugins) == 1:
+            self.msg = "Plugin %s does not exist" % (plugins[0])
+        else:
+            self.msg = "Plugins %s do not exist" % (", ".join(plugins))
