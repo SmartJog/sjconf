@@ -34,6 +34,7 @@ class SJConfCLI:
         self.plugins_to_disable = []
         self.profiles_to_enable = []
         self.profiles_to_disable = []
+        self.services_to_reload = []
         self.services_to_restart = []
         self.changes = False
         self.quiet = False
@@ -59,6 +60,7 @@ class SJConfCLI:
         --save                                   : save modification (mandatory to deploy)
         --deploy                                 : deploy configuration
         --restart plugin                         : restart all services of “plugin”. If “plugin” is “all, then restart all services of all plugins.
+        --reload plugin                          : reload all services of ”plugin”. If ”plugin” is ”all”, then reload all services of all plugins.
         --get section key                        : get a configuration key
         --set section key value                  : set a configuration key
         --add-to-list section key value          : add a value to a configuration key
@@ -115,6 +117,8 @@ class SJConfCLI:
                     self.save = True
                 elif cmd == '--restart':
                     self.services_to_restart += self._get_params(argv, 1)
+                elif cmd == '--reload':
+                    self.services_to_reload += self._get_params(argv, 1)
                 elif cmd == '--get':
                     self.get = self._get_params(argv, 2)
                 elif cmd == '--set':
@@ -253,6 +257,9 @@ class SJConfCLI:
 
         if not self.deploy and self.services_to_restart:
             self.sjconf.restart_services(self.services_to_restart)
+
+        if not self.deploy and self.services_to_reload:
+            self.sjconf.restart_services(self.services_to_reload, reload=True)
 
         if self.deploy:
             self.sjconf.deploy_conf(self.services_to_restart)

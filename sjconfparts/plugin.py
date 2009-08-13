@@ -97,6 +97,9 @@ class Plugin(PythonIsCrappy):
     def services_to_restart(self):
         return ()
 
+    def services_to_reload(self):
+        return ()
+
     def conf_files_path(self):
         return ()
 
@@ -138,8 +141,15 @@ class Plugin(PythonIsCrappy):
         for service in self.services_to_restart():
             self.restart_service(service)
 
+    def reload_all_services(self):
+        for service in self.services_to_reload():
+            self.reload_service(service)
+
     def restart_service(self, service):
         os.system('invoke-rc.d %s restart' % (service))
+
+    def reload_service(self, service):
+        os.system('invoke-rc.d %s reload' % (service))
 
 class PluginWithTemplate(Plugin):
     def template_path(self, file_path, confs_to_test = None):

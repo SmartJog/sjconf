@@ -101,7 +101,7 @@ class SJConf:
             plugins[plugin.name()] = plugin
         return plugins
 
-    def restart_services(self, services_to_restart):
+    def restart_services(self, services_to_restart, reload=False):
         self._plugins_load()
         plugins_hash = dict([(plugin.name(), plugin) for plugin in self.plugins_list])
         if 'all' in services_to_restart:
@@ -110,7 +110,10 @@ class SJConf:
                 if not plugin_name in services_to_restart:
                     services_to_restart.append(plugin_name)
         for service_to_restart in services_to_restart:
-            plugins_hash[service_to_restart].restart_all_services()
+            if reload:
+                plugins_hash[service_to_restart].reload_all_services()
+            else:
+                plugins_hash[service_to_restart].restart_all_services()
 
     def delete_section(self, section):
         self._load_conf_local()
