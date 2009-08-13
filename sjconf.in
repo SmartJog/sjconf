@@ -59,7 +59,7 @@ class SJConfCLI:
         --diff                                   : show “diff -u” between old and new configuration files
         --save                                   : save modification (mandatory to deploy)
         --deploy                                 : deploy configuration
-        --restart plugin                         : restart all services of “plugin”. If “plugin” is “all, then restart all services of all plugins.
+        --restart plugin                         : restart all services of “plugin”. If “plugin” is “all”, then restart all services of all plugins.
         --reload plugin                          : reload all services of ”plugin”. If ”plugin” is ”all”, then reload all services of all plugins.
         --get section key                        : get a configuration key
         --set section key value                  : set a configuration key
