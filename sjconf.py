@@ -199,7 +199,7 @@ class SJConf:
             output_file = conf.file_path
         conf.save(output_file)
 
-    def deploy_conf(self, services_to_restart = ()):
+    def deploy_conf(self, services_to_restart = (), services_to_reload = ()):
         self._plugins_load()
         conf_files = self._conf_files(self.plugins_list)
         files_to_backup = self._files_to_backup(self.plugins_list) + conf_files
@@ -212,12 +212,18 @@ class SJConf:
             # restart services if asked
             if len(services_to_restart) > 0:
                 self.restart_services(services_to_restart)
+            # reload services if asked
+            if len(services_to_reload) > 0:
+                self.restart_services(services_to_reload, reload=True)
+
             self._logger('')
         except:
             # Something when wrong, restoring backup files
             self.restore_files(files_to_backup)
             if len(services_to_restart) > 0:
                 self.restart_services(services_to_restart)
+            if len(services_to_reload) > 0:
+                self.restart_services(services_to_reload, reload=True)
             # And delete backup folder
             self._delete_backup_dir()
             raise

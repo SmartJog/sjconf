@@ -262,7 +262,7 @@ class SJConfCLI:
             self.sjconf.restart_services(self.services_to_reload, reload=True)
 
         if self.deploy:
-            self.sjconf.deploy_conf(self.services_to_restart)
+            self.sjconf.deploy_conf(self.services_to_restart, self.services_to_reload)
 
 if __name__ == '__main__':
     try:
