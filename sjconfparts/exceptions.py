@@ -38,7 +38,4 @@ class ProfileNotEnabledError(Error):
 
 class PluginsNotExistError(Error):
     def __init__(self, *plugins):
-        if len(plugins) == 1:
-            self.msg = "Plugin %s does not exist" % (plugins[0])
-        else:
-            self.msg = "Plugins %s do not exist" % (", ".join(plugins))
+        self.msg = 'Plugin%s ' % (len(plugins) > 1 and 's' or '') + ', '.join(plugins) + ' do%s ' % (len(plugins) == 1 and 'es' or '') + "not exist"
