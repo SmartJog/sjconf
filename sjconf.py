@@ -199,11 +199,12 @@ class SJConf:
             output_file = conf.file_path
         conf.save(output_file)
 
-    def deploy_conf(self, services_to_restart = (), services_to_reload = ()):
+    def deploy_conf(self, services_to_restart = (), services_to_reload = (), backup=True):
         self._plugins_load()
         conf_files = self._conf_files(self.plugins_list)
-        files_to_backup = self._files_to_backup(self.plugins_list) + conf_files
-        self.backup_files(files_to_backup)
+        if backup:
+            files_to_backup = self._files_to_backup(self.plugins_list) + conf_files
+            self.backup_files(files_to_backup)
 
         try:
             # Write all configuration files
@@ -218,20 +219,25 @@ class SJConf:
 
             self._logger('')
         except:
-            # Something when wrong, restoring backup files
-            self.restore_files(files_to_backup)
+            if backup:
+                # Something when wrong, restoring backup files
+                self.restore_files(files_to_backup)
             if len(services_to_restart) > 0:
                 self.restart_services(services_to_restart)
             if len(services_to_reload) > 0:
                 self.restart_services(services_to_reload, reload=True)
             # And delete backup folder
-            self._delete_backup_dir()
+            if backup:
+                self._delete_backup_dir()
             raise
-        # Only archive once everything is OK
-        self._archive_backup()
-        self._logger('')
-        # Delete backup, everything is cool
-        self._delete_backup_dir()
+        if backup:
+            # Only archive once everything is OK
+            self._archive_backup()
+            self._logger('')
+            # Delete backup, everything is cool
+            self._delete_backup_dir()
+        else:
+            self.logger("No backup created as requested")
 
     def file_install(self, file_type, file_to_install, link=False):
         if self.verbose:

@@ -50,6 +50,9 @@ Save modification (mandatory to deploy).
 : --**deploy**
 Deploy configuration.
 
+: --**no-backup**
+Do not backup configuration files. To be used with --**deploy** option.
+
 : --**restart** //<plugin>// | //all//
 Restart all services of "plugin". If "plugin" is "all", then restart all services of all plugins.
 
