@@ -3,6 +3,7 @@ Version 1.9.0~dev
 	* Add a --no-backup option that prevents backing up configuration files when deploying configuration, closes: #2262.
 	* Fix KeyError when trying to restart an unknown plugin, closes: #799.
 	* Add option to reload services, closes: #2255.
+	* Do not modify sys.path in order to load plugins, closes: #2272.
 
 Version 1.8.1 Released on 2009/06/22
 

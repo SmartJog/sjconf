@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import re, sys, os, errno, time, shutil, tarfile, glob
+import re, os, errno, time, shutil, tarfile, glob
+import imp
 
 from sjconfparts.type import *
 from sjconfparts.plugin import *
@@ -31,8 +32,6 @@ class SJConf:
             'profile' : self.base_dir + '/profiles'
         }
         self.files_extensions = {'plugin' : ('.py',), 'template' : ('.conf',), 'conf' : ('.conf',), 'profile' : ('.conf',)}
-
-        sys.path.append(self.files_path['plugin'])
 
         self.verbose = verbose
         self.logger = logger
@@ -406,7 +405,11 @@ class SJConf:
             plugins_list = self.confs_internal['sjconf']['conf']['plugins_list']
         plugins = []
         for plugin in plugins_list:
-            plugins.append(__import__(plugin).Plugin(plugin, self, self.plugin_conf(plugin)))
+            # Using this method of import, we do not have to modify
+            # sys.path, which could pose problems for people using us
+            # in an other Python program
+            plugin_module = imp.load_module(plugin, *imp.find_module(plugin, [self.files_path['plugin']]))
+            plugins.append(plugin_module.Plugin(plugin, self, self.plugin_conf(plugin)))
         return plugins
 
     def _plugins_load(self):
