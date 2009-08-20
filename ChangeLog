@@ -1,4 +1,4 @@
-Version 1.9.0~dev
+Version 1.9.0 Released on 2009/08/20
 
 	* Add a --no-backup option that prevents backing up configuration files when deploying configuration, closes: #2262.
 	* Fix KeyError when trying to restart an unknown plugin, closes: #799.
