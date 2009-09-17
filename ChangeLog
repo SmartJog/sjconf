@@ -1,3 +1,7 @@
+Version 1.9.1~dev
+
+	* Fix Traceback when using no backup directly in a python module, closes: #2345.
+
 Version 1.9.0 Released on 2009/08/20
 
 	* Add a --no-backup option that prevents backing up configuration files when deploying configuration, closes: #2262.

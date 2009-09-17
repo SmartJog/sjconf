@@ -236,7 +236,7 @@ class SJConf:
             # Delete backup, everything is cool
             self._delete_backup_dir()
         else:
-            self.logger("No backup created as requested")
+            self._logger("No backup created as requested")
 
     def file_install(self, file_type, file_to_install, link=False):
         if self.verbose:
