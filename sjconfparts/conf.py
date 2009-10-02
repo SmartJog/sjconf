@@ -1,6 +1,7 @@
 from sjconfparts.type import *
 from sjconfparts.exceptions import *
 import os, re, ConfigParser, errno
+import sjutils
 
 class Conf:
 
@@ -22,11 +23,11 @@ class Conf:
         def __init__(self, conf_name1, conf_name2, section, key):
             self.msg = 'The profiles "%s" and "%s" are enabled on the same level, but have a conflicting value for key "%s" in section "%s", please set it to the appropriate value in local.conf or disable one of the profiles' % (conf_name1, conf_name2, key, section)
 
-    class SafeConfigParser(ConfigParser.SafeConfigParser):
+    class SafeConfigParser(sjutils.OrderedSafeConfigParser):
         def optionxform(self, optionstr):
             return optionstr
 
-    class RawConfigParser(ConfigParser.RawConfigParser):
+    class RawConfigParser(sjutils.OrderedRawConfigParser):
         def optionxform(self, optionstr):
             return optionstr
 

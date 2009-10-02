@@ -1,8 +1,9 @@
 sjconf (1.9.1~dev-1) unstable; urgency=low
 
   * New upstream release.
+  * Added a dependency on python-sjutils (>= 1.11), refs: #2315
 
- -- Benoit Mauduit <benoit.mauduit@smartjog.com>  Thu, 17 Sep 2009 14:49:45 +0200
+ -- Nicolas Noirbent <nicolas.noirbent@smartjog.com>  Fri, 02 Oct 2009 17:36:20 +0200
 
 sjconf (1.9.0-1) unstable; urgency=low
 
