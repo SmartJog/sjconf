@@ -4,7 +4,7 @@ Section: admin
 Maintainer: Philippe BRIDANT <philippe.bridant@smartjog.com>
 Uploaders: Jean-Philippe Garcia Ballester <jeanphilippe.garciaballester@smartjog.com>, Gilles Dartiguelongue <gdartigu@smartjog.com>, Benoit Mauduit <bmauduit@smartjog.com>, Nicolas Noirbent <nicolas.noirbent@smartjog.com>
 Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5.0.38), python-central (>= 0.5), txt2tags
-Standards-Version: 3.8.0
+Standards-Version: 3.8.3
 XS-Python-Version: all
 
 Package: sjconf1
