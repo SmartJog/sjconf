@@ -1,4 +1,4 @@
-Version 1.9.1~dev
+Version 1.9.1 Released on 2009/10/27
 
 	* Fix Traceback when using no backup directly in a python module, closes: #2345.
 	* Use sjutils' new OrderedConfigParser classes, closes: #2315.
