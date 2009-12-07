@@ -1,3 +1,7 @@
+Version 1.9.3~dev
+
+	* Remove empty sections to local conf when deleting a key/sequence, closes: #2611.
+
 Version 1.9.2 Released on 2009/11/03
 
 	* Dummy release

@@ -131,6 +131,9 @@ class SJConf:
         conf = self.confs['local']
         if section in conf and key in conf[section]:
                 del(conf[section][key])
+            # If section becomes empty, remove it
+            if not conf[section]:
+                del(conf[section])
         self._logger('delete key     : %s: %s' % (section, key))
 
     def set(self, section, key, value):
@@ -176,6 +179,9 @@ class SJConf:
         self._generic_list_remove(section, key, 'sequence', value)
         new_keys = dict([(key_to_test, value_to_test) for (key_to_test, value_to_test) in conf[section].iteritems() if regexp.match(key_to_test)])
         self._sequence_diff(section, key, old_keys, new_keys)
+        # If section becomes empty, remove it
+        if not conf[section]:
+            del(conf[section])
 
     def apply_conf_modifications(self, temp = False, **kw):
         self._load_conf_local()

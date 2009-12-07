@@ -1,3 +1,9 @@
+sjconf (1.9.3~dev-1) unstable; urgency=low
+
+  * New upstream release. (Closes: #2611)
+
+ -- Benoit Mauduit <benoit.mauduit@smartjog.com>  Mon, 07 Dec 2009 10:59:24 +0100
+
 sjconf (1.9.2-1) unstable; urgency=low
 
   * New upstream release.
