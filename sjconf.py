@@ -130,7 +130,7 @@ class SJConf:
         self._load_conf_local()
         conf = self.confs['local']
         if section in conf and key in conf[section]:
-                del(conf[section][key])
+            del(conf[section][key])
             # If section becomes empty, remove it
             if not conf[section]:
                 del(conf[section])
