@@ -1,4 +1,4 @@
-sjconf (1.9.3~dev-1) unstable; urgency=low
+sjconf (1.9.3-1) unstable; urgency=low
 
   [ Benoit Mauduit ]
   * New upstream release. (Closes: #2611)
@@ -7,7 +7,7 @@ sjconf (1.9.3~dev-1) unstable; urgency=low
   * Clean up Uploaders.
   * Expand short-form email addresses.
 
- -- Gilles Dartiguelongue <gilles.dartiguelongue@smartjog.com>  Thu, 10 Dec 2009 15:52:17 +0100
+ -- Gilles Dartiguelongue <gilles.dartiguelongue@smartjog.com>  Thu, 10 Dec 2009 15:53:34 +0100
 
 sjconf (1.9.2-1) unstable; urgency=low
 
