@@ -1,8 +1,13 @@
 sjconf (1.9.3~dev-1) unstable; urgency=low
 
+  [ Benoit Mauduit ]
   * New upstream release. (Closes: #2611)
 
- -- Benoit Mauduit <benoit.mauduit@smartjog.com>  Mon, 07 Dec 2009 10:59:24 +0100
+  [ Gilles Dartiguelongue ]
+  * Clean up Uploaders.
+  * Expand short-form email addresses.
+
+ -- Gilles Dartiguelongue <gilles.dartiguelongue@smartjog.com>  Thu, 10 Dec 2009 15:52:17 +0100
 
 sjconf (1.9.2-1) unstable; urgency=low
 
@@ -36,7 +41,7 @@ sjconf (1.8.1-1) unstable; urgency=low
   * New upstream release.
   * Add myself to uploaders.
 
- -- Gilles Dartiguelongue <gdartigu@smartjog.com>  Mon, 22 Jun 2009 14:15:07 +0200
+ -- Gilles Dartiguelongue <gilles.dartiguelongue@smartjog.com>  Mon, 22 Jun 2009 14:15:07 +0200
 
 sjconf (1.8.0-1) unstable; urgency=low
 
