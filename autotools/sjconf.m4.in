@@ -11,7 +11,7 @@ AS_IF([test "x$SJCONF" = xno], [SJCONF=true], [ : ])
 AS_IF([test "x$SJCONF" = xyes], [SJCONF=$DEFAULT_SJCONF], [ : ])
 
 AC_CHECK_PROG(SJCONF_EXISTS, $SJCONF, yes, no)
-AS_IF([test "x$SJCONF_EXISTS" = xno], [AC_MSG_ERROR([$SJCONF not found])])
+AS_IF([test "x$SJCONF_EXISTS" = xno], [AC_MSG_WARN([$SJCONF not found])])
 
 AC_SUBST([SJCONF])
 AC_SUBST_FILE([AM_SJCONF])

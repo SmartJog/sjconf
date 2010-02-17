@@ -1,3 +1,7 @@
+Version 1.9.4~dev
+
+	* Make sjconf detection non-fatal in autoconf macro.
+
 Version 1.9.3 Released on 2009/12/10
 
 	* Remove empty sections to local conf when deleting a key/sequence, closes: #2611.

@@ -1,3 +1,9 @@
+sjconf (1.9.4~dev-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Gilles Dartiguelongue <gilles.dartiguelongue@smartjog.com>  Thu, 17 Dec 2009 12:23:42 +0100
+
 sjconf (1.9.3-1) unstable; urgency=low
 
   [ Benoit Mauduit ]
