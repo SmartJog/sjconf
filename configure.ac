@@ -32,6 +32,9 @@ AC_SUBST([sjconftemplatesconfdir])
 sjconfpartspythondir=$pythondir/sjconfparts
 AC_SUBST([sjconfpartspythondir])
 
+aclocaldir=\$\(datadir\)/aclocal
+AC_SUBST([aclocaldir])
+
 autotoolspkgdatadir=\$\(pkgdatadir\)/autotools
 AC_SUBST([autotoolspkgdatadir])
 
