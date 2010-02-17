@@ -18,3 +18,10 @@ Description: Configuration wrapper
  sjconf is a configuration wrapper that handles global and server-specific
  configuration, deployment and service restart.
  It can be accessed through a command-line utility or through a Python module.
+
+Package: sjconf1-dev
+Architecture: all
+Depends: ${misc:Depends}, sjconf1 (= ${binary:Version})
+Breaks: sjconf1 (<< 1.9.4~dev-1)
+Description: Development files for sjconf
+ provides autotools and automake files for packages using sjconf to use.

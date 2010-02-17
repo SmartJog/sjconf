@@ -1,7 +1,5 @@
 debian/tmp/usr/bin
 debian/tmp/etc/smartjog
 debian/tmp/var/lib/sjconf
-debian/tmp/usr/share/aclocal
 debian/tmp/usr/share/man
-debian/tmp/usr/share/sjconf
 debian/tmp/usr/lib

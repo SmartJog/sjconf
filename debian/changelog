@@ -1,6 +1,7 @@
 sjconf (1.9.4~dev-1) unstable; urgency=low
 
   * New upstream release.
+  * Move autoconf related files to sjconf1-dev.
 
  -- Gilles Dartiguelongue <gilles.dartiguelongue@smartjog.com>  Thu, 17 Dec 2009 12:23:42 +0100
 
