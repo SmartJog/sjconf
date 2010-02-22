@@ -1,6 +1,7 @@
 Version 1.9.4~dev
 
 	* Make sjconf detection non-fatal in autoconf macro.
+	* Rename AC_PROG_SJCONF to SJ_PROG_SJCONF (with compatibility alias).
 
 Version 1.9.3 Released on 2009/12/10
 

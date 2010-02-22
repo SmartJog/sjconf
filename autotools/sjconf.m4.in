@@ -1,4 +1,6 @@
-AC_DEFUN([AC_PROG_SJCONF], [
+AU_ALIAS([AC_PROG_SJCONF], [SJ_PROG_SJCONF])
+
+AC_DEFUN([SJ_PROG_SJCONF], [
 dnl Default value for sjconf
 DEFAULT_SJCONF=sjconf
 
