@@ -2,8 +2,10 @@ sjconf (1.9.4~dev-1) unstable; urgency=low
 
   * New upstream release.
   * Move autoconf related files to sjconf1-dev.
+  * Update packaging for Lenny.
+  * Add myself to Uploaders.
 
- -- Gilles Dartiguelongue <gilles.dartiguelongue@smartjog.com>  Thu, 17 Dec 2009 12:23:42 +0100
+ -- Rémi Cardona <remi.cardona@smartjog.com>  Wed, 24 Mar 2010 15:04:20 +0100
 
 sjconf (1.9.3-1) unstable; urgency=low
 
