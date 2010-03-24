@@ -3,6 +3,7 @@ Version 1.9.4~dev
 	* Make sjconf detection non-fatal in autoconf macro.
 	* Rename AC_PROG_SJCONF to SJ_PROG_SJCONF (with compatibility alias).
 	* Install autoconf macro in ${datadir}/aclocal.
+	* Check for txt2tags in configure.
 
 Version 1.9.3 Released on 2009/12/10
 

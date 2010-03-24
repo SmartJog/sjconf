@@ -7,6 +7,7 @@ AC_PREREQ(2.52)
 AM_INIT_AUTOMAKE([foreign])
 
 AM_PATH_PYTHON([2.3])
+AC_PATH_PROG(TXT2TAGS, txt2tags)
 
 sjconflocalstatedir=$localstatedir/lib/sjconf
 AC_SUBST([sjconflocalstatedir])
