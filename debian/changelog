@@ -1,4 +1,4 @@
-sjconf (1.9.4~dev-1) unstable; urgency=low
+sjconf (1.9.4-1) unstable; urgency=low
 
   * New upstream release.
   * Move autoconf related files to sjconf1-dev.
