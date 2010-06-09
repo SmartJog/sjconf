@@ -132,6 +132,7 @@ class Plugin(PythonIsCrappy):
         raise Plugin.MethodNotImplementedError(self.name(), 'file_content')
 
     def conf_files(self):
+        """ return a list of Plugin.File instance of each config file"""
         return map(lambda file_path: Plugin.File(file_path, self.file_content(file_path), self.name()), self.conf_files_path())
 
     def files_to_backup(self):
@@ -153,6 +154,11 @@ class Plugin(PythonIsCrappy):
 
 class PluginWithTemplate(Plugin):
     def template_path(self, file_path, confs_to_test = None):
+        """
+        Override this method to provid custom template path
+        corresponding to the 'generated configuration file' provided
+        The use of @confs_to_test remains a mistary to this day.
+        """
         if not confs_to_test:
             confs_to_test = (self.conf[self.name()],)
         for conf_to_test in confs_to_test:
@@ -162,9 +168,21 @@ class PluginWithTemplate(Plugin):
         raise Plugin.MethodNotImplementedError(self.name(), 'template_path')
 
     def template_conf(self, file_path):
+        """
+        This method return the conf section corresponding to 'the generated configuration file'
+        passed as @file_path.
+        If you generate multiple configuration file, you'd be better override it.
+        """
         return self.conf[self.name()]
 
     def file_content(self, file_path):
+        """
+        This method fill up the 'generated configuration file' pointed out
+        by @file_path. It output the template provided in templates/@plugin@/@plugin@.conf
+        with values replaced with those from conf file in confs/@plugin@.conf, using python template string
+        mecanism (template_string % values_dic).
+        Override it to fill the result file yourself.
+        """
         template_conf = self.template_conf(file_path)
         confs_to_test = [template_conf]
         if self.name() in self.conf:
