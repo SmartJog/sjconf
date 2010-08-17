@@ -130,11 +130,18 @@ class SJConf:
         invalid_plugins = [plugin for plugin in services_to_restart if plugin not in plugins_hash]
         if invalid_plugins:
             raise PluginsNotExistError(*invalid_plugins)
-        for service_to_restart in services_to_restart:
+        # services_to_restart are plugins name actually
+        services = set()
+        for plugin in services_to_restart:
             if reload:
-                self.reload_all_services(plugins_hash[service_to_restart])
+                services |= set(plugins_hash[plugin].services_to_reload())
             else:
-                self.restart_all_services(plugins_hash[service_to_restart])
+                services |= set(plugins_hash[plugin].services_to_restart())
+        for service in services:
+            if reload:
+                self.reload_service(service)
+            else:
+                self.restart_service(service)
 
     def delete_section(self, section):
         self._load_conf_local()

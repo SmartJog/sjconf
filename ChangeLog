@@ -1,6 +1,7 @@
 Version 1.9.5~dev
 
 	* Move restart/reload service methods from Plugin to Sjconf, refs: #3144.
+	* Do not restart/reload services several times, closes: #3144.
 
 Version 1.9.4 Released on 2010/04/21
 
