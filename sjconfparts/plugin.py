@@ -138,20 +138,6 @@ class Plugin(PythonIsCrappy):
     def files_to_backup(self):
         return map(lambda file_path: Plugin.File(file_path, None, self.name()), self.files_to_backup_path())
 
-    def restart_all_services(self):
-        for service in self.services_to_restart():
-            self.restart_service(service)
-
-    def reload_all_services(self):
-        for service in self.services_to_reload():
-            self.reload_service(service)
-
-    def restart_service(self, service):
-        os.system('invoke-rc.d %s restart' % (service))
-
-    def reload_service(self, service):
-        os.system('invoke-rc.d %s reload' % (service))
-
 class PluginWithTemplate(Plugin):
     def template_path(self, file_path, confs_to_test = None):
         """

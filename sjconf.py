@@ -100,6 +100,24 @@ class SJConf:
             plugins[plugin.name()] = plugin
         return plugins
 
+    @classmethod
+    def restart_all_services(cls, plugin):
+        for service in plugin.services_to_restart():
+            cls.restart_service(service)
+
+    @classmethod
+    def reload_all_services(cls, plugin):
+        for service in plugin.services_to_reload():
+            cls.reload_service(service)
+
+    @classmethod
+    def restart_service(cls, service):
+        os.system('invoke-rc.d %s restart' % (service))
+
+    @classmethod
+    def reload_service(cls, service):
+        os.system('invoke-rc.d %s reload' % (service))
+
     def restart_services(self, services_to_restart, reload=False):
         self._plugins_load()
         plugins_hash = dict([(plugin.name(), plugin) for plugin in self.plugins_list])
@@ -112,12 +130,11 @@ class SJConf:
         invalid_plugins = [plugin for plugin in services_to_restart if plugin not in plugins_hash]
         if invalid_plugins:
             raise PluginsNotExistError(*invalid_plugins)
-
         for service_to_restart in services_to_restart:
             if reload:
-                plugins_hash[service_to_restart].reload_all_services()
+                self.reload_all_services(plugins_hash[service_to_restart])
             else:
-                plugins_hash[service_to_restart].restart_all_services()
+                self.restart_all_services(plugins_hash[service_to_restart])
 
     def delete_section(self, section):
         self._load_conf_local()
