@@ -1,8 +1,8 @@
-sjconf (1.9.5~dev) unstable; urgency=low
+sjconf (1.9.5-1) unstable; urgency=low
 
   * New upstream release. (closes: #3144)
 
- -- Alexandre Bossard <alexandre.bossard@smartjog.com>  Wed, 18 Aug 2010 14:05:47 +0200
+ -- Nicolas Noirbent <nicolas.noirbent@smartjog.com>  Mon, 23 Aug 2010 15:25:04 +0200
 
 sjconf (1.9.4-1) unstable; urgency=low
 
