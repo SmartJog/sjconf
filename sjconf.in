@@ -208,7 +208,10 @@ class SJConfCLI:
 
         if self.plugins_list:
             plugins_list = self.sjconf.plugins_infos()
-            for plugin_info in plugins_list.values():
+            keys = plugins_list.keys()
+            keys.sort()
+            for key in keys:
+                plugin_info = plugins_list[key]
                 self._my_print('Plugin %s' % (plugin_info['plugin'].name()))
                 self._my_print('  Version: %s' % (plugin_info['plugin'].version()))
                 self._my_print('  Enabled: %s' % (sjconf.Type.Bool.bool_to_str(plugin_info, {}, 'is_enabled')['is_enabled']))

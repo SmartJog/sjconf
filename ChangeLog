@@ -1,3 +1,7 @@
+Version 1.9.6~dev
+
+	* Sort output of sjconf --list-plugins, closes: #3496.
+
 Version 1.9.5 Released on 2010/08/23
 
 	* Move restart/reload service methods from Plugin to Sjconf, refs: #3144.
