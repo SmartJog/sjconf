@@ -1,4 +1,4 @@
-Version 1.9.6~dev
+Version 1.9.6 Released on 2010/10/19
 
 	* Sort output of sjconf --list-plugins, closes: #3496.
 
