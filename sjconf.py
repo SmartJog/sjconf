@@ -9,7 +9,7 @@ from sjconfparts.exceptions import *
 
 class SJConf:
 
-    DEFAULT_SJCONF_FILE_NAME = '/etc/smartjog/sjconf.conf'
+    DEFAULT_SJCONF_FILE_NAME = '/etc/sjconf/sjconf.conf'
 
     def __init__(self, sjconf_file_path = DEFAULT_SJCONF_FILE_NAME, verbose = False, logger = None):
 

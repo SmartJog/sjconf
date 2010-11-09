@@ -1,3 +1,10 @@
+sjconf (1.10.0~dev-1) unstable; urgency=low
+
+  * New upstream release.
+  * /etc/smartjog has been renamed to /etc/sjconf
+
+ -- Nicolas Noirbent <nicolas.noirbent@smartjog.com>  Tue, 09 Nov 2010 14:48:21 +0100
+
 sjconf (1.9.6-1) unstable; urgency=low
 
   * New upstream release. (closes: #3496)

@@ -98,7 +98,7 @@ class SJConfCLI:
             try:
                 if cmd == '-e':
                     editor = os.getenv("EDITOR") or "vim"
-                    os.system("%s /etc/smartjog/local.conf" % editor)
+                    os.system("%s @sjconfconfdir@/local.conf" % editor)
                     sys.exit(0)
                 elif cmd == '--version':
                     print os.path.basename(bin), SJConfCLI.VERSION

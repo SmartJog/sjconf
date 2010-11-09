@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(sjconf, 1.9.6)
+AC_INIT(sjconf, 1.10.0~dev)
 
 dnl 2.52 is quite realistic
 AC_PREREQ(2.52)
@@ -15,7 +15,7 @@ AC_SUBST([sjconflocalstatedir])
 sjconfpluginslocalstatedir=$sjconflocalstatedir/plugins
 AC_SUBST([sjconfpluginslocalstatedir])
 
-sjconfconfdir=$sysconfdir/smartjog
+sjconfconfdir=$sysconfdir/sjconf
 AC_SUBST([sjconfconfdir])
 
 sjconfbaseconfdir=$sjconfconfdir/base

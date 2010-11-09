@@ -1,0 +1,15 @@
+#! /bin/sh
+
+set -e
+
+#DEBHELPER#
+
+if [ $2 ] && dpkg --compare-versions $2 '<' 1.10.0~
+then
+    mkdir -p /etc/sjconf
+    for item in base templates profiles local.conf sjconf.conf
+    do
+        cp -a /etc/smartjog/$item /etc/sjconf
+    done
+    sed -i "s,/etc/smartjog,/etc/sjconf," /etc/sjconf/local.conf /etc/sjconf/sjconf.conf
+fi
