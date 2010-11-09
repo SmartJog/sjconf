@@ -1,6 +1,7 @@
 Version 1.10.0~dev
 
 	* Rename /etc/smartjog to /etc/sjconf, closes: #3674.
+	* SJConf is now released under the LGPL-2.1.
 
 Version 1.9.6 Released on 2010/10/19
 

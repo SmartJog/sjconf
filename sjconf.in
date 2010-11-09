@@ -102,8 +102,12 @@ class SJConfCLI:
                     sys.exit(0)
                 elif cmd == '--version':
                     print os.path.basename(bin), SJConfCLI.VERSION
-                    print 'Copyright © 2008 SmartJog'
-                    print 'This is proprietary software, you are not allowed to change nor reprofileute it.'
+                    print 'Copyright © 2008-2011 SmartJog'
+                    print """
+License LGPLv2.1: GNU Lesser GPL version 2.1 <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+"""
                     sys.exit(0)
                 elif cmd == '--deploy':
                     self.deploy = True
