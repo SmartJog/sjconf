@@ -24,9 +24,6 @@ AC_SUBST([sjconfbaseconfdir])
 sjconfprofilesconfdir=$sjconfconfdir/profiles
 AC_SUBST([sjconfprofilesconfdir])
 
-sjconfcustomconfdir=$sjconfconfdir/custom
-AC_SUBST([sjconfcustomconfdir])
-
 sjconftemplatesconfdir=$sjconfconfdir/templates
 AC_SUBST([sjconftemplatesconfdir])
 
@@ -44,7 +41,6 @@ AC_CONFIG_FILES([Makefile \
                  conf/Makefile \
                  conf/base/Makefile \
                  conf/profiles/Makefile \
-                 conf/custom/Makefile \
                  conf/templates/Makefile \
                  sjconfparts/Makefile \
                  autotools/Makefile \
