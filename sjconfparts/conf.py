@@ -1,7 +1,6 @@
 from sjconfparts.type import *
 from sjconfparts.exceptions import *
 import os, re, ConfigParser, errno
-import sjutils
 
 class Conf:
 
@@ -23,13 +22,40 @@ class Conf:
         def __init__(self, conf_name1, conf_name2, section, key):
             self.msg = 'The profiles "%s" and "%s" are enabled on the same level, but have a conflicting value for key "%s" in section "%s", please set it to the appropriate value in local.conf or disable one of the profiles' % (conf_name1, conf_name2, key, section)
 
-    class SafeConfigParser(sjutils.OrderedSafeConfigParser):
+    class RawConfigParser(ConfigParser.RawConfigParser):
+        """RawConfigParser subclass, with an ordered write() method."""
+
+        def write(self, fp):
+            """Write an .ini-format representation of the configuration
+            state. Sections are written sorted."""
+            if self._defaults:
+                fp.write("[%s]\n" % ConfigParser.DEFAULTSECT)
+                for (key, value) in self._defaults.items():
+                    fp.write("%s = %s\n" % (key, str(value).replace('\n', '\n\t')))
+                fp.write("\n")
+            tmp_sections = self._sections.keys()
+            tmp_sections.sort()
+            for section in tmp_sections:
+                fp.write("[%s]\n" % section)
+                tmp_keys = self._sections[section].keys()
+                tmp_keys.sort()
+                for key in tmp_keys:
+                    if key != "__name__":
+                        fp.write("%s = %s\n" %
+                                 (key, str(self._sections[section][key]).replace('\n', '\n\t')))
+                fp.write("\n")
+
         def optionxform(self, optionstr):
             return optionstr
 
-    class RawConfigParser(sjutils.OrderedRawConfigParser):
+    class SafeConfigParser(ConfigParser.SafeConfigParser, RawConfigParser):
+        """A SafeConfigParser subclass, with an ordered write() method."""
+
         def optionxform(self, optionstr):
             return optionstr
+
+        def write(self, fp):
+            Conf.RawConfigParser.write(self, fp)
 
     class ConfSection:
         def __init__(self, dictionary = {}):

@@ -12,7 +12,7 @@ Conflicts: sjconf
 Replaces: sjconf
 Provides: sjconf
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-sjutils (>= 1.11)
+Depends: ${misc:Depends}, ${python:Depends}
 XB-Python-Version: ${python:Versions}
 Description: Configuration wrapper
  sjconf is a configuration wrapper that handles global and server-specific

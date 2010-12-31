@@ -1,3 +1,10 @@
+sjconf (1.10.1~dev-1) unstable; urgency=low
+
+  * New upstream release.
+  * Removed dependency on python-sjutils.
+
+ -- Nicolas Noirbent <nicolas.noirbent@smartjog.com>  Fri, 31 Dec 2010 14:54:33 +0100
+
 sjconf (1.10.0-1) unstable; urgency=low
 
   * New upstream release.
