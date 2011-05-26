@@ -2,10 +2,10 @@ Source: sjconf
 Priority: optional
 Section: admin
 Maintainer: Philippe Bridant <philippe.bridant@smartjog.com>
-Uploaders: Gilles Dartiguelongue <gilles.dartiguelongue@smartjog.com>, Nicolas Noirbent <nicolas.noirbent@smartjog.com>, Rémi Cardona <remi.cardona@smartjog.com>, Thomas Souvignet <thomas.souvignet@smartjog.com>
-Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5.0.38), python-central (>= 0.6), txt2tags
-Standards-Version: 3.8.4
-XS-Python-Version: >= 2.5
+Uploaders: Gilles Dartiguelongue <gilles.dartiguelongue@smartjog.com>, Nicolas Noirbent <nicolas.noirbent@smartjog.com>, Rémi Cardona <remi.cardona@smartjog.com>, Thomas Souvignet <thomas.souvignet@smartjog.com>, Stéphane Kanschine <stephane.kanschine@smartjog.com>
+Build-Depends: cdbs (>= 0.4.89), debhelper (>= 8), python-central (>= 0.6), txt2tags
+Standards-Version: 3.9.2
+XS-Python-Version: >= 2.6
 
 Package: sjconf1
 Conflicts: sjconf
