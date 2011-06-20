@@ -89,7 +89,7 @@ class SJConf:
             conf = self.conf()
         plugin_conf = Conf()
         for section in conf:
-            if re.compile(plugin_name + ':?.*').match(section):
+            if re.compile('^' + plugin_name + '(|:.*)$').match(section):
                 plugin_conf[section] = conf[section]
         return plugin_conf
 
