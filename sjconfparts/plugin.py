@@ -7,6 +7,9 @@ class PythonIsCrappy:
         pass
 
 class Plugin(PythonIsCrappy):
+    """ Base class to implement SJConf plugins.
+
+    """
 
     class MethodNotImplementedError(PythonIsCrappy.Error):
         def __init__(self, plugin_name, method_name):
@@ -21,6 +24,12 @@ class Plugin(PythonIsCrappy):
             self.msg = "Plugin not enabled: %s" % (plugin_name)
 
     class Dependency:
+        """ Dependency helper class.
+
+        Embeds various methods to verify that plugin dependencies are valid and
+        satisfied.
+        """
+
         class Error(PythonIsCrappy.Error):
             pass
 
@@ -67,6 +76,11 @@ class Plugin(PythonIsCrappy):
                     raise Plugin.Dependency.BadVersionError(self.plugin.name(), self.name, version, '<=', self.requirements['<='])
 
     class File:
+        """ File helper class.
+
+        Holds a couple of values.
+        """
+
         def __init__(self, path, content, plugin_name):
             self.path = path
             self.content = content
@@ -80,27 +94,45 @@ class Plugin(PythonIsCrappy):
         self.set_conf(conf)
 
     def name(self):
+        """ Returns plugin's name. '"""
         return self.plugin_name
 
     def version(self):
+        """ Returns plugin's version. '"""
         if hasattr(self.__class__, 'VERSION'):
             return getattr(self.__class__, 'VERSION')
         else:
             raise Plugin.MethodNotImplementedError(self.name(), 'version')
 
     def dependencies(self):
+        """ List dependencies of this plugin.
+
+        @returns: an iterable container of Dependency instances.
+        """
         return ()
 
     def conf_types(self):
+        """ List of 3-tuple configuration option type mapping. """
         return ()
 
     def services_to_restart(self):
+        """ List of services to restart.
+
+        The services listed therein will be restarted upon usage of the
+        --restart command line switch with plugin's name as the argument.
+        """
         return ()
 
     def services_to_reload(self):
+        """ List of services to reload.
+
+        The services listed therein will be reloaded upon usage of the
+        --reload command line switch with plugin's name as the argument.
+        """
         return ()
 
     def conf_files_path(self):
+        """ List of configuration file path. """
         return ()
 
     def files_to_backup_path(self):
@@ -129,21 +161,32 @@ class Plugin(PythonIsCrappy):
             self.conf.set_type(*conf_type)
 
     def file_content(self, file_path):
+        """ Generates content to be written to @file_path. """
         raise Plugin.MethodNotImplementedError(self.name(), 'file_content')
 
     def conf_files(self):
-        """ return a list of Plugin.File instance of each config file"""
+        """ Returns a list of Plugin.File instance of each config file"""
         return map(lambda file_path: Plugin.File(file_path, self.file_content(file_path), self.name()), self.conf_files_path())
 
     def files_to_backup(self):
         return map(lambda file_path: Plugin.File(file_path, None, self.name()), self.files_to_backup_path())
 
 class PluginWithTemplate(Plugin):
+    """ Template based SJConf base plugin.
+
+    """
+
     def template_path(self, file_path, confs_to_test = None):
-        """
-        Override this method to provid custom template path
-        corresponding to the 'generated configuration file' provided
-        The use of @confs_to_test remains a mistary to this day.
+        """ Provide template path for @file_path configuration file.
+
+        Attempt to get template path for @file_path from the following
+        configuration keys in this order:
+            * template_$(basename file_path)
+            * template_$(basename file_path) without .conf occurences
+            * template
+
+        If @confs_to_test is provided, use it to get the template path
+        from the key listed above.
         """
         if not confs_to_test:
             confs_to_test = (self.conf[self.name()],)
@@ -154,20 +197,18 @@ class PluginWithTemplate(Plugin):
         raise Plugin.MethodNotImplementedError(self.name(), 'template_path')
 
     def template_conf(self, file_path):
-        """
-        This method return the conf section corresponding to 'the generated configuration file'
-        passed as @file_path.
-        If you generate multiple configuration file, you'd be better override it.
+        """ Configuration to be used for @file_path's template.
+
+        @returns: configuration dictionary to be used for @file_path template.
         """
         return self.conf[self.name()]
 
     def file_content(self, file_path):
-        """
-        This method fill up the 'generated configuration file' pointed out
-        by @file_path. It output the template provided in templates/@plugin@/@plugin@.conf
-        with values replaced with those from conf file in confs/@plugin@.conf, using python template string
-        mecanism (template_string % values_dic).
-        Override it to fill the result file yourself.
+        """ Generates content to be written to @file_path.
+
+        Uses template corresponding to @file_path.
+
+        @see: Plugin.file_content
         """
         template_conf = self.template_conf(file_path)
         confs_to_test = [template_conf]

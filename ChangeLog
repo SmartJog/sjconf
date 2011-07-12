@@ -6,6 +6,7 @@ Version 1.10.3~dev
 	* Fix errors in Size type conversion handling.
 	* cls is the conventional name for classmethod first argument.
 	* Fix errors in Size type conversion handling, step #2.
+	* Add docstrings to sjconfparts/plugin.py.
 
 Version 1.10.2 Released on 2011/06/20
 
