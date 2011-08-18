@@ -1,4 +1,4 @@
-sjconf (1.10.2-2~dev) unstable; urgency=low
+sjconf (1.10.2-2) unstable; urgency=low
 
   * Update debian/control Build-Depends, Standards-Version.
   * Update debian/compat version.
