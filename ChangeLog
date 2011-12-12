@@ -1,3 +1,9 @@
+Version 1.10.3~dev
+
+	* Write files to a temporary location before renaming them to their
+	  final filename. This avoids transient issues for files like
+	  /etc/hosts, closes: #2602.
+
 Version 1.10.2 Released on 2011/06/20
 
 	* Fix bad regular expression in plugin_conf(), closes: #4017.

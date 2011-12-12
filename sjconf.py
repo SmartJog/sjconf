@@ -586,7 +586,8 @@ class SJConf:
             folder = os.path.dirname(conf_file.path)
             if not os.path.isdir(folder):
                 os.makedirs(folder)
-            open(conf_file.path, "w").write(conf_file.content)
+            open(conf_file.path + '.sjconf', "w").write(conf_file.content)
+            os.rename(conf_file.path + '.sjconf', conf_file.path)
             conf_file.written = True
         self._logger('')
 
