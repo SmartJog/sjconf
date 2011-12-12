@@ -159,9 +159,9 @@ class Type(TypePythonIsCrappy):
         @classmethod
         def size_to_str(xcls, dict_source, dict_dest, key):
             try:
-                size_object = int(size_object)
+                size_object = int(dict_source[key])
             except ValueError:
-                raise SizeToStrError(size_object)
+                raise Type.Size.SizeToStrError(size_object)
             for suffix_to_test in ('k', 'M', 'G', 'T'):
                 if size > 1024:
                     suffix = suffix_to_test
