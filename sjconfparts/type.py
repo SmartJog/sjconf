@@ -33,31 +33,31 @@ class Type(TypePythonIsCrappy):
             self.msg = 'Invalid conversion from type %s to type %s, can only convert from str or to str'
 
     @classmethod
-    def convert(xcls, type_source, type_dest, dict_source, dict_dest, key):
+    def convert(cls, type_source, type_dest, dict_source, dict_dest, key):
         if type_source == 'str':
             type_class_name = type_dest.capitalize()
         elif type_dest == 'str':
             type_class_name = type_source.capitalize()
         else:
             raise Type.ConversionBadTypeError(type_source, type_dest)
-        type_class = getattr(xcls, type_class_name)
+        type_class = getattr(cls, type_class_name)
         return getattr(type_class, type_source + '_to_' + type_dest)(dict_source, dict_dest, key)
 
     @classmethod
-    def convert_key(xcls, key, type):
-        return xcls._convert_method('key', key, type)
+    def convert_key(cls, key, type):
+        return cls._convert_method('key', key, type)
 
     @classmethod
-    def convert_value(xcls, value, type, dict_str, dict_type, key):
-        return xcls._convert_method('value', value, type, dict_str, dict_type, key)
+    def convert_value(cls, value, type, dict_str, dict_type, key):
+        return cls._convert_method('value', value, type, dict_str, dict_type, key)
 
     @classmethod
-    def convert_key_for_search(xcls, key, type):
-        return xcls._convert_method('key_for_search', key, type)
+    def convert_key_for_search(cls, key, type):
+        return cls._convert_method('key_for_search', key, type)
 
     @classmethod
-    def _convert_method(xcls, method, value, type, *args):
-        type_class = getattr(xcls, type.capitalize())
+    def _convert_method(cls, method, value, type, *args):
+        type_class = getattr(cls, type.capitalize())
         if not hasattr(type_class, method):
             converted_value = value
         else:
@@ -67,13 +67,13 @@ class Type(TypePythonIsCrappy):
     class List:
 
         @classmethod
-        def value(xcls, value, dict_str, dict_type, key):
+        def value(cls, value, dict_str, dict_type, key):
             def conversion_method():
                 Type.List.list_to_str(dict_type, dict_str, key)
             return ConversionList(conversion_method, value)
 
         @classmethod
-        def str_to_list(xcls, dict_source, dict_dest, key):
+        def str_to_list(cls, dict_source, dict_dest, key):
             def conversion_method():
                 Type.List.list_to_str(dict_dest, dict_source, key)
             str_object = dict_source[key]
@@ -86,7 +86,7 @@ class Type(TypePythonIsCrappy):
             return dict_dest
 
         @classmethod
-        def list_to_str(xcls, dict_source, dict_dest, key):
+        def list_to_str(cls, dict_source, dict_dest, key):
             list_object = dict_source[key]
             str_object = ', '.join(list_object)
             dict_dest[key] = str_object
@@ -107,7 +107,7 @@ class Type(TypePythonIsCrappy):
                 self.msg = 'Bad value "%s" for bool to str conversion, expected a boolean' % (bool_object)
 
         @classmethod
-        def str_to_bool(xcls, dict_source, dict_dest, key):
+        def str_to_bool(cls, dict_source, dict_dest, key):
             str_object = dict_source[key]
             if str_object.lower() in Type.Bool.TRUE_VALUES:
                 bool_object = True
@@ -119,7 +119,7 @@ class Type(TypePythonIsCrappy):
             return dict_dest
 
         @classmethod
-        def bool_to_str(xcls, dict_source, dict_dest, key):
+        def bool_to_str(cls, dict_source, dict_dest, key):
             bool_object = dict_source[key]
             if bool_object == True:
                 str_object = "yes"
@@ -141,7 +141,7 @@ class Type(TypePythonIsCrappy):
                 self.msg = 'Bad value "%s" for size to str conversion, expected an integer' % (size_object)
 
         @classmethod
-        def str_to_size(xcls, dict_source, dict_dest, key):
+        def str_to_size(cls, dict_source, dict_dest, key):
             str_object = dict_source[key]
             suffixes = ['T', 'G', 'M', 'k']
             match_result = re.compile("^(\d+)([%s])?$" % (''.join(suffixes))).match(str_object)
@@ -157,7 +157,7 @@ class Type(TypePythonIsCrappy):
             return dict_dest
 
         @classmethod
-        def size_to_str(xcls, dict_source, dict_dest, key):
+        def size_to_str(cls, dict_source, dict_dest, key):
             try:
                 size_object = int(dict_source[key])
             except ValueError:
@@ -173,27 +173,27 @@ class Type(TypePythonIsCrappy):
     class Sequence:
 
         @classmethod
-        def key(xcls, key):
+        def key(cls, key):
             match_results = re.compile('^(.*)-\d+$').match(key)
             if match_results:
                 key = match_results.group(1)
             return key
 
         @classmethod
-        def key_for_search(xcls, key):
+        def key_for_search(cls, key):
             if not hasattr(key, 'search'):
-                key = xcls.key(key)
+                key = cls.key(key)
                 key = re.compile('^%s(-\d+)?$' % (key))
             return key
 
         @classmethod
-        def value(xcls, value, dict_str, dict_type, key):
+        def value(cls, value, dict_str, dict_type, key):
             def conversion_method():
                 Type.Sequence.sequence_to_str(dict_type, dict_str, key)
             return ConversionList(conversion_method, value)
 
         @classmethod
-        def key_to_index(xcls, key, key_to_convert):
+        def key_to_index(cls, key, key_to_convert):
             index = key_to_convert[len(key) + 1:]
             if index == '':
                 index = -1
@@ -202,22 +202,22 @@ class Type(TypePythonIsCrappy):
             return index
 
         @classmethod
-        def str_to_sequence(xcls, dict_source, dict_dest, key):
+        def str_to_sequence(cls, dict_source, dict_dest, key):
             def conversion_method():
                 Type.Sequence.sequence_to_str(dict_dest, dict_source, key)
             str_object = []
-            key = xcls.key(key)
+            key = cls.key(key)
             regexp = re.compile('^%s-\d+$' % (key))
             for (key_to_test, value) in dict_source.iteritems():
                 if key_to_test == key or regexp.match(key_to_test):
                     str_object.append((key_to_test, value))
-            str_object.sort(key = lambda str_object: xcls.key_to_index(key, str_object[0]))
+            str_object.sort(key = lambda str_object: cls.key_to_index(key, str_object[0]))
             sequence_object = ConversionList(conversion_method, [value for (str_key, value) in str_object])
             dict_dest[key] = sequence_object
             return dict_dest
 
         @classmethod
-        def assign_elts(xcls, elts, assignments_old, indices_unassigned):
+        def assign_elts(cls, elts, assignments_old, indices_unassigned):
 
             def _assign_unassigned(indices, elts_unassigned, indices_unassigned, index_prev, index):
                 indices_available = [index_unassigned for index_unassigned in indices_unassigned if index_unassigned > index_prev and (index_unassigned < index or index < -1)]
@@ -254,15 +254,15 @@ class Type(TypePythonIsCrappy):
             return indices
 
         @classmethod
-        def sequence_to_str(xcls, dict_source, dict_dest, key):
-            key = xcls.key(key)
+        def sequence_to_str(cls, dict_source, dict_dest, key):
+            key = cls.key(key)
             sequence_object = [elt for elt in list(dict_source[key]) if elt != '']
             regexp = re.compile('^%s-\d+$' % (key))
             str_keys = [key_to_test for key_to_test in dict_dest if regexp.match(key_to_test)]
             keys_unassigned = [str_key for str_key in str_keys if dict_dest[str_key] == '']
             str_keys = [str_key for str_key in str_keys if str_key not in keys_unassigned]
-            assignments_old = dict([(dict_dest[str_key], xcls.key_to_index(key, str_key)) for str_key in sorted(str_keys, key = lambda key_to_convert: xcls.key_to_index(key, key_to_convert))])
-            indices = xcls.assign_elts(sequence_object, assignments_old, [xcls.key_to_index(key, key_to_convert) for key_to_convert in keys_unassigned])
+            assignments_old = dict([(dict_dest[str_key], cls.key_to_index(key, str_key)) for str_key in sorted(str_keys, key = lambda key_to_convert: cls.key_to_index(key, key_to_convert))])
+            indices = cls.assign_elts(sequence_object, assignments_old, [cls.key_to_index(key, key_to_convert) for key_to_convert in keys_unassigned])
             for str_key in str_keys:
                 del dict_dest[str_key]
             while len(sequence_object) > 0:
