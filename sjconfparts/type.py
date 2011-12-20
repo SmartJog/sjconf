@@ -163,10 +163,10 @@ class Type(TypePythonIsCrappy):
             except ValueError:
                 raise Type.Size.SizeToStrError(size_object)
             for suffix_to_test in ('k', 'M', 'G', 'T'):
-                if size > 1024:
+                if size_object > 1024:
                     suffix = suffix_to_test
-                    size /= 1024
-            str_object = str(size) + suffix
+                    size_object /= 1024
+            str_object = str(size_object) + suffix
             dict_dest[key] = str_object
             return dict_dest
 

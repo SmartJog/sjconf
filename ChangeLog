@@ -5,6 +5,7 @@ Version 1.10.3~dev
 	  /etc/hosts, closes: #2602.
 	* Fix errors in Size type conversion handling.
 	* cls is the conventional name for classmethod first argument.
+	* Fix errors in Size type conversion handling, step #2.
 
 Version 1.10.2 Released on 2011/06/20
 
