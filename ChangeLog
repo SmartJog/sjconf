@@ -1,4 +1,4 @@
-Version 1.10.3~dev
+Version 1.10.3 Released on 2012/01/11
 
 	* Write files to a temporary location before renaming them to their
 	  final filename. This avoids transient issues for files like
