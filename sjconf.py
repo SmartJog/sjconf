@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re, os, errno, time, shutil, tarfile, glob
 import imp
+import sys
 
 from sjconfparts.type import *
 from sjconfparts.plugin import *
@@ -433,12 +434,21 @@ class SJConf:
     def _plugins_init(self, plugins_list = None):
         if plugins_list == None:
             plugins_list = self.confs_internal['sjconf']['conf']['plugins_list']
+
+        # FIXME: Most of the code below can and should be reused for all other
+        # projects that load python plugins.
+
+        # fake 'sjconf.plugins' package in which we will shove our plugins
+        if 'sjconf.plugins' not in sys.modules:
+            sys.modules['sjconf.plugins'] = imp.new_module('sjconf.plugins')
+
         plugins = []
         for plugin in plugins_list:
             # Using this method of import, we do not have to modify
             # sys.path, which could pose problems for people using us
             # in an other Python program
-            plugin_module = imp.load_module(plugin, *imp.find_module(plugin, [self.files_path['plugin']]))
+            plugin_module = imp.load_module('sjconf.plugins.' + plugin, *imp.find_module(plugin, [self.files_path['plugin']]))
+
             plugins.append(plugin_module.Plugin(plugin, self, self.plugin_conf(plugin)))
         return plugins
 
