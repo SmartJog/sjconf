@@ -65,7 +65,7 @@ class SJConf:
                     if type:
                         key_converted = Type.convert_key(key, type)
                         del conf[section_name][key]
-                        conf[section_name][key_converted] = section[key_converted + '_' + type]
+                        Type.convert_safe('str', type, section, conf[section_name], key_converted)
         return conf
 
     def conf_local(self, typed = False):

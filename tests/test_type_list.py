@@ -6,6 +6,8 @@ import unittest
 import sjconf
 import tempfile
 import shutil
+import pickle
+import json
 
 SJCONF_CONF = """\
 [conf]
@@ -112,3 +114,14 @@ class TestClass:
         self.conf.deploy_conf(backup = False)
         environment = file(self.conf.etc_dir + '/environment', 'rb').read(4096)
         assert environment == 'PATH="/usr/bin"\n'
+
+    def test_05_pickle_conf_typed(self):
+        typed_conf = self.conf.conf_typed()
+        unpickled = pickle.loads(pickle.dumps(typed_conf))
+        print id(typed_conf), id(unpickled)
+        assert typed_conf == unpickled
+
+    def test_06_json_conf_typed(self):
+        typed_conf = self.conf.conf_typed()
+        unjsoned = json.loads(json.dumps(typed_conf))
+        assert typed_conf == unjsoned

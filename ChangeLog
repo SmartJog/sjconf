@@ -3,6 +3,8 @@ Version 1.11.0~dev
 	* Prevent plugin loading from polluting python's global namespace,
 	  closes: #5566.
 	* Add a simple 'list type' test suite.
+	* Ensure that SJConf::conf_typed() only returns built-in python types,
+	  closes: #5603.
 
 Version 1.10.3 Released on 2012/01/11
 

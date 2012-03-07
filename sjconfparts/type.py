@@ -44,6 +44,20 @@ class Type(TypePythonIsCrappy):
         return getattr(type_class, type_source + '_to_' + type_dest)(dict_source, dict_dest, key)
 
     @classmethod
+    def convert_safe(cls, type_source, type_dest, dict_source, dict_dest, key):
+        if type_source == 'str':
+            type_class_name = type_dest.capitalize()
+        elif type_dest == 'str':
+            type_class_name = type_source.capitalize()
+        else:
+            raise Type.ConversionBadTypeError(type_source, type_dest)
+        type_class = getattr(cls, type_class_name)
+        if hasattr(type_class, type_source + '_to_' + type_dest + '_safe'):
+            return getattr(type_class, type_source + '_to_' + type_dest + '_safe')(dict_source, dict_dest, key)
+        else:
+            return getattr(type_class, type_source + '_to_' + type_dest)(dict_source, dict_dest, key)
+
+    @classmethod
     def convert_key(cls, key, type):
         return cls._convert_method('key', key, type)
 
@@ -83,6 +97,19 @@ class Type(TypePythonIsCrappy):
             except ValueError:
                 pass
             dict_dest[key] = ConversionList(conversion_method, list)
+            return dict_dest
+
+        @classmethod
+        def str_to_list_safe(cls, dict_source, dict_dest, key):
+            print "List::str_to_list_safe", dict_source, dict_dest, key
+            str_object = dict_source[key]
+            list_object = map(str.strip, str_object.split(','))
+            try:
+                list_object.remove('')
+            except ValueError:
+                pass
+            dict_dest[key] = list_object
+            print "List::str_to_list_safe", dict_source, dict_dest, key
             return dict_dest
 
         @classmethod
@@ -214,6 +241,18 @@ class Type(TypePythonIsCrappy):
             str_object.sort(key = lambda str_object: cls.key_to_index(key, str_object[0]))
             sequence_object = ConversionList(conversion_method, [value for (str_key, value) in str_object])
             dict_dest[key] = sequence_object
+            return dict_dest
+
+        @classmethod
+        def str_to_sequence_safe(cls, dict_source, dict_dest, key):
+            str_object = []
+            key = cls.key(key)
+            regexp = re.compile('^%s-\d+$' % (key))
+            for (key_to_test, value) in dict_source.iteritems():
+                if key_to_test == key or regexp.match(key_to_test):
+                    str_object.append((key_to_test, value))
+            str_object.sort(key = lambda str_object: cls.key_to_index(key, str_object[0]))
+            dict_dest[key] = [value for (str_key, value) in str_object]
             return dict_dest
 
         @classmethod
