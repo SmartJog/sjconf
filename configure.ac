@@ -45,6 +45,7 @@ AC_CONFIG_FILES([Makefile \
                  sjconfparts/Makefile \
                  autotools/Makefile \
                  sjconf \
+                 tests/Makefile \
                  ])
 
 AC_OUTPUT

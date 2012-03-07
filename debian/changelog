@@ -1,8 +1,10 @@
 sjconf (1.11.0~dev-1) unstable; urgency=low
 
   * New upstream release, closes: #5566.
+  * Add python-nose to Build-Depends.
+  * Enable 'make check' during build.
 
- -- Rémi Cardona <remi.cardona@smartjog.com>  Fri, 24 Feb 2012 17:28:18 +0100
+ -- Rémi Cardona <remi.cardona@smartjog.com>  Mon, 12 Mar 2012 15:07:06 +0100
 
 sjconf (1.10.3-1) unstable; urgency=low
 
