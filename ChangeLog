@@ -1,4 +1,4 @@
-Version 1.11.0~dev
+Version 1.11.0 Released on 2012/03/12
 
 	* Prevent plugin loading from polluting python's global namespace,
 	  closes: #5566.
