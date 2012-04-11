@@ -1,10 +1,8 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(sjconf, 1.11.1~dev)
+AC_PREREQ([2.67])
+AC_INIT([sjconf],[1.11.1~dev])
 
-dnl 2.52 is quite realistic
-AC_PREREQ(2.52)
-
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([-Wall 1.11 foreign no-dist-gzip dist-xz])
 
 AM_PATH_PYTHON([2.3])
 AC_PATH_PROG(TXT2TAGS, txt2tags)
@@ -36,16 +34,17 @@ AC_SUBST([aclocaldir])
 autotoolspkgdatadir=\$\(pkgdatadir\)/autotools
 AC_SUBST([autotoolspkgdatadir])
 
-AC_CONFIG_FILES([Makefile \
-                 doc/Makefile \
-                 conf/Makefile \
-                 conf/base/Makefile \
-                 conf/profiles/Makefile \
-                 conf/templates/Makefile \
-                 sjconfparts/Makefile \
-                 autotools/Makefile \
-                 sjconf \
-                 tests/Makefile \
-                 ])
+AC_CONFIG_FILES([
+    Makefile
+    doc/Makefile
+    conf/Makefile
+    conf/base/Makefile
+    conf/profiles/Makefile
+    conf/templates/Makefile
+    sjconfparts/Makefile
+    autotools/Makefile
+    sjconf
+    tests/Makefile
+])
 
 AC_OUTPUT
