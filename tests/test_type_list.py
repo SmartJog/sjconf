@@ -118,7 +118,6 @@ class TestClass:
     def test_05_pickle_conf_typed(self):
         typed_conf = self.conf.conf_typed()
         unpickled = pickle.loads(pickle.dumps(typed_conf))
-        print id(typed_conf), id(unpickled)
         assert typed_conf == unpickled
 
     def test_06_json_conf_typed(self):

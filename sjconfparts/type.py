@@ -101,7 +101,6 @@ class Type(TypePythonIsCrappy):
 
         @classmethod
         def str_to_list_safe(cls, dict_source, dict_dest, key):
-            print "List::str_to_list_safe", dict_source, dict_dest, key
             str_object = dict_source[key]
             list_object = map(str.strip, str_object.split(','))
             try:
@@ -109,7 +108,6 @@ class Type(TypePythonIsCrappy):
             except ValueError:
                 pass
             dict_dest[key] = list_object
-            print "List::str_to_list_safe", dict_source, dict_dest, key
             return dict_dest
 
         @classmethod

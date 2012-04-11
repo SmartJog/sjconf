@@ -1,3 +1,9 @@
+sjconf (1.11.1~dev-1) unstable; urgency=low
+
+  * New upstream release, closes: #5712.
+
+ -- Gilles Dartiguelongue <gilles.dartiguelongue@smartjog.com>  Wed, 11 Apr 2012 11:30:42 +0200
+
 sjconf (1.11.0-1) unstable; urgency=low
 
   * New upstream release, closes: #5566, #5603.
