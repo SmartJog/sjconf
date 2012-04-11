@@ -1,4 +1,4 @@
-Version 1.11.1~dev
+Version 1.11.1 Released on 2012/04/11
 
 	* Drop useless print statements, closes: #5712.
 	* Modernize configure.ac a bit.
