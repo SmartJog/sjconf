@@ -1,6 +1,7 @@
 Version 1.11.2~dev
 
 	* Fix make distcheck problem.
+	* Fix plugin version comparison, closes: #5635.
 
 Version 1.11.1 Released on 2012/04/11
 

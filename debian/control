@@ -3,7 +3,7 @@ Priority: optional
 Section: admin
 Maintainer: Philippe Bridant <philippe.bridant@smartjog.com>
 Uploaders: Gilles Dartiguelongue <gilles.dartiguelongue@smartjog.com>, Nicolas Noirbent <nicolas.noirbent@smartjog.com>, Rémi Cardona <remi.cardona@smartjog.com>, Thomas Souvignet <thomas.souvignet@smartjog.com>, Stéphane Kanschine <stephane.kanschine@smartjog.com>, Laurent Defert <laurent.defert@smartjog.com>
-Build-Depends: cdbs (>= 0.4.89), debhelper (>= 8), python-central (>= 0.6), txt2tags, python-nose
+Build-Depends: cdbs (>= 0.4.89), debhelper (>= 8), python-central (>= 0.6), txt2tags, python-nose, python-sjutils (>= 1.24.0)
 Standards-Version: 3.9.2
 XS-Python-Version: >= 2.6
 
@@ -12,7 +12,7 @@ Conflicts: sjconf
 Replaces: sjconf
 Provides: sjconf
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}
+Depends: ${misc:Depends}, ${python:Depends}, python-sjutils (>= 1.24.0)
 XB-Python-Version: ${python:Versions}
 Description: Configuration wrapper
  sjconf is a configuration wrapper that handles global and server-specific

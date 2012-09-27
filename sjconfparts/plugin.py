@@ -2,6 +2,8 @@ from sjconfparts.conf import *
 from sjconfparts.exceptions import *
 import os
 
+from sjutils.debversion import DebianVersion
+
 class PythonIsCrappy:
     class Error(Error):
         pass
@@ -60,19 +62,19 @@ class Plugin(PythonIsCrappy):
 
         def verify(self, version):
             if '=' in  self.requirements:
-                if not version == self.requirements['=']:
+                if not DebianVersion(version) == DebianVersion(self.requirements['=']):
                     raise Plugin.Dependency.BadVersionError(self.plugin.name(), self.name, version, '=', self.requirements['='])
             if '>' in  self.requirements:
-                if not version > self.requirements['>']:
+                if not DebianVersion(version) > DebianVersion(self.requirements['>']):
                     raise Plugin.Dependency.BadVersionError(self.plugin.name(), self.name, version, '>', self.requirements['>'])
             if '>=' in  self.requirements:
-                if not version >= self.requirements['>=']:
+                if not DebianVersion(version) >= DebianVersion(self.requirements['>=']):
                     raise Plugin.Dependency.BadVersionError(self.plugin.name(), self.name, version, '>=', self.requirements['>='])
             if '<' in  self.requirements:
-                if not version < self.requirements['<']:
+                if not DebianVersion(version) < DebianVersion(self.requirements['<']):
                     raise Plugin.Dependency.BadVersionError(self.plugin.name(), self.name, version, '<', self.requirements['<'])
             if '<=' in  self.requirements:
-                if not version <= self.requirements['<=']:
+                if not DebianVersion(version) <= DebianVersion(self.requirements['<=']):
                     raise Plugin.Dependency.BadVersionError(self.plugin.name(), self.name, version, '<=', self.requirements['<='])
 
     class File:
