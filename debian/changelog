@@ -1,4 +1,4 @@
-sjconf (1.11.2~dev-1) unstable; urgency=low
+sjconf (1.11.2-1) unstable; urgency=low
 
   [ Gilles Dartiguelongue ]
   * New upstream release.
@@ -7,8 +7,9 @@ sjconf (1.11.2~dev-1) unstable; urgency=low
   * Fix plugin version comparison, closes: #5635.
   * Add debian/sjconf1.dirs.
   * Change dist format to gzip.
+  * Add myself to Uploaders.
 
- -- Aurélien Dunand <aurelien.dunand@smartjog.com>  Mon, 01 Oct 2012 11:30:59 +0200
+ -- Aurélien Dunand <aurelien.dunand@smartjog.com>  Mon, 01 Oct 2012 11:32:36 +0200
 
 sjconf (1.11.1-1) unstable; urgency=low
 
