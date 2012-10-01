@@ -6,6 +6,7 @@ sjconf (1.11.2~dev-1) unstable; urgency=low
   [ Aurélien Dunand ]
   * Fix plugin version comparison, closes: #5635.
   * Add debian/sjconf1.dirs.
+  * Change dist format to gzip.
 
  -- Aurélien Dunand <aurelien.dunand@smartjog.com>  Mon, 01 Oct 2012 11:30:59 +0200
 
