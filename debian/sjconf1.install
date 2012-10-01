@@ -1,5 +1,4 @@
 debian/tmp/usr/bin
 debian/tmp/etc/sjconf
-debian/tmp/var/lib/sjconf
 debian/tmp/usr/share/man
 debian/tmp/usr/lib

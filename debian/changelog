@@ -5,8 +5,9 @@ sjconf (1.11.2~dev-1) unstable; urgency=low
 
   [ Aurélien Dunand ]
   * Fix plugin version comparison, closes: #5635.
+  * Add debian/sjconf1.dirs.
 
- -- Aurélien Dunand <aurelien.dunand@smartjog.com>  Mon, 01 Oct 2012 11:30:08 +0200
+ -- Aurélien Dunand <aurelien.dunand@smartjog.com>  Mon, 01 Oct 2012 11:30:59 +0200
 
 sjconf (1.11.1-1) unstable; urgency=low
 
