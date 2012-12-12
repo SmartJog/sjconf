@@ -1,8 +1,8 @@
-sjconf (1.12.0~dev-1) UNRELEASED; urgency=low
+sjconf (1.12.0-1) unstable; urgency=low
 
   * New upstream release.
 
- -- Aurélien Dunand <aurelien.dunand@smartjog.com>  Wed, 12 Dec 2012 12:19:44 +0100
+ -- Aurélien Dunand <aurelien.dunand@smartjog.com>  Wed, 12 Dec 2012 12:12:12 +0100
 
 sjconf (1.11.2-1) unstable; urgency=low
 
