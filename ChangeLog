@@ -1,3 +1,7 @@
+Version 1.12.0~dev
+
+	* Add bash completion
+
 Version 1.11.2 Released on 2012/09/29
 
 	* Fix make distcheck problem.

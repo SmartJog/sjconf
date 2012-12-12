@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.67])
-AC_INIT([sjconf],[1.11.2])
+AC_INIT([sjconf],[1.12.0~dev])
 
 AM_INIT_AUTOMAKE([-Wall 1.11 foreign])
 

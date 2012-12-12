@@ -1,0 +1,147 @@
+# bash completion for sjconf
+
+# this function returns the last option, excluding args. It also returns the
+# number of arguments between current postition and the last option.
+_get_last_option()
+{
+  local i cword words out
+  __reassemble_comp_words_by_ref "" words cword
+
+  opt=
+  out=
+  cnt=0
+  for w in ${words[@]:1:cword-1}; do
+    out="$w $out"
+  done
+  for i in $out; do
+    cnt=$(($cnt + 1))
+    [[ $cnt > 3 ]] && break
+    [[ "$i" == -* ]] && opt=$i && break
+  done
+}
+
+# list sections from local sjconf configuration
+_sections() {
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf | sed -rn 's/[[]([^]]*)[]]/\1/p')"  -- "$cur"))
+}
+
+# list keys in a section
+_keys() {
+  local keys
+  keys=$(sjconf | sed -n "/[[]${1}[]]/,/^$/p" | sed "/[[]${1}[]]/d;/^$/d" | cut -d= -f1)
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$keys"  -- "$cur"))
+}
+
+# list plugins
+_plugins() {
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-plugins | grep '^Plugin ' | cut -d' '  -f2)"  -- "$cur"))
+}
+
+# list enabled plugins
+_enabled_plugins() {
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-plugins | grep -B2 'Enabled: yes' | grep '^Plugin ' | cut -d' '  -f2)"  -- "$cur"))
+}
+
+# list disabled plugins
+_disabled_plugins() {
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-plugins | grep -B2 'Enabled: no' | grep '^Plugin ' | cut -d' '  -f2)"  -- "$cur"))
+}
+
+# list profiles
+_profiles() {
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-profiles | grep '^Profile ' | cut -d' ' -f2)"  -- "$cur"))
+}
+
+# list enabled profiles
+_enabled_profiles() {
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-profiles | grep -B1 "Enabled at " | grep '^Profile ' | cut -d' ' -f2)"  -- "$cur"))
+}
+
+# list disabled profiles
+_disabled_profiles() {
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-profiles | grep -B1 "Not enabled" | grep '^Profile ' | cut -d' ' -f2)"  -- "$cur"))
+}
+
+# list available profiles level
+_available_profiles_level() {
+  local i level
+  level="1 2 3 4 5 6 7 8 9 "
+  used_level=$(sjconf --list-profiles | sed -rn "s/^.*level ([[:digit:]]{1,2})/\1/p")
+  # remove already used level
+  for i in $used_level; do
+    level=$(echo $level | sed "s/ $i//")
+  done
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$level" -- "$cur"))
+}
+
+_default_sjconf() {
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "-e --version --diff --save \
+    --deploy --no-backup --restart --reload --get --set --add-to-list \
+    --remove-from-list --add-to-sequence --remove-from-sequence \
+    --delete-key --delete-section --install-plugin --uninstall-plugin \
+    --enable-plugin --disable-plugin --list-plugins --list-profiles \
+    --install-template --uninstall-template --install-conf \
+    --uninstall-conf --install-profile --uninstall-profile \
+    --enable-profile --disable-profile" -- "${cur}"))
+}
+
+_sjconf() {
+  local cur prev
+  COMPREPLY=()
+  _get_comp_words_by_ref cur prev
+
+  case "$prev" in
+    --delete-section)
+      _sections
+      ;;
+    --restart|--reload|--disable-plugin)
+      _enabled_plugins
+      ;;
+    --enable-plugin)
+      _disabled_plugins
+      ;;
+    --install-plugin|--install-conf|--install-template|--install-profile)
+      _filedir
+      # FIXME: could not complete _filedir after --link ($prev == --link)
+      COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "--link" -- "$cur"))
+      ;;
+    --uninstall-plugin|--uninstall-conf|--uninstall-template)
+      _plugins
+      ;;
+    --uninstall-profile)
+      _profiles
+      ;;
+    --disable-profile)
+      _enabled_profiles
+      ;;
+
+    *)
+      _get_last_option
+      case "$opt" in
+        --get|--delete-key)
+          [[ $cnt == 1 ]] && _sections
+          [[ $cnt == 2 ]] && _keys $prev
+          [[ $cnt > 2 ]] && _default_sjconf
+          ;;
+        --set|--add-to-list|--remove-from-list|--add-to-sequence|--remove-from-sequence)
+          [[ $cnt == 1 ]] && _sections
+          [[ $cnt == 2 ]] && _keys $prev
+          [[ $cnt > 3 ]] && _default_sjconf
+          ;;
+        --enable-profile)
+          [[ $cnt == 1 ]] && _disabled_profiles
+          [[ $cnt == 2 ]] && _available_profiles_level
+          [[ $cnt > 2 ]] && _default_sjconf
+          ;;
+        *)
+          _default_sjconf
+      esac
+      ;;
+  esac
+
+  return 0
+}
+
+complete -F _sjconf sjconf
+
+# ex: ts=2 sw=2 et filetype=sh

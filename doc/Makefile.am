@@ -1,6 +1,6 @@
 man8_MANS = sjconf.man
 DISTCLEANFILES = sjconf.man
-EXTRA_DIST = sjconf.t2t
+EXTRA_DIST = sjconf.t2t sjconf.bash_completion
 
 SUFFIXES = .t2t
 
