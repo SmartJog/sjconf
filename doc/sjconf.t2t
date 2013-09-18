@@ -35,14 +35,43 @@ Note than using templates is not mandatory: plugins may as well generate the who
 
 When run without options, sjconf will output the content of the local.conf file.
 
-: **-e**
-Open local.conf in $EDITOR.
+== About sjconf ==
 
-: --**version**
+: **-h**, --**help**
+Show a help message and exit.
+
+: **-v**, --**version**
 Print version and exit.
 
-: --**diff**
-Show "diff -u" between old and new configuration files.
+
+== sjconf behaviour ==
+
+: **-v**, --**verbose**
+Be verbose.
+
+: **-q**, --**quiet**
+Be quiet: nothing will be printed on stdout.
+
+
+== sjconf editor ==
+
+: **-e**, --**editor**,
+Open local.conf in $EDITOR.
+
+
+== sjconf information ==
+
+: --**get** //<section>// //<key>//
+Get a configuration key in "local.conf".
+
+: --**list-plugins**
+List installed plugins.
+
+: --**list-profiles** //<profile>//
+List installed profiles.
+
+
+== sjconf commit ==
 
 : --**save**
 Save modification (mandatory to deploy).
@@ -53,14 +82,8 @@ Deploy configuration.
 : --**no-backup**
 Do not backup configuration files. To be used with --**deploy** option.
 
-: --**restart** //<plugin>// | //all//
-Restart all services of "plugin". If "plugin" is "all", then restart all services of all plugins.
 
-: --**reload** //<plugin>// | //all//
-Reload all services of "plugin". If "plugin" is "all", then reload all services of all plugins.
-
-: --**get** //<section>// //<key>//
-Get a configuration key in "local.conf".
+== sjconf modifiers ==
 
 : --**set** //<section>// //<key>// //<value>//
 Set a configuration key in "local.conf".
@@ -83,8 +106,26 @@ Delete a key within a section.
 : --**delete-section** //<section>//
 Delete a complete section.
 
-: --**install-plugin** [//--link//] //<plugin>//
-Install "plugin" into the plugins path; if --link is given, use a symbolic link.
+
+== sjconf diff ==
+
+: --**diff**
+Show "diff -u" between old and new configuration files.
+
+
+== sjconf extensions ==
+
+: --**restart** //<plugin>// | //all//
+Restart all services of "plugin". If "plugin" is "all", then restart all services of all plugins.
+
+: --**reload** //<plugin>// | //all//
+Reload all services of "plugin". If "plugin" is "all", then reload all services of all plugins.
+
+: --**install-plugin** //<plugin>//
+Install "plugin" into the plugins path.
+
+: --**install-plugin-with-symlink** //<plugin>//
+Install "plugin" into the plugins path by using a symbolic link.
 
 : --**uninstall-plugin** //<plugin>//
 Uninstall "plugin" from the plugins path.
@@ -95,23 +136,29 @@ Add "plugin" to the list of plugins to use.
 : --**disable-plugin** //<plugin>//
 Remove "plugin" from the list of plugins to use.
 
-: --**list-plugins**
-List installed plugins.
+: --**install-template** //<template>//
+Install "template" into the templates path.
 
-: --**install-template** [//--link//] //<template>//
-Install "template" into the templates path; if --link is given, use a symbolic link.
+: --**install-template-with-symlink** //<template>//
+Install "template" into the templates path by using a symbolic link.
 
 : --**uninstall-template** //<template>//
 Uninstall "plugin" from the templates path.
 
-: --**install-conf** [//--link//] //<conf>//
-Install "conf" into the "base" configuration directory; if --link is given, use a symbolic link.
+: --**install-conf** //<conf>//
+Install "conf" into the "base" configuration directory.
+
+: --**install-conf-with-symlink** //<conf>//
+Install "conf" into the "base" configuration directory by using a symbolic link.
 
 : --**uninstall-conf** //<conf>//
 Uninstall "conf" from the base.conf file, "conf" should be the basename of a conf file previously installed.
 
-: --**install-profile** [//--link//] //<profile>//
-Install "profile" file into the configuration directory; if --link is given, use a symbolic link.
+: --**install-profile** //<profile>//
+Install "profile" file into the configuration directory.
+
+: --**install-profile-with-symlink** //<profile>//
+Install "profile" file into the configuration directory by using a symbolic link.
 
 : --**uninstall-profile** //<profile>//
 Uninstall "profile" file, "profile" should be the basename of a profile file previously installed.
@@ -122,8 +169,6 @@ Enable the profile "profile" at level "level".
 : --**disable-profile** //<profile>//
 Disable the profile "profile".
 
-: --**list-profiles** //<profile>//
-List installed profiles.
 
 
 = TYPES =

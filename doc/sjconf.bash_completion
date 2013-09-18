@@ -34,32 +34,32 @@ _keys() {
 
 # list plugins
 _plugins() {
-  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-plugins | grep '^Plugin ' | cut -d' '  -f2)"  -- "$cur"))
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-plugins | grep '^Plugin ' | cut -d' '  -f2 | sed 's/:$//')"  -- "$cur"))
 }
 
 # list enabled plugins
 _enabled_plugins() {
-  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-plugins | grep -B2 'Enabled: yes' | grep '^Plugin ' | cut -d' '  -f2)"  -- "$cur"))
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-plugins | grep -B2 'Enabled: yes' | grep '^Plugin ' | cut -d' '  -f2 | sed 's/:$//')"  -- "$cur"))
 }
 
 # list disabled plugins
 _disabled_plugins() {
-  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-plugins | grep -B2 'Enabled: no' | grep '^Plugin ' | cut -d' '  -f2)"  -- "$cur"))
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-plugins | grep -B2 'Enabled: no' | grep '^Plugin ' | cut -d' '  -f2 | sed 's/:$//')"  -- "$cur"))
 }
 
 # list profiles
 _profiles() {
-  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-profiles | grep '^Profile ' | cut -d' ' -f2)"  -- "$cur"))
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-profiles | grep '^Profile ' | cut -d' ' -f2 | sed 's/:$//')"  -- "$cur"))
 }
 
 # list enabled profiles
 _enabled_profiles() {
-  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-profiles | grep -B1 "Enabled at " | grep '^Profile ' | cut -d' ' -f2)"  -- "$cur"))
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-profiles | grep -B1 "Enabled at level " | grep '^Profile ' | cut -d' ' -f2 | sed 's/:$//')"  -- "$cur"))
 }
 
 # list disabled profiles
 _disabled_profiles() {
-  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-profiles | grep -B1 "Not enabled" | grep '^Profile ' | cut -d' ' -f2)"  -- "$cur"))
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "$(sjconf --list-profiles | grep -B1 "Not enabled" | grep '^Profile ' | cut -d' ' -f2 | sed 's/:$//')"  -- "$cur"))
 }
 
 # list available profiles level
@@ -75,14 +75,16 @@ _available_profiles_level() {
 }
 
 _default_sjconf() {
-  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "-e --version --diff --save \
-    --deploy --no-backup --restart --reload --get --set --add-to-list \
-    --remove-from-list --add-to-sequence --remove-from-sequence \
-    --delete-key --delete-section --install-plugin --uninstall-plugin \
-    --enable-plugin --disable-plugin --list-plugins --list-profiles \
-    --install-template --uninstall-template --install-conf \
-    --uninstall-conf --install-profile --uninstall-profile \
-    --enable-profile --disable-profile" -- "${cur}"))
+  COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "-h --help -V --version -v \
+    --verbose -q --quiet -e --edit --get --list-plugins --list-profiles \
+    --save --deploy --no-backup --set --add-to-list --remove-from-list \
+    --add-to-sequence --remove-from-sequence --delete-key --delete-section \
+    --diff --restart --reload --install-plugin --install-plugin-with-symlink \
+    --uninstall-plugin --enable-plugin --disable-plugin --install-template \
+    --install-template-with-symlink --uninstall-template --install-conf \
+    --install-conf-with-symlink --uninstall-conf --install-profile \
+    --install-profile-with-symlink --uninstall-profile --enable-profile \
+    --disable-profile" -- "${cur}"))
 }
 
 _sjconf() {
@@ -100,10 +102,8 @@ _sjconf() {
     --enable-plugin)
       _disabled_plugins
       ;;
-    --install-plugin|--install-conf|--install-template|--install-profile)
+    --install-plugin|--install-plugin-with-symlink|--install-template|--install-template-with-symlink|--install-conf|--install-conf-with-symlink|--install-profile|--install-profile-with-symlink)
       _filedir
-      # FIXME: could not complete _filedir after --link ($prev == --link)
-      COMPREPLY=("${COMPREPLY[@]}" $(compgen -W "--link" -- "$cur"))
       ;;
     --uninstall-plugin|--uninstall-conf|--uninstall-template)
       _plugins

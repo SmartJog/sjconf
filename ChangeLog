@@ -1,6 +1,7 @@
 Version 1.13.0~dev
 
-	* TODO
+	* Complete refactoring of the 'sjconf' console utility
+	* Update accordingly the sjconf bash completion and its man page
 
 Version 1.12.0 Released on 2012/12/12
 
