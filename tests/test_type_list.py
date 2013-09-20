@@ -1,3 +1,4 @@
+#!/usr/bin/nosetests
 # -*- coding: utf-8 -*-
 
 import sys

@@ -1,4 +1,4 @@
-TESTS_ENVIRONMENT = PYTHONPATH="$(top_srcdir)" nosetests
+AM_TESTS_ENVIRONMENT = PYTHONPATH="$(top_srcdir)"
 TESTS = test_type_list.py \
 		test_plugins.py
 

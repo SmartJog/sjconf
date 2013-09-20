@@ -2,6 +2,7 @@ Version 1.13.0~dev
 
 	* Complete refactoring of the 'sjconf' console utility
 	* Update accordingly the sjconf bash completion and its man page
+	* Update the unit tests for Automake 1.12+ compliance
 
 Version 1.12.0 Released on 2012/12/12
 
