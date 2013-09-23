@@ -1,10 +1,10 @@
-sjconf (1.13.0~dev-1) UNRELEASED; urgency=low
+sjconf (1.13.0-1) unstable; urgency=low
 
-  * New development version
+  * New upstream release
   * Add myself to Uploaders
   * Clean up the debian/control file
 
- -- Nicolas Godinho <nicolas.godinho@smartjog.com>  Wed, 18 Sep 2013 15:29:39 +0200
+ -- Nicolas Godinho <nicolas.godinho@smartjog.com>  Mon, 23 Sep 2013 10:53:19 +0200
 
 sjconf (1.12.0-1) unstable; urgency=low
 
