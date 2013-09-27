@@ -110,7 +110,7 @@ Delete a complete section.
 == sjconf diff ==
 
 : --**diff**
-Show "diff -u" between old and new configuration files.
+Show "diff -u1" between old and new configuration files.
 
 
 == sjconf extensions ==
