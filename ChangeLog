@@ -1,6 +1,9 @@
 Version 1.13.1~dev
 
 	* Bind sjconf diff with `diff -u1`
+	* Prevent the mixed use of sjconf modifiers (e.g. `--set`, `--add-to-list`)
+	  with extensions actions (e.g. `--install-plugin`) commands to improve
+	  determinism of the sjconf utility behavior
 
 Version 1.13.0 Released on 2013/09/23
 

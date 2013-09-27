@@ -380,6 +380,12 @@ def parse_arguments():
                      'making changes to sjconf with modifiers options. sjconf '
                      'unchanged.')
 
+    if (any([getattr(args, arg) for arg in modifier_args]) and
+            any([getattr(args, arg) for arg in extension_args])):
+        parser.error('Sorry but you cannot mix options that modify sjconf with'
+                     ' options that act upon sjconf extensions. Please split '
+                     'your command. sjconf unchanged.')
+
 
 def sjprint(str_to_print):
     """Custom 'print' function"""
