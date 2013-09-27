@@ -1,4 +1,4 @@
-Version 1.13.1~dev
+Version 1.13.1 Released on 2013/09/27
 
 	* Bind sjconf diff with `diff -u1`
 	* Prevent the mixed use of sjconf modifiers (e.g. `--set`, `--add-to-list`)

@@ -1,8 +1,8 @@
-sjconf (1.13.1~dev-1) UNRELEASED; urgency=low
+sjconf (1.13.1-1) unstable; urgency=low
 
-  * New development version
+  * New upstream release
 
- -- Nicolas Godinho <nicolas.godinho@smartjog.com>  Thu, 26 Sep 2013 16:30:13 +0200
+ -- Nicolas Godinho <nicolas.godinho@smartjog.com>  Fri, 27 Sep 2013 11:01:01 +0200
 
 sjconf (1.13.0-1) unstable; urgency=low
 
