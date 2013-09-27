@@ -48,13 +48,7 @@ class ArgumentParserExtension(argparse.Action):
         user-given shell arguments before being append in the namespace as
         list."""
 
-        if len(values) == 0:
-            # should not happen!
-            raise ValueError('Received an empty list')
-        elif len(values) == 1:
-            getattr(namespace, self.dest).append(values[0])
-        else:
-            getattr(namespace, self.dest).append(tuple(values))
+        getattr(namespace, self.dest).append(tuple(values))
 
 
 def parse_arguments():
@@ -530,72 +524,70 @@ def main():
     #
     if args.install_plugin:
         for plugin_file in args.install_plugin:
-            my_sjconf.file_install('plugin', plugin_file)
+            my_sjconf.file_install('plugin', *plugin_file)
     if args.install_plugin_with_symlink:
         for plugin_file in args.install_plugin_with_symlink:
-            my_sjconf.file_install('plugin', plugin_file, link=True)
+            my_sjconf.file_install('plugin', *plugin_file, link=True)
 
     if args.install_conf:
         for conf_file in args.install_conf:
-            my_sjconf.file_install('conf', conf_file)
+            my_sjconf.file_install('conf', *conf_file)
     if args.install_conf_with_symlink:
         for conf_file in args.install_conf_with_symlink:
-            my_sjconf.file_install('conf', conf_file, link=True)
+            my_sjconf.file_install('conf', *conf_file, link=True)
 
     if args.install_template:
         for template_file in args.install_template:
-            my_sjconf.file_install('template', template_file)
+            my_sjconf.file_install('template', *template_file)
     if args.install_template_with_symlink:
         for template_file in args.install_template_with_symlink:
-            my_sjconf.file_install('template', template_file, link=True)
+            my_sjconf.file_install('template', *template_file, link=True)
 
     if args.install_profile:
         for profile_file in args.install_profile:
-            my_sjconf.file_install('profile', profile_file)
+            my_sjconf.file_install('profile', *profile_file)
     if args.install_profile_with_symlink:
         for profile_file in args.install_profile_with_symlink:
-            my_sjconf.file_install('profile', profile_file, link=True)
+            my_sjconf.file_install('profile', *profile_file, link=True)
 
     #
     # Uninstall plugins, templates, confs or profiles:
     #
     if args.uninstall_plugin:
         for plugin in args.uninstall_plugin:
-            my_sjconf.file_uninstall('plugin', plugin)
+            my_sjconf.file_uninstall('plugin', *plugin)
 
     if args.uninstall_conf:
         for conf in args.uninstall_conf:
-            my_sjconf.file_uninstall('conf', conf)
+            my_sjconf.file_uninstall('conf', *conf)
 
     if args.uninstall_template:
         for template in args.uninstall_template:
-            my_sjconf.file_uninstall('template', template)
+            my_sjconf.file_uninstall('template', *template)
 
     if args.uninstall_profile:
         for profile in args.uninstall_profile:
-            my_sjconf.file_uninstall('profile', profile)
+            my_sjconf.file_uninstall('profile', *profile)
 
     #
     # Enable plugins:
     #
     if args.enable_plugin:
         for plugin in args.enable_plugin:
-            my_sjconf.plugin_enable(plugin)
+            my_sjconf.plugin_enable(*plugin)
 
     #
     # Disable plugins:
     #
     if args.disable_plugin:
         for plugin in args.disable_plugin:
-            my_sjconf.plugin_disable(plugin)
+            my_sjconf.plugin_disable(*plugin)
 
     #
     # Enable profiles:
     #
     if args.enable_profile:
         for profile in args.enable_profile:
-            # Yes, that's weird but the sjconf API asks us to unpack
-            # profile here.
             my_sjconf.profile_enable(*profile)
 
     #
@@ -603,7 +595,7 @@ def main():
     #
     if args.disable_profile:
         for profile in args.disable_profile:
-            my_sjconf.profile_disable(profile)
+            my_sjconf.profile_disable(*profile)
 
     #
     # Set sjconf values ('--set', '--add-to-list', '--remove-from-list',
@@ -665,8 +657,12 @@ def main():
     # Deployment
     #
     if args.deploy:
-        my_sjconf.deploy_conf(services_to_restart=args.restart,
-                              services_to_reload=args.reload,
+        # since deploy_conf() takes only lists of services names, we have to
+        # get rid of the tuples containing the services names
+        svc_names_to_restart = [svc[0] for svc in args.restart]
+        svc_names_to_reload = [svc[0] for svc in args.reload]
+        my_sjconf.deploy_conf(services_to_restart=svc_names_to_restart,
+                              services_to_reload=svc_names_to_reload,
                               backup=(not args.no_backup))
 
 
