@@ -1,9 +1,9 @@
 Source: sjconf
 Priority: optional
 Section: admin
-Maintainer: Philippe Bridant <philippe.bridant@smartjog.com>
-Uploaders: Aurélien Dunand <aurelien.dunand@smartjog.com>,
-           Nicolas Godinho <nicolas.godinho@smartjog.com>
+Maintainer: Aurélien Dunand <aurelien.dunand@smartjog.com>
+Uploaders: Nicolas Godinho <nicolas.godinho@smartjog.com>,
+           Anaël Beutot <anael.beutot@smartjog.com>
 Build-Depends: cdbs (>= 0.4.89),
                debhelper (>= 8),
                python-central (>= 0.6),
