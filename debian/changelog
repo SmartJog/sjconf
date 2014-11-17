@@ -1,3 +1,10 @@
+sjconf (1.13.1-3) unstable; urgency=medium
+
+  * Add python-argparse as a dependency
+  * Make myself the maintainer
+
+ -- Nicolas Delvaux <nicolas.delvaux@arkena.com>  Mon, 17 Nov 2014 16:44:03 +0100
+
 sjconf (1.13.1-2) unstable; urgency=low
 
   * Add myself to uploaders.

@@ -1,16 +1,17 @@
 Source: sjconf
 Priority: optional
 Section: admin
-Maintainer: Aurélien Dunand <aurelien.dunand@smartjog.com>
-Uploaders: Nicolas Godinho <nicolas.godinho@smartjog.com>,
-           Anaël Beutot <anael.beutot@smartjog.com>
+Maintainer: Nicolas Delvaux <nicolas.delvaux@arkena.com>
+Uploaders: Nicolas Godinho <nicolas.godinho@ymagis.com>,
+           Anaël Beutot <anael.beutot@arkena.com>,
+           Aurélien Dunand <aurelien.dunand@arkena.com>
 Build-Depends: cdbs (>= 0.4.89),
                debhelper (>= 8),
                python-central (>= 0.6),
                txt2tags,
                python-nose,
                python-sjutils (>= 1.24.0)
-Standards-Version: 3.9.2
+Standards-Version: 3.9.4
 XS-Python-Version: >= 2.6
 
 Package: sjconf1
@@ -18,7 +19,10 @@ Conflicts: sjconf
 Replaces: sjconf
 Provides: sjconf
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-sjutils (>= 1.24.0)
+Depends: ${misc:Depends},
+         ${python:Depends},
+         python-sjutils (>= 1.24.0),
+         python-argparse
 XB-Python-Version: ${python:Versions}
 Description: Configuration wrapper
  sjconf is a configuration wrapper that handles global and server-specific
