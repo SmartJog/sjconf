@@ -77,7 +77,7 @@ def parse_arguments():
                              action='version',
                              help='print version and exit',
                              version='%(prog)s ' + str(__version__) + '\n'
-                             'Copyright © 2008-2013 SmartJog\n\n'
+                             'Copyright © 2008-2015 Arkena\n\n'
                              'License LGPLv2.1: GNU Lesser GPL version 2.1 \n'
                              '<http://www.gnu.org/licenses/old-licenses/lgpl-2'
                              '.1.html>.\n'
