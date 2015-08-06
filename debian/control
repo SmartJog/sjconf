@@ -5,14 +5,12 @@ Maintainer: Nicolas Delvaux <nicolas.delvaux@arkena.com>
 Uploaders: Nicolas Godinho <nicolas.godinho@ymagis.com>,
            Anaël Beutot <anael.beutot@arkena.com>,
            Aurélien Dunand <aurelien.dunand@arkena.com>
-Build-Depends: cdbs (>= 0.4.89),
-               debhelper (>= 8),
-               python-central (>= 0.6),
+Build-Depends: debhelper (>= 9),
+               dh-python,
                txt2tags,
                python-nose,
                python-sjutils (>= 1.24.0)
-Standards-Version: 3.9.4
-XS-Python-Version: >= 2.6
+Standards-Version: 3.9.6
 
 Package: sjconf1
 Conflicts: sjconf
@@ -23,7 +21,6 @@ Depends: ${misc:Depends},
          ${python:Depends},
          python-sjutils (>= 1.24.0),
          python-argparse
-XB-Python-Version: ${python:Versions}
 Description: Configuration wrapper
  sjconf is a configuration wrapper that handles global and server-specific
  configuration, deployment and service restart.
@@ -31,7 +28,13 @@ Description: Configuration wrapper
 
 Package: sjconf1-dev
 Architecture: all
-Depends: ${misc:Depends}, sjconf1 (= ${binary:Version})
+Depends: ${misc:Depends},
+         sjconf1 (= ${binary:Version})
 Breaks: sjconf1 (<< 1.9.4~dev-1)
 Description: Development files for sjconf
- provides autotools and automake files for packages using sjconf to use.
+ sjconf is a configuration wrapper that handles global and server-specific
+ configuration, deployment and service restart.
+ It can be accessed through a command-line utility or through a Python module.
+ .
+ This package provides autotools and automake files for packages integrating
+ sjconf in their build system.

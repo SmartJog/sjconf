@@ -1,4 +1,4 @@
-debian/tmp/usr/bin
-debian/tmp/etc/sjconf
-debian/tmp/usr/share/man
-debian/tmp/usr/lib
+usr/bin
+etc/sjconf
+usr/share/man
+usr/lib

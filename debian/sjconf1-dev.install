@@ -1,2 +1,2 @@
-debian/tmp/usr/share/aclocal/*.m4
-debian/tmp/usr/share/sjconf/autotools/*.am
+usr/share/aclocal/*.m4
+usr/share/sjconf/autotools/*.am
