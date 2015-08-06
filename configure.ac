@@ -41,6 +41,7 @@ AC_CONFIG_FILES([
     conf/base/Makefile
     conf/profiles/Makefile
     conf/templates/Makefile
+    conf/bash_completion/Makefile
     sjconfparts/Makefile
     autotools/Makefile
     sjconf
