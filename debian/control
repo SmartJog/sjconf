@@ -2,9 +2,8 @@ Source: sjconf
 Priority: optional
 Section: admin
 Maintainer: Nicolas Delvaux <nicolas.delvaux@arkena.com>
-Uploaders: Nicolas Godinho <nicolas.godinho@ymagis.com>,
-           Anaël Beutot <anael.beutot@arkena.com>,
-           Aurélien Dunand <aurelien.dunand@arkena.com>
+Uploaders: Aurélien Dunand <aurelien.dunand@arkena.com>,
+           Olivier Ceyral <olivier.ceyral@arkena.com>
 Build-Depends: debhelper (>= 9),
                dh-python,
                txt2tags,
