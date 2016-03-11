@@ -1,3 +1,9 @@
+sjconf (1.13.2-2) unstable; urgency=medium
+
+  * Add missing /etc/sjconf/templates directory
+
+ -- Olivier Ceyral <olivier.ceyral@arkena.com>  Fri, 11 Mar 2016 10:19:36 +0100
+
 sjconf (1.13.2-1) unstable; urgency=medium
 
   * New upstream version
