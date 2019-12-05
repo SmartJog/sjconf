@@ -2,6 +2,7 @@ sjconf (1.13.3~dev-1) UNRELEASED; urgency=medium
 
   * New upstream version
   * Remove the useless argparse dependency (which is in Python stdlib)
+  * Install the Bash completion in a non-deprecated folder
 
  -- Nicolas Delvaux <nicolas.delvaux@arkena.com>  Thu, 05 Dec 2019 17:46:41 +0100
 

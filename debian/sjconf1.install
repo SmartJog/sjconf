@@ -1,4 +1,4 @@
-etc/bash_completion.d
+usr/share/bash-completion/completions
 usr/bin
 etc/sjconf
 usr/share/man

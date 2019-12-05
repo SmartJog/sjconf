@@ -1,3 +1,2 @@
 var/lib/sjconf/plugins
-etc/bash_completion.d
 etc/templates
