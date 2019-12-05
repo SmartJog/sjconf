@@ -4,9 +4,11 @@ import os
 
 from sjutils.debversion import DebianVersion
 
+
 class PythonIsCrappy:
     class Error(Error):
         pass
+
 
 class Plugin(PythonIsCrappy):
     """ Base class to implement SJConf plugins.
@@ -15,7 +17,10 @@ class Plugin(PythonIsCrappy):
 
     class MethodNotImplementedError(PythonIsCrappy.Error):
         def __init__(self, plugin_name, method_name):
-            self.msg = "Method \"%s\" not implemented in plugin %s" % (method_name, plugin_name)
+            self.msg = 'Method "%s" not implemented in plugin %s' % (
+                method_name,
+                plugin_name,
+            )
 
     class AlreadyEnabledError(PythonIsCrappy.Error):
         def __init__(self, plugin_name):
@@ -36,46 +41,101 @@ class Plugin(PythonIsCrappy):
             pass
 
         class BadVersionError(Error):
-            def __init__(self, plugin_name, dependency, installed_version, requirement, requirement_version):
-                self.msg = 'Plugin %s depends on plugin %s version %s %s, but version %s is installed' % (plugin_name, dependency, requirement, requirement_version, installed_version)
+            def __init__(
+                self,
+                plugin_name,
+                dependency,
+                installed_version,
+                requirement,
+                requirement_version,
+            ):
+                self.msg = (
+                    "Plugin %s depends on plugin %s version %s %s, but version %s is installed"
+                    % (
+                        plugin_name,
+                        dependency,
+                        requirement,
+                        requirement_version,
+                        installed_version,
+                    )
+                )
 
         class NotInstalledError(Error):
             def __init__(self, plugin_name, dependency):
-                self.msg = 'Plugin %s depends on plugin %s but it is not installed' % (plugin_name, dependency)
+                self.msg = "Plugin %s depends on plugin %s but it is not installed" % (
+                    plugin_name,
+                    dependency,
+                )
 
         class NotEnabledError(Error):
             def __init__(self, plugin_name, dependency):
-                self.msg = 'Plugin %s depends on plugin %s but it is not enabled' % (plugin_name, dependency)
+                self.msg = "Plugin %s depends on plugin %s but it is not enabled" % (
+                    plugin_name,
+                    dependency,
+                )
 
         class BadRequirementTypeError(Error):
             def __init__(self, plugin_name, dependency, requirement):
-                self.msg = 'Plugin %s declares a dependency on plugin %s with an invalid requirement type "%s"' % (plugin_name, dependency, requirement)
+                self.msg = (
+                    'Plugin %s declares a dependency on plugin %s with an invalid requirement type "%s"'
+                    % (plugin_name, dependency, requirement)
+                )
 
-        def __init__(self, plugin, name, optional = False, requirements = {}):
+        def __init__(self, plugin, name, optional=False, requirements={}):
             self.name = name
             self.plugin = plugin
             self.optional = optional
             for key in requirements:
-                if key not in ('=', '>=', '<=', '>', '<'):
+                if key not in ("=", ">=", "<=", ">", "<"):
                     raise BadRequirementTypeError(self.plugin.name(), self.name, key)
             self.requirements = requirements
 
         def verify(self, version):
-            if '=' in  self.requirements:
-                if not DebianVersion(version) == DebianVersion(self.requirements['=']):
-                    raise Plugin.Dependency.BadVersionError(self.plugin.name(), self.name, version, '=', self.requirements['='])
-            if '>' in  self.requirements:
-                if not DebianVersion(version) > DebianVersion(self.requirements['>']):
-                    raise Plugin.Dependency.BadVersionError(self.plugin.name(), self.name, version, '>', self.requirements['>'])
-            if '>=' in  self.requirements:
-                if not DebianVersion(version) >= DebianVersion(self.requirements['>=']):
-                    raise Plugin.Dependency.BadVersionError(self.plugin.name(), self.name, version, '>=', self.requirements['>='])
-            if '<' in  self.requirements:
-                if not DebianVersion(version) < DebianVersion(self.requirements['<']):
-                    raise Plugin.Dependency.BadVersionError(self.plugin.name(), self.name, version, '<', self.requirements['<'])
-            if '<=' in  self.requirements:
-                if not DebianVersion(version) <= DebianVersion(self.requirements['<=']):
-                    raise Plugin.Dependency.BadVersionError(self.plugin.name(), self.name, version, '<=', self.requirements['<='])
+            if "=" in self.requirements:
+                if not DebianVersion(version) == DebianVersion(self.requirements["="]):
+                    raise Plugin.Dependency.BadVersionError(
+                        self.plugin.name(),
+                        self.name,
+                        version,
+                        "=",
+                        self.requirements["="],
+                    )
+            if ">" in self.requirements:
+                if not DebianVersion(version) > DebianVersion(self.requirements[">"]):
+                    raise Plugin.Dependency.BadVersionError(
+                        self.plugin.name(),
+                        self.name,
+                        version,
+                        ">",
+                        self.requirements[">"],
+                    )
+            if ">=" in self.requirements:
+                if not DebianVersion(version) >= DebianVersion(self.requirements[">="]):
+                    raise Plugin.Dependency.BadVersionError(
+                        self.plugin.name(),
+                        self.name,
+                        version,
+                        ">=",
+                        self.requirements[">="],
+                    )
+            if "<" in self.requirements:
+                if not DebianVersion(version) < DebianVersion(self.requirements["<"]):
+                    raise Plugin.Dependency.BadVersionError(
+                        self.plugin.name(),
+                        self.name,
+                        version,
+                        "<",
+                        self.requirements["<"],
+                    )
+            if "<=" in self.requirements:
+                if not DebianVersion(version) <= DebianVersion(self.requirements["<="]):
+                    raise Plugin.Dependency.BadVersionError(
+                        self.plugin.name(),
+                        self.name,
+                        version,
+                        "<=",
+                        self.requirements["<="],
+                    )
 
     class File:
         """ File helper class.
@@ -101,10 +161,10 @@ class Plugin(PythonIsCrappy):
 
     def version(self):
         """ Returns plugin's version. '"""
-        if hasattr(self.__class__, 'VERSION'):
-            return getattr(self.__class__, 'VERSION')
+        if hasattr(self.__class__, "VERSION"):
+            return getattr(self.__class__, "VERSION")
         else:
-            raise Plugin.MethodNotImplementedError(self.name(), 'version')
+            raise Plugin.MethodNotImplementedError(self.name(), "version")
 
     def dependencies(self):
         """ List dependencies of this plugin.
@@ -141,22 +201,29 @@ class Plugin(PythonIsCrappy):
         return ()
 
     def conf_class(self):
-        if hasattr(self.__class__, 'Conf'):
-            return getattr(self.__class__, 'Conf')
+        if hasattr(self.__class__, "Conf"):
+            return getattr(self.__class__, "Conf")
         else:
             return Conf
 
     def conf_section_class(self):
-        if hasattr(self.__class__, 'Conf') and hasattr(getattr(self.__class__, 'Conf',), 'ConfSection'):
-            return getattr(getattr(self.__class__, 'Conf',), 'ConfSection')
-        elif hasattr(self.__class__, 'ConfSection'):
-            return getattr(self.__class__, 'ConfSection')
+        if hasattr(self.__class__, "Conf") and hasattr(
+            getattr(self.__class__, "Conf",), "ConfSection"
+        ):
+            return getattr(getattr(self.__class__, "Conf",), "ConfSection")
+        elif hasattr(self.__class__, "ConfSection"):
+            return getattr(self.__class__, "ConfSection")
         else:
             return Conf.ConfSection
 
     def set_conf(self, conf):
-        if (self.conf_class() and conf.__class__ != self.conf_class()) or (self.conf_section_class() and self.conf_section_class() != conf.conf_section_class):
-            self.conf = self.conf_class()(conf, conf_section_class = self.conf_section_class())
+        if (self.conf_class() and conf.__class__ != self.conf_class()) or (
+            self.conf_section_class()
+            and self.conf_section_class() != conf.conf_section_class
+        ):
+            self.conf = self.conf_class()(
+                conf, conf_section_class=self.conf_section_class()
+            )
         else:
             self.conf = conf
         for conf_type in self.conf_types():
@@ -164,21 +231,30 @@ class Plugin(PythonIsCrappy):
 
     def file_content(self, file_path):
         """ Generates content to be written to @file_path. """
-        raise Plugin.MethodNotImplementedError(self.name(), 'file_content')
+        raise Plugin.MethodNotImplementedError(self.name(), "file_content")
 
     def conf_files(self):
         """ Returns a list of Plugin.File instance of each config file"""
-        return map(lambda file_path: Plugin.File(file_path, self.file_content(file_path), self.name()), self.conf_files_path())
+        return map(
+            lambda file_path: Plugin.File(
+                file_path, self.file_content(file_path), self.name()
+            ),
+            self.conf_files_path(),
+        )
 
     def files_to_backup(self):
-        return map(lambda file_path: Plugin.File(file_path, None, self.name()), self.files_to_backup_path())
+        return map(
+            lambda file_path: Plugin.File(file_path, None, self.name()),
+            self.files_to_backup_path(),
+        )
+
 
 class PluginWithTemplate(Plugin):
     """ Template based SJConf base plugin.
 
     """
 
-    def template_path(self, file_path, confs_to_test = None):
+    def template_path(self, file_path, confs_to_test=None):
         """ Provide template path for @file_path configuration file.
 
         Attempt to get template path for @file_path from the following
@@ -193,10 +269,14 @@ class PluginWithTemplate(Plugin):
         if not confs_to_test:
             confs_to_test = (self.conf[self.name()],)
         for conf_to_test in confs_to_test:
-            for key_to_test in ('template_' + os.path.basename(file_path), 'template_' + os.path.basename(file_path).replace('.conf', ''), 'template'):
+            for key_to_test in (
+                "template_" + os.path.basename(file_path),
+                "template_" + os.path.basename(file_path).replace(".conf", ""),
+                "template",
+            ):
                 if key_to_test in conf_to_test:
-                    return self.sjconf.base_dir + '/' + conf_to_test[key_to_test]
-        raise Plugin.MethodNotImplementedError(self.name(), 'template_path')
+                    return self.sjconf.base_dir + "/" + conf_to_test[key_to_test]
+        raise Plugin.MethodNotImplementedError(self.name(), "template_path")
 
     def template_conf(self, file_path):
         """ Configuration to be used for @file_path's template.

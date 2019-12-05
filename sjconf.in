@@ -8,7 +8,7 @@ configuration, deployment and service restart.
 
 """
 
-__version__ = '@PACKAGE_VERSION@'
+__version__ = "@PACKAGE_VERSION@"
 __all__ = []
 
 import os
@@ -16,6 +16,7 @@ import sys
 import pipes
 import argparse
 import subprocess
+
 # The following import is needed (at least in Python 2) to access to the
 # 'print' function (and not to the Python 2 keyword) with the following code:
 #    getattr(__builtin__, 'print')
@@ -35,13 +36,13 @@ class ArgumentParserExtension(argparse.Action):
         """Custom matcher function."""
 
         if type(rule) is str:
-            return (rule == candidate)
+            return rule == candidate
         elif isinstance(rule, re._pattern_type):
             return bool(rule.match(candidate))
         elif isinstance(rule, tuple) or isinstance(rule, list):
             return bool(candidate in rule)
         else:
-            raise TypeError('Unsupported matching rule')
+            raise TypeError("Unsupported matching rule")
 
     def __call__(self, parser, namespace, values, option_string=None):
         """Function called by the 'argparse' parser for the processing of the
@@ -57,266 +58,317 @@ def parse_arguments():
     global args
 
     # Init the argument parser and configure it properly
-    parser = argparse.ArgumentParser(prog='sjconf',
-                                     description='%(prog)s is a configuration '
-                                     'wrapper that handles global and server '
-                                     'specific \nconfiguration, deployment and'
-                                     ' service restart.\n\n'
-                                     'If sjconf is called without any '
-                                     'argument, the current configuration will'
-                                     ' be \nshown.',
-                                     add_help=False,
-                                     formatter_class=
-                                     argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        prog="sjconf",
+        description="%(prog)s is a configuration "
+        "wrapper that handles global and server "
+        "specific \nconfiguration, deployment and"
+        " service restart.\n\n"
+        "If sjconf is called without any "
+        "argument, the current configuration will"
+        " be \nshown.",
+        add_help=False,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
 
-    about_group = parser.add_argument_group('about sjconf')
-    about_group.add_argument('-h', '--help',
-                             action='help',
-                             help='show this help message and exit')
-    about_group.add_argument('-V', '--version',
-                             action='version',
-                             help='print version and exit',
-                             version='%(prog)s ' + str(__version__) + '\n'
-                             'Copyright © 2008-2015 Arkena\n\n'
-                             'License LGPLv2.1: GNU Lesser GPL version 2.1 \n'
-                             '<http://www.gnu.org/licenses/old-licenses/lgpl-2'
-                             '.1.html>.\n'
-                             'This is free software: you are free to change '
-                             'and redistribute it.\n'
-                             'There is NO WARRANTY, to the extent permitted by'
-                             ' law.')
+    about_group = parser.add_argument_group("about sjconf")
+    about_group.add_argument(
+        "-h", "--help", action="help", help="show this help message and exit"
+    )
+    about_group.add_argument(
+        "-V",
+        "--version",
+        action="version",
+        help="print version and exit",
+        version="%(prog)s " + str(__version__) + "\n"
+        "Copyright © 2008-2015 Arkena\n\n"
+        "License LGPLv2.1: GNU Lesser GPL version 2.1 \n"
+        "<http://www.gnu.org/licenses/old-licenses/lgpl-2"
+        ".1.html>.\n"
+        "This is free software: you are free to change "
+        "and redistribute it.\n"
+        "There is NO WARRANTY, to the extent permitted by"
+        " law.",
+    )
 
-    behaviour_group = parser.add_argument_group('sjconf behaviour')
-    behaviour_group.add_argument('-v', '--verbose',
-                                 action='store_true',
-                                 help='be verbose')
-    behaviour_group.add_argument('-q', '--quiet',
-                                 action='store_true',
-                                 help='be quiet: don\'t print anything to '
-                                 'stdout')
+    behaviour_group = parser.add_argument_group("sjconf behaviour")
+    behaviour_group.add_argument(
+        "-v", "--verbose", action="store_true", help="be verbose"
+    )
+    behaviour_group.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="be quiet: don't print anything to " "stdout",
+    )
 
-    editor_group = parser.add_argument_group('sjconf editor')
-    editor_group.add_argument('-e', '--edit',
-                              action='store_true',
-                              help='open \'local.conf\' with $EDITOR in order '
-                              'to edit the sjconf manually (this option cannot'
-                              ' be mixed with other non-behavioural options)')
+    editor_group = parser.add_argument_group("sjconf editor")
+    editor_group.add_argument(
+        "-e",
+        "--edit",
+        action="store_true",
+        help="open 'local.conf' with $EDITOR in order "
+        "to edit the sjconf manually (this option cannot"
+        " be mixed with other non-behavioural options)",
+    )
 
-    info_group = parser.add_argument_group('sjconf information')
-    info_group.add_argument('--get',
-                            nargs=2,
-                            metavar=('SECTION', 'KEY'),
-                            help='get a configuration key')
-    info_group.add_argument('--list-plugins',
-                            action='store_true',
-                            help='list installed plugins')
-    info_group.add_argument('--list-profiles',
-                            action='store_true',
-                            help='list installed profiles')
+    info_group = parser.add_argument_group("sjconf information")
+    info_group.add_argument(
+        "--get", nargs=2, metavar=("SECTION", "KEY"), help="get a configuration key"
+    )
+    info_group.add_argument(
+        "--list-plugins", action="store_true", help="list installed plugins"
+    )
+    info_group.add_argument(
+        "--list-profiles", action="store_true", help="list installed profiles"
+    )
 
-    commit_group = parser.add_argument_group('sjconf commit')
-    commit_group.add_argument('--save',
-                              action='store_true',
-                              help='save modifications (but do not deploy '
-                              'them)')
-    commit_group.add_argument('--deploy',
-                              action='store_true',
-                              help='deploy configuration (needs \'--save\' '
-                              'parameter if the modifications are set in the'
-                              'modifications are set in the same command '
-                              'line)')
-    commit_group.add_argument('--no-backup',
-                              action='store_true',
-                              help='do not backup configuration files '
-                              'during deployment')
+    commit_group = parser.add_argument_group("sjconf commit")
+    commit_group.add_argument(
+        "--save",
+        action="store_true",
+        help="save modifications (but do not deploy " "them)",
+    )
+    commit_group.add_argument(
+        "--deploy",
+        action="store_true",
+        help="deploy configuration (needs '--save' "
+        "parameter if the modifications are set in the"
+        "modifications are set in the same command "
+        "line)",
+    )
+    commit_group.add_argument(
+        "--no-backup",
+        action="store_true",
+        help="do not backup configuration files " "during deployment",
+    )
 
-    modifier_group = parser.add_argument_group('sjconf modifiers')
-    modifier_group.add_argument('--set',
-                                default=[],
-                                nargs=3,
-                                metavar=('SECTION', 'KEY', 'VALUE'),
-                                action=ArgumentParserExtension,
-                                help='set a configuration key')
-    modifier_group.add_argument('--add-to-list',
-                                default=[],
-                                nargs=3,
-                                metavar=('SECTION', 'KEY', 'VALUE'),
-                                action=ArgumentParserExtension,
-                                help='add a value to a configuration key '
-                                '(list)')
-    modifier_group.add_argument('--remove-from-list',
-                                default=[],
-                                nargs=3,
-                                metavar=('SECTION', 'KEY', 'VALUE'),
-                                action=ArgumentParserExtension,
-                                help='remove a value from a configuration key '
-                                '(list)')
-    modifier_group.add_argument('--add-to-sequence',
-                                default=[],
-                                nargs=3,
-                                metavar=('SECTION', 'KEY', 'VALUE'),
-                                action=ArgumentParserExtension,
-                                help='add a value to a configuration key '
-                                '(sequence)')
-    modifier_group.add_argument('--remove-from-sequence',
-                                default=[],
-                                nargs=3,
-                                metavar=('SECTION', 'KEY', 'VALUE'),
-                                action=ArgumentParserExtension,
-                                help='remove a value from a configuration key '
-                                '(sequence)')
-    modifier_group.add_argument('--delete-key',
-                                default=[],
-                                nargs=2,
-                                metavar=('SECTION', 'KEY'),
-                                action=ArgumentParserExtension,
-                                help='delete a key within a section')
-    modifier_group.add_argument('--delete-section',
-                                default=[],
-                                nargs=1,
-                                metavar=('SECTION', ),
-                                action=ArgumentParserExtension,
-                                help='delete a complete section')
+    modifier_group = parser.add_argument_group("sjconf modifiers")
+    modifier_group.add_argument(
+        "--set",
+        default=[],
+        nargs=3,
+        metavar=("SECTION", "KEY", "VALUE"),
+        action=ArgumentParserExtension,
+        help="set a configuration key",
+    )
+    modifier_group.add_argument(
+        "--add-to-list",
+        default=[],
+        nargs=3,
+        metavar=("SECTION", "KEY", "VALUE"),
+        action=ArgumentParserExtension,
+        help="add a value to a configuration key " "(list)",
+    )
+    modifier_group.add_argument(
+        "--remove-from-list",
+        default=[],
+        nargs=3,
+        metavar=("SECTION", "KEY", "VALUE"),
+        action=ArgumentParserExtension,
+        help="remove a value from a configuration key " "(list)",
+    )
+    modifier_group.add_argument(
+        "--add-to-sequence",
+        default=[],
+        nargs=3,
+        metavar=("SECTION", "KEY", "VALUE"),
+        action=ArgumentParserExtension,
+        help="add a value to a configuration key " "(sequence)",
+    )
+    modifier_group.add_argument(
+        "--remove-from-sequence",
+        default=[],
+        nargs=3,
+        metavar=("SECTION", "KEY", "VALUE"),
+        action=ArgumentParserExtension,
+        help="remove a value from a configuration key " "(sequence)",
+    )
+    modifier_group.add_argument(
+        "--delete-key",
+        default=[],
+        nargs=2,
+        metavar=("SECTION", "KEY"),
+        action=ArgumentParserExtension,
+        help="delete a key within a section",
+    )
+    modifier_group.add_argument(
+        "--delete-section",
+        default=[],
+        nargs=1,
+        metavar=("SECTION",),
+        action=ArgumentParserExtension,
+        help="delete a complete section",
+    )
 
-    diff_group = parser.add_argument_group('sjconf diff')
-    diff_group.add_argument('--diff',
-                            action='store_true',
-                            help='show the differences (\'diff -u1\') '
-                            'between the previous and the new (to be deployed '
-                            'or not) configuration files (this option is '
-                            'useful only associated with sjconf modifiers '
-                            'options)')
+    diff_group = parser.add_argument_group("sjconf diff")
+    diff_group.add_argument(
+        "--diff",
+        action="store_true",
+        help="show the differences ('diff -u1') "
+        "between the previous and the new (to be deployed "
+        "or not) configuration files (this option is "
+        "useful only associated with sjconf modifiers "
+        "options)",
+    )
 
-    extension_group = parser.add_argument_group('sjconf extensions')
-    extension_group.add_argument('--restart',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('PLUGIN', ),
-                                 action=ArgumentParserExtension,
-                                 help='restart all services of PLUGIN (if '
-                                 'PLUGIN is "all", then all services from all '
-                                 'the plugins will be restarted)')
-    extension_group.add_argument('--reload',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('PLUGIN', ),
-                                 action=ArgumentParserExtension,
-                                 help='reload all services of PLUGIN (if '
-                                 'PLUGIN is "all", then all services from all '
-                                 'the plugins will be reloaded)')
-    extension_group.add_argument('--install-plugin',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('PLUGIN', ),
-                                 action=ArgumentParserExtension,
-                                 help='install PLUGIN into the plugins path')
-    extension_group.add_argument('--install-plugin-with-symlink',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('PLUGIN', ),
-                                 action=ArgumentParserExtension,
-                                 help='install PLUGIN into the plugins path by'
-                                 ' using a symbolic link')
-    extension_group.add_argument('--uninstall-plugin',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('PLUGIN', ),
-                                 action=ArgumentParserExtension,
-                                 help='uninstall PLUGIN from the plugins path')
-    extension_group.add_argument('--enable-plugin',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('PLUGIN', ),
-                                 action=ArgumentParserExtension,
-                                 help='add PLUGIN to the list of plugins to '
-                                 'use')
-    extension_group.add_argument('--disable-plugin',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('PLUGIN', ),
-                                 action=ArgumentParserExtension,
-                                 help='remove PLUGIN from the list of plugins '
-                                 'to use')
-    extension_group.add_argument('--install-template',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('TEMPLATE', ),
-                                 action=ArgumentParserExtension,
-                                 help='install TEMPLATE into the templates '
-                                 'path')
-    extension_group.add_argument('--install-template-with-symlink',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('TEMPLATE', ),
-                                 action=ArgumentParserExtension,
-                                 help='install TEMPLATE into the templates '
-                                 'path by using a symbolic link')
-    extension_group.add_argument('--uninstall-template',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('TEMPLATE', ),
-                                 action=ArgumentParserExtension,
-                                 help='uninstall TEMPLATE from the templates '
-                                 'path')
-    extension_group.add_argument('--install-conf',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('CONF', ),
-                                 action=ArgumentParserExtension,
-                                 help='install CONF into the "base" '
-                                 'configuration directory')
-    extension_group.add_argument('--install-conf-with-symlink',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('CONF', ),
-                                 action=ArgumentParserExtension,
-                                 help='install CONF into the "base" '
-                                 'configuration directory by using a symbolic '
-                                 'link')
-    extension_group.add_argument('--uninstall-conf',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('CONF', ),
-                                 action=ArgumentParserExtension,
-                                 help='uninstall CONF from the base.conf file '
-                                 '(CONF should be the basename of a conf file '
-                                 'previously installed)')
-    extension_group.add_argument('--install-profile',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('PROFILE', ),
-                                 action=ArgumentParserExtension,
-                                 help='install PROFILE file into the '
-                                 'configuration directory')
-    extension_group.add_argument('--install-profile-with-symlink',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('PROFILE', ),
-                                 action=ArgumentParserExtension,
-                                 help='install PROFILE into the "base" '
-                                 'configuration directory by using a symbolic '
-                                 'link')
-    extension_group.add_argument('--uninstall-profile',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('PROFILE', ),
-                                 action=ArgumentParserExtension,
-                                 help='uninstall PROFILE file (PROFILE should'
-                                 ' be the basename of a profile file '
-                                 'previously installed)')
-    extension_group.add_argument('--enable-profile',
-                                 default=[],
-                                 nargs=2,
-                                 metavar=('PROFILE', 'LEVEL'),
-                                 action=ArgumentParserExtension,
-                                 help='enable the profile PROFILE at level '
-                                 'LEVEL')
-    extension_group.add_argument('--disable-profile',
-                                 default=[],
-                                 nargs=1,
-                                 metavar=('PROFILE', ),
-                                 action=ArgumentParserExtension,
-                                 help='disable the profile PROFILE')
+    extension_group = parser.add_argument_group("sjconf extensions")
+    extension_group.add_argument(
+        "--restart",
+        default=[],
+        nargs=1,
+        metavar=("PLUGIN",),
+        action=ArgumentParserExtension,
+        help="restart all services of PLUGIN (if "
+        'PLUGIN is "all", then all services from all '
+        "the plugins will be restarted)",
+    )
+    extension_group.add_argument(
+        "--reload",
+        default=[],
+        nargs=1,
+        metavar=("PLUGIN",),
+        action=ArgumentParserExtension,
+        help="reload all services of PLUGIN (if "
+        'PLUGIN is "all", then all services from all '
+        "the plugins will be reloaded)",
+    )
+    extension_group.add_argument(
+        "--install-plugin",
+        default=[],
+        nargs=1,
+        metavar=("PLUGIN",),
+        action=ArgumentParserExtension,
+        help="install PLUGIN into the plugins path",
+    )
+    extension_group.add_argument(
+        "--install-plugin-with-symlink",
+        default=[],
+        nargs=1,
+        metavar=("PLUGIN",),
+        action=ArgumentParserExtension,
+        help="install PLUGIN into the plugins path by" " using a symbolic link",
+    )
+    extension_group.add_argument(
+        "--uninstall-plugin",
+        default=[],
+        nargs=1,
+        metavar=("PLUGIN",),
+        action=ArgumentParserExtension,
+        help="uninstall PLUGIN from the plugins path",
+    )
+    extension_group.add_argument(
+        "--enable-plugin",
+        default=[],
+        nargs=1,
+        metavar=("PLUGIN",),
+        action=ArgumentParserExtension,
+        help="add PLUGIN to the list of plugins to " "use",
+    )
+    extension_group.add_argument(
+        "--disable-plugin",
+        default=[],
+        nargs=1,
+        metavar=("PLUGIN",),
+        action=ArgumentParserExtension,
+        help="remove PLUGIN from the list of plugins " "to use",
+    )
+    extension_group.add_argument(
+        "--install-template",
+        default=[],
+        nargs=1,
+        metavar=("TEMPLATE",),
+        action=ArgumentParserExtension,
+        help="install TEMPLATE into the templates " "path",
+    )
+    extension_group.add_argument(
+        "--install-template-with-symlink",
+        default=[],
+        nargs=1,
+        metavar=("TEMPLATE",),
+        action=ArgumentParserExtension,
+        help="install TEMPLATE into the templates " "path by using a symbolic link",
+    )
+    extension_group.add_argument(
+        "--uninstall-template",
+        default=[],
+        nargs=1,
+        metavar=("TEMPLATE",),
+        action=ArgumentParserExtension,
+        help="uninstall TEMPLATE from the templates " "path",
+    )
+    extension_group.add_argument(
+        "--install-conf",
+        default=[],
+        nargs=1,
+        metavar=("CONF",),
+        action=ArgumentParserExtension,
+        help='install CONF into the "base" ' "configuration directory",
+    )
+    extension_group.add_argument(
+        "--install-conf-with-symlink",
+        default=[],
+        nargs=1,
+        metavar=("CONF",),
+        action=ArgumentParserExtension,
+        help='install CONF into the "base" '
+        "configuration directory by using a symbolic "
+        "link",
+    )
+    extension_group.add_argument(
+        "--uninstall-conf",
+        default=[],
+        nargs=1,
+        metavar=("CONF",),
+        action=ArgumentParserExtension,
+        help="uninstall CONF from the base.conf file "
+        "(CONF should be the basename of a conf file "
+        "previously installed)",
+    )
+    extension_group.add_argument(
+        "--install-profile",
+        default=[],
+        nargs=1,
+        metavar=("PROFILE",),
+        action=ArgumentParserExtension,
+        help="install PROFILE file into the " "configuration directory",
+    )
+    extension_group.add_argument(
+        "--install-profile-with-symlink",
+        default=[],
+        nargs=1,
+        metavar=("PROFILE",),
+        action=ArgumentParserExtension,
+        help='install PROFILE into the "base" '
+        "configuration directory by using a symbolic "
+        "link",
+    )
+    extension_group.add_argument(
+        "--uninstall-profile",
+        default=[],
+        nargs=1,
+        metavar=("PROFILE",),
+        action=ArgumentParserExtension,
+        help="uninstall PROFILE file (PROFILE should"
+        " be the basename of a profile file "
+        "previously installed)",
+    )
+    extension_group.add_argument(
+        "--enable-profile",
+        default=[],
+        nargs=2,
+        metavar=("PROFILE", "LEVEL"),
+        action=ArgumentParserExtension,
+        help="enable the profile PROFILE at level " "LEVEL",
+    )
+    extension_group.add_argument(
+        "--disable-profile",
+        default=[],
+        nargs=1,
+        metavar=("PROFILE",),
+        action=ArgumentParserExtension,
+        help="disable the profile PROFILE",
+    )
 
     # Run the argument parser
     args = parser.parse_args()
@@ -337,48 +389,68 @@ def parse_arguments():
     #
 
     # "Semantic" checks over the user arguments
-    if (any([getattr(args, arg) for arg in editor_args]) and
-            (any([getattr(args, arg) for arg in info_args]) or
-             any([getattr(args, arg) for arg in commit_args]) or
-             any([getattr(args, arg) for arg in modifier_args]) or
-             any([getattr(args, arg) for arg in diff_args]) or
-             any([getattr(args, arg) for arg in extension_args]))):
-        parser.error('Sorry but you cannot call the sjconf editor with other '
-                     'options. sjconf unchanged.')
+    if any([getattr(args, arg) for arg in editor_args]) and (
+        any([getattr(args, arg) for arg in info_args])
+        or any([getattr(args, arg) for arg in commit_args])
+        or any([getattr(args, arg) for arg in modifier_args])
+        or any([getattr(args, arg) for arg in diff_args])
+        or any([getattr(args, arg) for arg in extension_args])
+    ):
+        parser.error(
+            "Sorry but you cannot call the sjconf editor with other "
+            "options. sjconf unchanged."
+        )
 
-    if (any([getattr(args, arg) for arg in info_args]) and
-            (any([getattr(args, arg) for arg in commit_args]) or
-             any([getattr(args, arg) for arg in modifier_args]) or
-             any([getattr(args, arg) for arg in extension_args]))):
-        parser.error('Sorry but you cannot mix informative options with '
-                     'options modifying sjconf. Please split your command. '
-                     'sjconf unchanged.')
+    if any([getattr(args, arg) for arg in info_args]) and (
+        any([getattr(args, arg) for arg in commit_args])
+        or any([getattr(args, arg) for arg in modifier_args])
+        or any([getattr(args, arg) for arg in extension_args])
+    ):
+        parser.error(
+            "Sorry but you cannot mix informative options with "
+            "options modifying sjconf. Please split your command. "
+            "sjconf unchanged."
+        )
 
-    if (any([getattr(args, arg) for arg in modifier_args]) and
-            args.deploy and not args.save):
-        parser.error('Please add the \'--save\' parameter to your command in '
-                     'order to save your inlined changes before deploying '
-                     'them. sjconf unchanged.')
+    if (
+        any([getattr(args, arg) for arg in modifier_args])
+        and args.deploy
+        and not args.save
+    ):
+        parser.error(
+            "Please add the '--save' parameter to your command in "
+            "order to save your inlined changes before deploying "
+            "them. sjconf unchanged."
+        )
 
     if args.verbose and args.quiet:
-        parser.error('You cannot mix the quiet and verbose option. sjconf '
-                     'unchanged.')
+        parser.error(
+            "You cannot mix the quiet and verbose option. sjconf " "unchanged."
+        )
 
     if args.no_backup and not args.deploy:
-        parser.error('You cannot use the \'--no-backup\' option without '
-                     'deploying changes. sjconf unchanged.')
+        parser.error(
+            "You cannot use the '--no-backup' option without "
+            "deploying changes. sjconf unchanged."
+        )
 
-    if (any([getattr(args, arg) for arg in diff_args]) and
-            not any([getattr(args, arg) for arg in modifier_args])):
-        parser.error('You cannot use the \'--diff\' option without '
-                     'making changes to sjconf with modifiers options. sjconf '
-                     'unchanged.')
+    if any([getattr(args, arg) for arg in diff_args]) and not any(
+        [getattr(args, arg) for arg in modifier_args]
+    ):
+        parser.error(
+            "You cannot use the '--diff' option without "
+            "making changes to sjconf with modifiers options. sjconf "
+            "unchanged."
+        )
 
-    if (any([getattr(args, arg) for arg in modifier_args]) and
-            any([getattr(args, arg) for arg in extension_args])):
-        parser.error('Sorry but you cannot mix options that modify sjconf with'
-                     ' options that act upon sjconf extensions. Please split '
-                     'your command. sjconf unchanged.')
+    if any([getattr(args, arg) for arg in modifier_args]) and any(
+        [getattr(args, arg) for arg in extension_args]
+    ):
+        parser.error(
+            "Sorry but you cannot mix options that modify sjconf with"
+            " options that act upon sjconf extensions. Please split "
+            "your command. sjconf unchanged."
+        )
 
 
 def sjprint(str_to_print):
@@ -388,63 +460,78 @@ def sjprint(str_to_print):
         print(str_to_print)
 
 
-def sjconf_error(msg='Unknown error.', return_code=1):
+def sjconf_error(msg="Unknown error.", return_code=1):
     """Error handler for sjconf with shell return code"""
 
     if not args.quiet:
-        print >> sys.stderr, 'sjconf: error: ' + msg
+        print >>sys.stderr, "sjconf: error: " + msg
     sys.exit(return_code)
 
 
-def print_plugin_info(plugin_info, printer=getattr(__builtin__, 'print')):
+def print_plugin_info(plugin_info, printer=getattr(__builtin__, "print")):
     """Plugin information 'pretty' printer"""
 
-    plugin_instance = plugin_info['plugin']
-    printer('Plugin %(name)s:\n'
-            '  Version: %(version)s\n'
-            '  Enabled: %(is_enabled)s' %
-            {'name': plugin_instance.name(),
-             'version': str(plugin_instance.version()),
-             'is_enabled': 'yes' if plugin_info['is_enabled'] else
-                           'no'})
+    plugin_instance = plugin_info["plugin"]
+    printer(
+        "Plugin %(name)s:\n"
+        "  Version: %(version)s\n"
+        "  Enabled: %(is_enabled)s"
+        % {
+            "name": plugin_instance.name(),
+            "version": str(plugin_instance.version()),
+            "is_enabled": "yes" if plugin_info["is_enabled"] else "no",
+        }
+    )
     if plugin_instance.dependencies():
-        printer('  Dependencies:')
-        for dep_key, dep in plugin_info['dependencies'].iteritems():
+        printer("  Dependencies:")
+        for dep_key, dep in plugin_info["dependencies"].iteritems():
             # Formatting the requirement string with the operators
             # according to the plugin versions
-            requirements_str = ', '.join(map(lambda (op, ver): op + ' ' +
-                                             ver, dep['dependency']
-                                             .requirements
-                                             .items()
-                                             ))
-            printer('    Plugin %(plugin_name)s:\n'
-                    '      Required: %(is_required)s\n'
-                    '      Requirements: %(requirements)s\n'
-                    '      Installed version: %(installed_version)s' %
-                    {'plugin_name': str(dep_key),
-                     'is_required': 'yes' if not dep['dependency'].optional
-                                    else 'no',
-                     'requirements': requirements_str,
-                     'installed_version': str(dep['plugin'].version()) if
-                     dep['plugin'] else 'Not installed'
-                     })
-            if dep['plugin']:
-                printer('      Enabled: %(is_enabled)s' %
-                        {'is_enabled': 'yes' if dep['is_enabled'] else 'no'})
-            printer('      State: %(state)s' %
-                    {'state': 'OK' if dep['state'] is True else
-                              'Error: ' + str(dep['state'])})
+            requirements_str = ", ".join(
+                map(
+                    lambda (op, ver): op + " " + ver,
+                    dep["dependency"].requirements.items(),
+                )
+            )
+            printer(
+                "    Plugin %(plugin_name)s:\n"
+                "      Required: %(is_required)s\n"
+                "      Requirements: %(requirements)s\n"
+                "      Installed version: %(installed_version)s"
+                % {
+                    "plugin_name": str(dep_key),
+                    "is_required": "yes" if not dep["dependency"].optional else "no",
+                    "requirements": requirements_str,
+                    "installed_version": str(dep["plugin"].version())
+                    if dep["plugin"]
+                    else "Not installed",
+                }
+            )
+            if dep["plugin"]:
+                printer(
+                    "      Enabled: %(is_enabled)s"
+                    % {"is_enabled": "yes" if dep["is_enabled"] else "no"}
+                )
+            printer(
+                "      State: %(state)s"
+                % {
+                    "state": "OK"
+                    if dep["state"] is True
+                    else "Error: " + str(dep["state"])
+                }
+            )
 
 
-def print_profile_info(profile_name, profile_level,
-                       printer=getattr(__builtin__, 'print')):
+def print_profile_info(
+    profile_name, profile_level, printer=getattr(__builtin__, "print")
+):
     """Profile information 'pretty' printer"""
 
-    printer('Profile %s:' % profile_name)
+    printer("Profile %s:" % profile_name)
     if profile_level is not None:
-        printer('  Enabled at level %s' % profile_level)
+        printer("  Enabled at level %s" % profile_level)
     else:
-        printer('  Not enabled')
+        printer("  Not enabled")
 
 
 def main():
@@ -461,19 +548,18 @@ def main():
     if args.verbose:
         my_sjconf._load_conf_base()
         my_sjconf._load_conf_local()
-        sjprint('Using base configuration file: %s' %
-                my_sjconf.confs['base'].file_path)
-        sjprint('Using local configuration file: %s' %
-                my_sjconf.confs['local'].file_path)
+        sjprint("Using base configuration file: %s" % my_sjconf.confs["base"].file_path)
+        sjprint(
+            "Using local configuration file: %s" % my_sjconf.confs["local"].file_path
+        )
 
     #
     # Launch the sjconf editor:
     #
     if args.edit:
         my_sjconf._load_conf_local()
-        editor = os.getenv("EDITOR") or 'vi'
-        editor_cmdline = [editor,
-                          pipes.quote(my_sjconf.confs['local'].file_path)]
+        editor = os.getenv("EDITOR") or "vi"
+        editor_cmdline = [editor, pipes.quote(my_sjconf.confs["local"].file_path)]
 
         subprocess.call(editor_cmdline)
 
@@ -482,7 +568,7 @@ def main():
     #
     if not any(vars(args).values()):
         my_sjconf._load_conf_local()
-        sjprint(open(my_sjconf.confs['local'].file_path).read())
+        sjprint(open(my_sjconf.confs["local"].file_path).read())
 
     #
     # List plugins (sorted by their names):
@@ -512,62 +598,65 @@ def main():
     if args.get:
         section_to_get = args.get[0]
         key_to_get = args.get[1]
-        if (section_to_get in my_sjconf.conf_local() and
-                key_to_get in my_sjconf.conf_local()[section_to_get]):
+        if (
+            section_to_get in my_sjconf.conf_local()
+            and key_to_get in my_sjconf.conf_local()[section_to_get]
+        ):
             sjprint(my_sjconf.conf_local()[section_to_get][key_to_get])
         else:
-            sjconf_error('Key %s in section %s not found.' %
-                         (key_to_get, section_to_get))
+            sjconf_error(
+                "Key %s in section %s not found." % (key_to_get, section_to_get)
+            )
 
     #
     # Install plugins, templates, confs or profiles:
     #
     if args.install_plugin:
         for plugin_file in args.install_plugin:
-            my_sjconf.file_install('plugin', *plugin_file)
+            my_sjconf.file_install("plugin", *plugin_file)
     if args.install_plugin_with_symlink:
         for plugin_file in args.install_plugin_with_symlink:
-            my_sjconf.file_install('plugin', *plugin_file, link=True)
+            my_sjconf.file_install("plugin", *plugin_file, link=True)
 
     if args.install_conf:
         for conf_file in args.install_conf:
-            my_sjconf.file_install('conf', *conf_file)
+            my_sjconf.file_install("conf", *conf_file)
     if args.install_conf_with_symlink:
         for conf_file in args.install_conf_with_symlink:
-            my_sjconf.file_install('conf', *conf_file, link=True)
+            my_sjconf.file_install("conf", *conf_file, link=True)
 
     if args.install_template:
         for template_file in args.install_template:
-            my_sjconf.file_install('template', *template_file)
+            my_sjconf.file_install("template", *template_file)
     if args.install_template_with_symlink:
         for template_file in args.install_template_with_symlink:
-            my_sjconf.file_install('template', *template_file, link=True)
+            my_sjconf.file_install("template", *template_file, link=True)
 
     if args.install_profile:
         for profile_file in args.install_profile:
-            my_sjconf.file_install('profile', *profile_file)
+            my_sjconf.file_install("profile", *profile_file)
     if args.install_profile_with_symlink:
         for profile_file in args.install_profile_with_symlink:
-            my_sjconf.file_install('profile', *profile_file, link=True)
+            my_sjconf.file_install("profile", *profile_file, link=True)
 
     #
     # Uninstall plugins, templates, confs or profiles:
     #
     if args.uninstall_plugin:
         for plugin in args.uninstall_plugin:
-            my_sjconf.file_uninstall('plugin', *plugin)
+            my_sjconf.file_uninstall("plugin", *plugin)
 
     if args.uninstall_conf:
         for conf in args.uninstall_conf:
-            my_sjconf.file_uninstall('conf', *conf)
+            my_sjconf.file_uninstall("conf", *conf)
 
     if args.uninstall_template:
         for template in args.uninstall_template:
-            my_sjconf.file_uninstall('template', *template)
+            my_sjconf.file_uninstall("template", *template)
 
     if args.uninstall_profile:
         for profile in args.uninstall_profile:
-            my_sjconf.file_uninstall('profile', *profile)
+            my_sjconf.file_uninstall("profile", *profile)
 
     #
     # Enable plugins:
@@ -602,9 +691,15 @@ def main():
     # '--add-to-sequence', '--remove-from-sequence', '--delete-key',
     # '--delete-section' arguments):
     #
-    if (args.set or args.add_to_list or args.remove_from_list or
-            args.add_to_sequence or args.remove_from_sequence or
-            args.delete_key or args.delete_section):
+    if (
+        args.set
+        or args.add_to_list
+        or args.remove_from_list
+        or args.add_to_sequence
+        or args.remove_from_sequence
+        or args.delete_key
+        or args.delete_section
+    ):
         my_sjconf.apply_conf_modifications(
             temp=(not args.save),
             sets=args.set,
@@ -613,7 +708,7 @@ def main():
             sequence_adds=args.add_to_sequence,
             sequence_removes=args.remove_from_sequence,
             delete_keys=args.delete_key,
-            delete_sections=args.delete_section
+            delete_sections=args.delete_section,
         )
 
         #
@@ -621,28 +716,33 @@ def main():
         # one which actually will be saved and/or deployed):
         #
         if args.diff:
-            diff_cmdline = ['diff', '-u1',
-                            pipes.quote(my_sjconf.confs['local'].file_path),
-                            pipes.quote(my_sjconf.temp_file_path)]
+            diff_cmdline = [
+                "diff",
+                "-u1",
+                pipes.quote(my_sjconf.confs["local"].file_path),
+                pipes.quote(my_sjconf.temp_file_path),
+            ]
             process = subprocess.Popen(diff_cmdline, stdout=subprocess.PIPE)
             proc_out, proc_err = process.communicate()
             proc_returncode = process.poll()
 
             if proc_returncode == 0:
-                sjprint('The diff result is empty. The two configuration files'
-                        ' are identical.')
+                sjprint(
+                    "The diff result is empty. The two configuration files"
+                    " are identical."
+                )
             elif proc_returncode == 1:
-                sjprint('############### local.conf diffs ################')
+                sjprint("############### local.conf diffs ################")
                 sjprint(proc_out)
-                sjprint('#################################################')
+                sjprint("#################################################")
             else:
                 # This should not happen!
-                sjconf_error('diff returned an error exit status.')
+                sjconf_error("diff returned an error exit status.")
 
         if args.save:
-            sjprint('Configuration saved.')
+            sjprint("Configuration saved.")
         else:
-            sjprint('No configuration saved (please use \'--save\').')
+            sjprint("No configuration saved (please use '--save').")
 
     #
     # Reload/Restart services
@@ -661,12 +761,14 @@ def main():
         # get rid of the tuples containing the services names
         svc_names_to_restart = [svc[0] for svc in args.restart]
         svc_names_to_reload = [svc[0] for svc in args.reload]
-        my_sjconf.deploy_conf(services_to_restart=svc_names_to_restart,
-                              services_to_reload=svc_names_to_reload,
-                              backup=(not args.no_backup))
+        my_sjconf.deploy_conf(
+            services_to_restart=svc_names_to_restart,
+            services_to_reload=svc_names_to_reload,
+            backup=(not args.no_backup),
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     global args
 
     try:
