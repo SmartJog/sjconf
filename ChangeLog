@@ -1,3 +1,8 @@
+Version 1.13.3~dev
+
+	* Remove the sjutils dependency
+	* Format the code
+
 Version 1.13.2 Released on 2015/08/06
 
 	* Fix the installation of the bash completion

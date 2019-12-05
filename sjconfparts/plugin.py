@@ -1,8 +1,9 @@
-from sjconfparts.conf import *
-from sjconfparts.exceptions import *
 import os
 
-from sjutils.debversion import DebianVersion
+import apt_pkg
+
+from sjconfparts.conf import *
+from sjconfparts.exceptions import *
 
 
 class PythonIsCrappy:
@@ -91,8 +92,10 @@ class Plugin(PythonIsCrappy):
             self.requirements = requirements
 
         def verify(self, version):
+            apt_pkg.init_system()
+
             if "=" in self.requirements:
-                if not DebianVersion(version) == DebianVersion(self.requirements["="]):
+                if not apt_pkg.version_compare(version, self.requirements["="]) == 0:
                     raise Plugin.Dependency.BadVersionError(
                         self.plugin.name(),
                         self.name,
@@ -101,7 +104,7 @@ class Plugin(PythonIsCrappy):
                         self.requirements["="],
                     )
             if ">" in self.requirements:
-                if not DebianVersion(version) > DebianVersion(self.requirements[">"]):
+                if not apt_pkg.version_compare(version, self.requirements[">"]) > 0:
                     raise Plugin.Dependency.BadVersionError(
                         self.plugin.name(),
                         self.name,
@@ -110,7 +113,7 @@ class Plugin(PythonIsCrappy):
                         self.requirements[">"],
                     )
             if ">=" in self.requirements:
-                if not DebianVersion(version) >= DebianVersion(self.requirements[">="]):
+                if not apt_pkg.version_compare(version, self.requirements[">="]) >= 0:
                     raise Plugin.Dependency.BadVersionError(
                         self.plugin.name(),
                         self.name,
@@ -119,7 +122,7 @@ class Plugin(PythonIsCrappy):
                         self.requirements[">="],
                     )
             if "<" in self.requirements:
-                if not DebianVersion(version) < DebianVersion(self.requirements["<"]):
+                if not apt_pkg.version_compare(version, self.requirements["<"]) < 0:
                     raise Plugin.Dependency.BadVersionError(
                         self.plugin.name(),
                         self.name,
@@ -128,7 +131,7 @@ class Plugin(PythonIsCrappy):
                         self.requirements["<"],
                     )
             if "<=" in self.requirements:
-                if not DebianVersion(version) <= DebianVersion(self.requirements["<="]):
+                if not apt_pkg.version_compare(version, self.requirements["<="]) <= 0:
                     raise Plugin.Dependency.BadVersionError(
                         self.plugin.name(),
                         self.name,
