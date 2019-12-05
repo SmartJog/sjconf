@@ -2,14 +2,12 @@ Source: sjconf
 Priority: optional
 Section: admin
 Maintainer: Nicolas Delvaux <nicolas.delvaux@arkena.com>
-Uploaders: Aurélien Dunand <aurelien.dunand@arkena.com>,
-           Olivier Ceyral <olivier.ceyral@arkena.com>
-Build-Depends: debhelper (>= 9),
+Build-Depends: debhelper (>= 12),
                dh-python,
                txt2tags,
                python-nose,
                python-sjutils (>= 1.24.0)
-Standards-Version: 3.9.6
+Standards-Version: 4.3.0
 
 Package: sjconf1
 Conflicts: sjconf
