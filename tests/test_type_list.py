@@ -1,5 +1,4 @@
-#!/usr/bin/nosetests
-# -*- coding: utf-8 -*-
+#!/usr/bin/nosetests3
 
 import sys
 import os
@@ -31,8 +30,6 @@ paths =
 """
 
 ENVIRONMENT_PLUGIN = """\
-# -*- coding: utf-8 -*-
-
 import sjconf
 
 class Plugin(sjconf.Plugin):
@@ -57,7 +54,7 @@ class Plugin(sjconf.Plugin):
 """
 
 
-class TestClass:
+class TestClass(unittest.TestCase):
     def setUp(self):
         self._tmpdir = tempfile.mkdtemp(prefix="sjconftest_")
         self._etc = self._tmpdir + "/etc"
@@ -69,20 +66,24 @@ class TestClass:
         self._environment = self._tmpdir + "/var/lib/sjconf/plugins/environment.py"
 
         os.makedirs(self._sjconf)
-        open(self._base_conf, "w").write(BASE_CONF)
-        open(self._local_conf, "w").write(LOCAL_CONF)
-        open(self._sjconf_conf, "w").write(
-            SJCONF_CONF
-            % {
-                "tmpdir": self._tmpdir,
-                "etc_dir": self._etc,
-                "base_dir": self._sjconf,
-                "plugins_path": self._plugins,
-            }
-        )
+        with open(self._base_conf, "w") as f:
+            f.write(BASE_CONF)
+        with open(self._local_conf, "w") as f:
+            f.write(LOCAL_CONF)
+        with open(self._sjconf_conf, "w") as f:
+            f.write(
+                SJCONF_CONF
+                % {
+                    "tmpdir": self._tmpdir,
+                    "etc_dir": self._etc,
+                    "base_dir": self._sjconf,
+                    "plugins_path": self._plugins,
+                }
+            )
 
         os.makedirs(self._plugins)
-        open(self._environment, "w").write(ENVIRONMENT_PLUGIN)
+        with open(self._environment, "w") as f:
+            f.write(ENVIRONMENT_PLUGIN)
 
         self.conf = sjconf.SJConf(sjconf_file_path=self._sjconf_conf)
         self.conf.plugin_enable("environment")
@@ -92,7 +93,8 @@ class TestClass:
 
     def test_01_regular_deploy(self):
         self.conf.deploy_conf(backup=False)
-        environment = file(self.conf.etc_dir + "/environment", "rb").read(4096)
+        with open(self.conf.etc_dir + "/environment", "r") as fi:
+            environment = fi.read(4096)
         assert environment == 'PATH="/bin:/usr/bin"\n'
 
     def test_02_set(self):
@@ -100,7 +102,8 @@ class TestClass:
         assert self.conf.conf_typed()["environment"]["paths"] == ["/tmp", "/bin"]
 
         self.conf.deploy_conf(backup=False)
-        environment = file(self.conf.etc_dir + "/environment", "rb").read(4096)
+        with open(self.conf.etc_dir + "/environment", "r") as fi:
+            environment = fi.read(4096)
         assert environment == 'PATH="/tmp:/bin"\n'
 
     def test_03_list_add(self):
@@ -112,7 +115,8 @@ class TestClass:
         ]
 
         self.conf.deploy_conf(backup=False)
-        environment = file(self.conf.etc_dir + "/environment", "rb").read(4096)
+        with open(self.conf.etc_dir + "/environment", "r") as fi:
+            environment = fi.read(4096)
         assert environment == 'PATH="/bin:/usr/bin:/usr/local/bin"\n'
 
     def test_04_list_remove(self):
@@ -120,7 +124,8 @@ class TestClass:
         assert self.conf.conf_typed()["environment"]["paths"] == ["/usr/bin"]
 
         self.conf.deploy_conf(backup=False)
-        environment = file(self.conf.etc_dir + "/environment", "rb").read(4096)
+        with open(self.conf.etc_dir + "/environment", "r") as fi:
+            environment = fi.read(4096)
         assert environment == 'PATH="/usr/bin"\n'
 
     def test_05_pickle_conf_typed(self):
@@ -132,3 +137,7 @@ class TestClass:
         typed_conf = self.conf.conf_typed()
         unjsoned = json.loads(json.dumps(typed_conf))
         assert typed_conf == unjsoned
+
+
+if __name__ == "__main__":
+    unittest.main()

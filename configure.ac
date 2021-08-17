@@ -4,7 +4,7 @@ AC_INIT([sjconf],[2.0.0~dev])
 
 AM_INIT_AUTOMAKE([-Wall 1.11 foreign])
 
-AM_PATH_PYTHON([2.3])
+AM_PATH_PYTHON([3])
 AC_PATH_PROG(TXT2TAGS, txt2tags)
 
 sjconflocalstatedir=$localstatedir/lib/sjconf

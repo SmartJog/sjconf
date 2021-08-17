@@ -243,18 +243,18 @@ class Plugin(PythonIsCrappy):
 
     def conf_files(self):
         """Returns a list of Plugin.File instance of each config file"""
-        return map(
+        return list(map(
             lambda file_path: Plugin.File(
                 file_path, self.file_content(file_path), self.name()
             ),
             self.conf_files_path(),
-        )
+        ))
 
     def files_to_backup(self):
-        return map(
+        return list(map(
             lambda file_path: Plugin.File(file_path, None, self.name()),
             self.files_to_backup_path(),
-        )
+        ))
 
 
 class PluginWithTemplate(Plugin):

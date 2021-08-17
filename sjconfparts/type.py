@@ -11,28 +11,80 @@ class TypePythonIsCrappy:
 
 
 class ConversionList:
+    """Custom list implementation, linked to the related Conf.
+
+    Each modification of the list will auto-update the string representation
+    of the list directly in the Conf object, via a call to
+    self.conversion_method().
+
+    Nowadays this is considered ugly (maybe it wasn't back in 2008 with Python 2.5?),
+    but no one wants nor has time to redevelop a big part of SJConf to get rid of this.
+    (aka don't blame the current dev who just wants to port this mess to Python3 :-p)
+
+    Starting from Python3/new style classes, all used special methods must be
+    explicitly redefined:
+    https://docs.python.org/3/reference/datamodel.html#special-lookup
+    """
+
+    def __add__(self, other):
+        self.innerList.__add__(other)
+        self.conversion_method()
+
     def __init__(self, conversion_method, list_object=None):
         self.conversion_method = conversion_method
         if list_object == None:
             list_object = []
-        self.list = list_object
+        self.innerList = list_object
+
+    def __contains__(self, item):
+        return self.innerList.__contains__(item)
+
+    def __delitem__(self, key):
+        self.innerList.__delitem__(key)
+        self.conversion_method()
+
+    def __getitem__(self, key):
+        self.innerList.__getitem__(key)
+
+    def __iadd__(self, other):
+        self.innerList.__iadd__(other)
+        self.conversion_method()
+
+    def __imul__(self, other):
+        self.innerList.__imul__(other)
+        self.conversion_method()
+
+    def __iter__(self):
+        return self.innerList.__iter__()
+
+    def __len__(self):
+        return self.innerList.__len__()
+
+    def __mul__(self, other):
+        self.innerList.__mul__(other)
+        self.conversion_method()
+
+    def __reversed__(self, other):
+        self.innerList.__reversed__(other)
+        self.conversion_method()
+
+    def __rmul__(self, other):
+        self.innerList.__rmul__(other)
+        self.conversion_method()
+
+    def __setitem__(self, key, value):
+        self.innerList.__setitem__(key, value)
+        self.conversion_method()
+
+    def __str__(self):
+        return self.innerList.__str__()
 
     def __getattr__(self, name):
-        list_method = getattr(self.list, name)
+        list_method = getattr(self.innerList, name)
 
         def method(*args, **kw):
             result = list_method(*args, **kw)
             if name in (
-                "__setslice__",
-                "__delslice__",
-                "__setitem__",
-                "__delitem__",
-                "__add__",
-                "__radd__",
-                "__iadd__",
-                "__mul__",
-                "__rmul__",
-                "__imul__",
                 "append",
                 "extend",
                 "insert",
@@ -118,18 +170,18 @@ class Type(TypePythonIsCrappy):
                 Type.List.list_to_str(dict_dest, dict_source, key)
 
             str_object = dict_source[key]
-            list = map(str.strip, str_object.split(","))
+            li = list(map(str.strip, str_object.split(",")))
             try:
-                list.remove("")
+                li.remove("")
             except ValueError:
                 pass
-            dict_dest[key] = ConversionList(conversion_method, list)
+            dict_dest[key] = ConversionList(conversion_method, li)
             return dict_dest
 
         @classmethod
         def str_to_list_safe(cls, dict_source, dict_dest, key):
             str_object = dict_source[key]
-            list_object = map(str.strip, str_object.split(","))
+            list_object = list(map(str.strip, str_object.split(",")))
             try:
                 list_object.remove("")
             except ValueError:
@@ -274,7 +326,7 @@ class Type(TypePythonIsCrappy):
             str_object = []
             key = cls.key(key)
             regexp = re.compile("^%s-\d+$" % (key))
-            for (key_to_test, value) in dict_source.iteritems():
+            for (key_to_test, value) in dict_source.items():
                 if key_to_test == key or regexp.match(key_to_test):
                     str_object.append((key_to_test, value))
             str_object.sort(key=lambda str_object: cls.key_to_index(key, str_object[0]))
@@ -289,7 +341,7 @@ class Type(TypePythonIsCrappy):
             str_object = []
             key = cls.key(key)
             regexp = re.compile("^%s-\d+$" % (key))
-            for (key_to_test, value) in dict_source.iteritems():
+            for (key_to_test, value) in dict_source.items():
                 if key_to_test == key or regexp.match(key_to_test):
                     str_object.append((key_to_test, value))
             str_object.sort(key=lambda str_object: cls.key_to_index(key, str_object[0]))
