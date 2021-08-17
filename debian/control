@@ -1,9 +1,10 @@
 Source: sjconf
 Priority: optional
 Section: admin
-Maintainer: Nicolas Delvaux <nicolas.delvaux@arkena.com>
-Build-Depends: debhelper (>= 12),
-               python2,
+Maintainer: Nicolas Delvaux <nicolas.delvaux@cji.paris>
+Build-Depends: debhelper (>= 9),
+               dh-python,
+               python,
                txt2tags,
                python-nose,
                python-apt

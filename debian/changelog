@@ -1,3 +1,9 @@
+sjconf (2.0.0~dev-1) UNRELEASED; urgency=medium
+
+  * New upstream version
+
+ -- Nicolas Delvaux <nicolas.delvaux@cji.paris>  Tue, 17 Aug 2021 16:36:57 +0200
+
 sjconf (1.13.3-1) unstable; urgency=medium
 
   * New upstream version
