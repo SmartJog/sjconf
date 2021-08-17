@@ -12,9 +12,7 @@ class PythonIsCrappy:
 
 
 class Plugin(PythonIsCrappy):
-    """ Base class to implement SJConf plugins.
-
-    """
+    """Base class to implement SJConf plugins."""
 
     class MethodNotImplementedError(PythonIsCrappy.Error):
         def __init__(self, plugin_name, method_name):
@@ -32,7 +30,7 @@ class Plugin(PythonIsCrappy):
             self.msg = "Plugin not enabled: %s" % (plugin_name)
 
     class Dependency:
-        """ Dependency helper class.
+        """Dependency helper class.
 
         Embeds various methods to verify that plugin dependencies are valid and
         satisfied.
@@ -50,15 +48,12 @@ class Plugin(PythonIsCrappy):
                 requirement,
                 requirement_version,
             ):
-                self.msg = (
-                    "Plugin %s depends on plugin %s version %s %s, but version %s is installed"
-                    % (
-                        plugin_name,
-                        dependency,
-                        requirement,
-                        requirement_version,
-                        installed_version,
-                    )
+                self.msg = "Plugin %s depends on plugin %s version %s %s, but version %s is installed" % (
+                    plugin_name,
+                    dependency,
+                    requirement,
+                    requirement_version,
+                    installed_version,
                 )
 
         class NotInstalledError(Error):
@@ -141,7 +136,7 @@ class Plugin(PythonIsCrappy):
                     )
 
     class File:
-        """ File helper class.
+        """File helper class.
 
         Holds a couple of values.
         """
@@ -159,29 +154,29 @@ class Plugin(PythonIsCrappy):
         self.set_conf(conf)
 
     def name(self):
-        """ Returns plugin's name. '"""
+        """Returns plugin's name."""
         return self.plugin_name
 
     def version(self):
-        """ Returns plugin's version. '"""
+        """Returns plugin's version."""
         if hasattr(self.__class__, "VERSION"):
             return getattr(self.__class__, "VERSION")
         else:
             raise Plugin.MethodNotImplementedError(self.name(), "version")
 
     def dependencies(self):
-        """ List dependencies of this plugin.
+        """List dependencies of this plugin.
 
         @returns: an iterable container of Dependency instances.
         """
         return ()
 
     def conf_types(self):
-        """ List of 3-tuple configuration option type mapping. """
+        """List of 3-tuple configuration option type mapping."""
         return ()
 
     def services_to_restart(self):
-        """ List of services to restart.
+        """List of services to restart.
 
         The services listed therein will be restarted upon usage of the
         --restart command line switch with plugin's name as the argument.
@@ -189,7 +184,7 @@ class Plugin(PythonIsCrappy):
         return ()
 
     def services_to_reload(self):
-        """ List of services to reload.
+        """List of services to reload.
 
         The services listed therein will be reloaded upon usage of the
         --reload command line switch with plugin's name as the argument.
@@ -197,7 +192,7 @@ class Plugin(PythonIsCrappy):
         return ()
 
     def conf_files_path(self):
-        """ List of configuration file path. """
+        """List of configuration file path."""
         return ()
 
     def files_to_backup_path(self):
@@ -211,9 +206,19 @@ class Plugin(PythonIsCrappy):
 
     def conf_section_class(self):
         if hasattr(self.__class__, "Conf") and hasattr(
-            getattr(self.__class__, "Conf",), "ConfSection"
+            getattr(
+                self.__class__,
+                "Conf",
+            ),
+            "ConfSection",
         ):
-            return getattr(getattr(self.__class__, "Conf",), "ConfSection")
+            return getattr(
+                getattr(
+                    self.__class__,
+                    "Conf",
+                ),
+                "ConfSection",
+            )
         elif hasattr(self.__class__, "ConfSection"):
             return getattr(self.__class__, "ConfSection")
         else:
@@ -233,11 +238,11 @@ class Plugin(PythonIsCrappy):
             self.conf.set_type(*conf_type)
 
     def file_content(self, file_path):
-        """ Generates content to be written to @file_path. """
+        """Generates content to be written to @file_path."""
         raise Plugin.MethodNotImplementedError(self.name(), "file_content")
 
     def conf_files(self):
-        """ Returns a list of Plugin.File instance of each config file"""
+        """Returns a list of Plugin.File instance of each config file"""
         return map(
             lambda file_path: Plugin.File(
                 file_path, self.file_content(file_path), self.name()
@@ -253,12 +258,10 @@ class Plugin(PythonIsCrappy):
 
 
 class PluginWithTemplate(Plugin):
-    """ Template based SJConf base plugin.
-
-    """
+    """Template based SJConf base plugin."""
 
     def template_path(self, file_path, confs_to_test=None):
-        """ Provide template path for @file_path configuration file.
+        """Provide template path for @file_path configuration file.
 
         Attempt to get template path for @file_path from the following
         configuration keys in this order:
@@ -282,14 +285,14 @@ class PluginWithTemplate(Plugin):
         raise Plugin.MethodNotImplementedError(self.name(), "template_path")
 
     def template_conf(self, file_path):
-        """ Configuration to be used for @file_path's template.
+        """Configuration to be used for @file_path's template.
 
         @returns: configuration dictionary to be used for @file_path template.
         """
         return self.conf[self.name()]
 
     def file_content(self, file_path):
-        """ Generates content to be written to @file_path.
+        """Generates content to be written to @file_path.
 
         Uses template corresponding to @file_path.
 
