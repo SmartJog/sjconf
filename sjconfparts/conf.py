@@ -32,46 +32,6 @@ class Conf:
                 % (conf_name1, conf_name2, key, section)
             )
 
-    class RawConfigParser(configparser.RawConfigParser):
-        """RawConfigParser subclass, with an ordered write() method."""
-
-        def write(self, fp):
-            """Write an .ini-format representation of the configuration
-            state. Sections are written sorted."""
-            if self._defaults:
-                fp.write("[%s]\n" % configparser.DEFAULTSECT)
-                for (key, value) in list(self._defaults.items()):
-                    fp.write("%s = %s\n" % (key, str(value).replace("\n", "\n\t")))
-                fp.write("\n")
-            tmp_sections = list(self._sections.keys())
-            tmp_sections.sort()
-            for section in tmp_sections:
-                fp.write("[%s]\n" % section)
-                tmp_keys = list(self._sections[section].keys())
-                tmp_keys.sort()
-                for key in tmp_keys:
-                    if key != "__name__":
-                        fp.write(
-                            "%s = %s\n"
-                            % (
-                                key,
-                                str(self._sections[section][key]).replace("\n", "\n\t"),
-                            )
-                        )
-                fp.write("\n")
-
-        def optionxform(self, optionstr):
-            return optionstr
-
-    class SafeConfigParser(configparser.SafeConfigParser, RawConfigParser):
-        """A SafeConfigParser subclass, with an ordered write() method."""
-
-        def optionxform(self, optionstr):
-            return optionstr
-
-        def write(self, fp):
-            Conf.RawConfigParser.write(self, fp)
-
     class ConfSection:
         def __init__(self, dictionary={}):
             self.dict = dict(dictionary)
@@ -180,9 +140,11 @@ class Conf:
         self.comments = None
         self.types = {}
         if parser_type == "raw":
-            self.config_parser_class = Conf.RawConfigParser
+            self.config_parser_class = configparser.RawConfigParser
         else:
-            self.config_parser_class = Conf.SafeConfigParser
+            self.config_parser_class = configparser.ConfigParser
+        # For retrocompatibility, keys must be case-sensitive
+        self.config_parser_class.optionxform = str
         if self.file_path:
             self.load()
         elif dictionary:
