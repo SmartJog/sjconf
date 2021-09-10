@@ -59,17 +59,18 @@ was heavily redesigned by Jean-Philippe Garcia Ballester in 2008 to
 give it its current API / class hierarchy. Various employees and
 interns from SmartJog fixed bugs and added features since then.
 
-* Alexandre Bossard <alexandre.bossard@smartjog.com>
-* Alexandre Bique <alexandre.bique@smartjog.com>
-* Benoit Mauduit <benoit.mauduit@smartjog.com>
-* Clément Gauthey <clement.gauthey@smartjog.com>
-* Gilles Dartiguelongue <gilles.dartiguelongue@smartjog.com>
-* Grégory Charbonneau <gregory.charbonneau@smartjog.com>
-* Jean-Baptiste Denis <jeanbaptiste.denis@smartjog.com>
-* Jean-Philippe Garcia Ballester <jeanphilippe.garciaballester@smartjog.com>
-* Mathieu Dupuy <mathieu.dupuy@smartjog.com>
-* Matthieu Bouron <matthieu.bouron@smartjog.com>
-* Nicolas Noirbent <nicolas.noirbent@smartjog.com>
-* Philippe Bridant <philippe.bridant@smartjog.com>
-* Rémi Cardona <remi.cardona@smartjog.com>
-* Thomas Sanchez <thomas.sanchez@smartjog.com>
+* Alexandre Bossard
+* Alexandre Bique
+* Benoit Mauduit
+* Clément Gauthey
+* Gilles Dartiguelongue
+* Grégory Charbonneau
+* Jean-Baptiste Denis
+* Jean-Philippe Garcia Ballester
+* Mathieu Dupuy
+* Matthieu Bouron
+* Nicolas Noirbent
+* Philippe Bridant
+* Rémi Cardona
+* Thomas Sanchez
+* Nicolas Delvaux <nicolas.delvaux@cji.paris>
