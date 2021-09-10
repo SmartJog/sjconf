@@ -532,7 +532,11 @@ class SJConf:
                 raise Plugin.Dependency.NotInstalledError(
                     plugin.name(), dependency.name
                 )
-        if dependency.name in self.confs_internal["sjconf"]["conf"]["plugins_list"]:
+
+        if (
+            dependency.name in self.confs_internal["sjconf"]["conf"]["plugins_list"]
+            and dependency.name in plugins_hash
+        ):
             dependency.verify(plugins_hash[dependency.name].version())
 
     def _plugin_dependencies(self, plugin, plugins_hash):
