@@ -1,13 +1,14 @@
-from sjconfparts.exceptions import *
 import re
 
+import sjconfparts.exceptions
 
-class TypePythonIsCrappy:
-    class Error(Error):
-        pass
 
-    class ConversionError(Error):
-        pass
+class Error(sjconfparts.exceptions.Error):
+    pass
+
+
+class ConversionError(Error):
+    pass
 
 
 class ConversionList:
@@ -99,8 +100,8 @@ class ConversionList:
         return method
 
 
-class Type(TypePythonIsCrappy):
-    class ConversionBadTypeError(TypePythonIsCrappy.ConversionError):
+class Type:
+    class ConversionBadTypeError(ConversionError):
         def __init__(self, type_source, type_dest):
             self.msg = "Invalid conversion from type %s to type %s, can only convert from str or to str"
 
@@ -202,14 +203,14 @@ class Type(TypePythonIsCrappy):
 
         FALSE_VALUES = ("no", "off", "false", "disabled", "disable")
 
-        class StrToBoolError(TypePythonIsCrappy.ConversionError):
+        class StrToBoolError(ConversionError):
             def __init__(self, str_object):
                 self.msg = (
                     'Bad value "%s" for str to bool conversion, expected a value in %s'
                     % (str_object, str(Type.Bool.TRUE_VALUES + Type.Bool.FALSE_VALUES))
                 )
 
-        class BoolToStrError(TypePythonIsCrappy.ConversionError):
+        class BoolToStrError(ConversionError):
             def __init__(self, bool_object):
                 self.msg = (
                     'Bad value "%s" for bool to str conversion, expected a boolean'
@@ -241,14 +242,14 @@ class Type(TypePythonIsCrappy):
             return dict_dest
 
     class Size:
-        class StrToSizeError(TypePythonIsCrappy.ConversionError):
+        class StrToSizeError(ConversionError):
             def __init__(self, str_object):
                 self.msg = (
                     'Bad value "%s" for str to size conversion, expected a value like, e.g. 10M'
                     % (str_object)
                 )
 
-        class SizeToStrError(TypePythonIsCrappy.ConversionError):
+        class SizeToStrError(ConversionError):
             def __init__(self, size_object):
                 self.msg = (
                     'Bad value "%s" for size to str conversion, expected an integer'

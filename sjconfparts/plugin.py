@@ -2,30 +2,28 @@ import os
 
 import apt_pkg
 
+import sjconfparts.exceptions
 from sjconfparts.conf import *
-from sjconfparts.exceptions import *
 
 
-class PythonIsCrappy:
-    class Error(Error):
-        pass
-
-
-class Plugin(PythonIsCrappy):
+class Plugin:
     """Base class to implement SJConf plugins."""
 
-    class MethodNotImplementedError(PythonIsCrappy.Error):
+    class Error(sjconfparts.exceptions.Error):
+        pass
+
+    class MethodNotImplementedError(Error):
         def __init__(self, plugin_name, method_name):
             self.msg = 'Method "%s" not implemented in plugin %s' % (
                 method_name,
                 plugin_name,
             )
 
-    class AlreadyEnabledError(PythonIsCrappy.Error):
+    class AlreadyEnabledError(Error):
         def __init__(self, plugin_name):
             self.msg = "Plugin already enabled: %s" % (plugin_name)
 
-    class NotEnabledError(PythonIsCrappy.Error):
+    class NotEnabledError(Error):
         def __init__(self, plugin_name):
             self.msg = "Plugin not enabled: %s" % (plugin_name)
 
@@ -36,7 +34,7 @@ class Plugin(PythonIsCrappy):
         satisfied.
         """
 
-        class Error(PythonIsCrappy.Error):
+        class Error(Error):
             pass
 
         class BadVersionError(Error):
@@ -243,18 +241,22 @@ class Plugin(PythonIsCrappy):
 
     def conf_files(self):
         """Returns a list of Plugin.File instance of each config file"""
-        return list(map(
-            lambda file_path: Plugin.File(
-                file_path, self.file_content(file_path), self.name()
-            ),
-            self.conf_files_path(),
-        ))
+        return list(
+            map(
+                lambda file_path: Plugin.File(
+                    file_path, self.file_content(file_path), self.name()
+                ),
+                self.conf_files_path(),
+            )
+        )
 
     def files_to_backup(self):
-        return list(map(
-            lambda file_path: Plugin.File(file_path, None, self.name()),
-            self.files_to_backup_path(),
-        ))
+        return list(
+            map(
+                lambda file_path: Plugin.File(file_path, None, self.name()),
+                self.files_to_backup_path(),
+            )
+        )
 
 
 class PluginWithTemplate(Plugin):
