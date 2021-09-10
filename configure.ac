@@ -1,10 +1,10 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.67])
-AC_INIT([sjconf],[1.13.3])
+AC_INIT([sjconf],[2.0.0])
 
 AM_INIT_AUTOMAKE([-Wall 1.11 foreign])
 
-AM_PATH_PYTHON([2.3])
+AM_PATH_PYTHON([3])
 AC_PATH_PROG(TXT2TAGS, txt2tags)
 
 sjconflocalstatedir=$localstatedir/lib/sjconf

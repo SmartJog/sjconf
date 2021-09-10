@@ -1,6 +1,6 @@
 from sjconfparts.type import *
 from sjconfparts.exceptions import *
-import os, re, ConfigParser, errno
+import os, re, configparser, errno
 
 
 class Conf:
@@ -32,53 +32,13 @@ class Conf:
                 % (conf_name1, conf_name2, key, section)
             )
 
-    class RawConfigParser(ConfigParser.RawConfigParser):
-        """RawConfigParser subclass, with an ordered write() method."""
-
-        def write(self, fp):
-            """Write an .ini-format representation of the configuration
-            state. Sections are written sorted."""
-            if self._defaults:
-                fp.write("[%s]\n" % ConfigParser.DEFAULTSECT)
-                for (key, value) in self._defaults.items():
-                    fp.write("%s = %s\n" % (key, str(value).replace("\n", "\n\t")))
-                fp.write("\n")
-            tmp_sections = self._sections.keys()
-            tmp_sections.sort()
-            for section in tmp_sections:
-                fp.write("[%s]\n" % section)
-                tmp_keys = self._sections[section].keys()
-                tmp_keys.sort()
-                for key in tmp_keys:
-                    if key != "__name__":
-                        fp.write(
-                            "%s = %s\n"
-                            % (
-                                key,
-                                str(self._sections[section][key]).replace("\n", "\n\t"),
-                            )
-                        )
-                fp.write("\n")
-
-        def optionxform(self, optionstr):
-            return optionstr
-
-    class SafeConfigParser(ConfigParser.SafeConfigParser, RawConfigParser):
-        """A SafeConfigParser subclass, with an ordered write() method."""
-
-        def optionxform(self, optionstr):
-            return optionstr
-
-        def write(self, fp):
-            Conf.RawConfigParser.write(self, fp)
-
     class ConfSection:
         def __init__(self, dictionary={}):
             self.dict = dict(dictionary)
             self.types = {}
             self.type_values = {}
             if hasattr(dictionary, "get_types"):
-                for (key, type) in dictionary.get_types().iteritems():
+                for (key, type) in dictionary.get_types().items():
                     self.set_type(key, type)
 
         def __delitem__(self, key):
@@ -88,7 +48,7 @@ class Conf:
 
         def _find_type_of(self, key):
             type = None
-            search_result = re.compile("(.*)_([^_]+)$").search(key)
+            search_result = re.compile(r"(.*)_([^_]+)$").search(key)
             if search_result:
                 key_tmp = search_result.group(1)
                 type = search_result.group(2)
@@ -131,7 +91,7 @@ class Conf:
                     Type.convert("str", type, self.dict, self.type_values, key)
 
         def update(self, other_dict):
-            for (key, value) in other_dict.iteritems():
+            for (key, value) in other_dict.items():
                 if hasattr(other_dict, "get_type"):
                     type = other_dict._find_type_for(key)
                     if type:
@@ -161,6 +121,9 @@ class Conf:
         def get_types(self):
             return self.types
 
+        def __iter__(self):
+            return self.dict.__iter__()
+
         def __getattr__(self, *args, **kw):
             return getattr(self.dict, *args, **kw)
 
@@ -177,9 +140,11 @@ class Conf:
         self.comments = None
         self.types = {}
         if parser_type == "raw":
-            self.config_parser_class = Conf.RawConfigParser
+            self.config_parser_class = configparser.RawConfigParser
         else:
-            self.config_parser_class = Conf.SafeConfigParser
+            self.config_parser_class = configparser.ConfigParser
+        # For retrocompatibility, keys must be case-sensitive
+        self.config_parser_class.optionxform = str
         if self.file_path:
             self.load()
         elif dictionary:
@@ -187,6 +152,15 @@ class Conf:
 
     def __setitem__(self, key, value):
         self.dict[key] = self._value_to_section(key, value)
+
+    def __getitem__(self, key):
+        return self.dict[key]
+
+    def __contains__(self, key):
+        return self.dict.__contains__(key)
+
+    def __iter__(self):
+        return self.dict.__iter__()
 
     def setdefault(self, key, value=None):
         return self.dict.setdefault(key, self._value_to_section(key, value))
@@ -202,13 +176,13 @@ class Conf:
                     value = other_dict[section]
                 self.dict[section] = value
         if hasattr(other_dict, "get_types"):
-            for (key, type) in other_dict.get_types().iteritems():
+            for (key, type) in other_dict.get_types().items():
                 self.set_type(self, key, type)
 
     def update_verify_conflict(self, other_dict):
         conflicting_values = []
-        for (section_name, section) in self.dict.iteritems():
-            for key, value in section.iteritems():
+        for (section_name, section) in self.dict.items():
+            for key, value in section.items():
                 if (
                     section_name in other_dict
                     and key in other_dict[section_name]
@@ -221,7 +195,7 @@ class Conf:
         for section in dictionary:
             self.dict[section] = self.conf_section_class(dictionary[section])
         if hasattr(dictionary, "get_types"):
-            for (key, type) in dictionary.get_types().iteritems():
+            for (key, type) in dictionary.get_types().items():
                 self.set_type(self, key, type)
 
     def load(self, file_path=None):
@@ -237,9 +211,9 @@ class Conf:
                 errno.ENOTDIR, "%s: %s" % (self.file_path, os.strerror(errno.ENOTDIR))
             )
         if os.path.isdir(file_path):
-            files_path = map(
-                lambda file_name: file_path + "/" + file_name, os.listdir(file_path)
-            )
+            files_path = [
+                file_path + "/" + file_name for file_name in os.listdir(file_path)
+            ]
         else:
             files_path = (file_path,)
         for file_path in files_path:
@@ -259,24 +233,28 @@ class Conf:
                 self.dict[section] = self.conf_section_class(cp.items(section))
 
     def save(self, output_file=None):
+        opened = False
         if not output_file:
             output_file = self.file_path
         if not hasattr(output_file, "write"):
             output_file = open(output_file, "w")
+            opened = True
         if self.comments != None and len(self.comments) > 0:
             for comment in self.comments.split("\n"):
                 output_file.write("# " + comment + "\n")
             output_file.write("\n")
         cp = self.config_parser_class()
-        sections = self.dict.keys()
-        sections.sort(lambda x, y: -cmp(x, y))
+        sections = list(self.dict.keys())
+        sections.sort(reverse=True)
         for section in sections:
             cp.add_section(section)
-            keys = self.dict[section].keys()
-            keys.sort(lambda x, y: -cmp(x, y))
+            keys = list(self.dict[section].keys())
+            keys.sort(reverse=True)
             for key in keys:
                 cp.set(section, key, self.dict[section][key])
         cp.write(output_file)
+        if opened:
+            output_file.close()
 
     def set_type(self, section, key, type):
         self.types.setdefault(section, []).append((key, type))
@@ -314,7 +292,7 @@ class Conf:
     def _value_to_section(self, key, value):
         if value.__class__ != self.conf_section_class:
             value = self.conf_section_class(value)
-        for (section, types) in self.types.iteritems():
+        for (section, types) in self.types.items():
             if section == key or (hasattr(section, "search") and section.search(key)):
                 for type in types:
                     value.set_type(*type)

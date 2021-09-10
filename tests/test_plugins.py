@@ -1,5 +1,4 @@
-#!/usr/bin/nosetests
-# -*- coding: utf-8 -*-
+#!/usr/bin/nosetests3
 
 import os
 import shutil
@@ -30,8 +29,6 @@ paths =
 """
 
 PLUGIN = """\
-# -*- coding: utf-8 -*-
-
 import sjconf
 
 class Plugin(sjconf.Plugin):
@@ -68,20 +65,24 @@ class TestPlugin(unittest.TestCase):
         self._plugin = self._tmpdir + "/var/lib/sjconf/plugins/plugin.py"
 
         os.makedirs(self._sjconf)
-        open(self._base_conf, "w").write(BASE_CONF)
-        open(self._local_conf, "w").write(LOCAL_CONF)
-        open(self._sjconf_conf, "w").write(
-            SJCONF_CONF
-            % {
-                "tmpdir": self._tmpdir,
-                "etc_dir": self._etc,
-                "base_dir": self._sjconf,
-                "plugins_path": self._plugins,
-            }
-        )
+        with open(self._base_conf, "w") as f:
+            f.write(BASE_CONF)
+        with open(self._local_conf, "w") as f:
+            f.write(LOCAL_CONF)
+        with open(self._sjconf_conf, "w") as f:
+            f.write(
+                SJCONF_CONF
+                % {
+                    "tmpdir": self._tmpdir,
+                    "etc_dir": self._etc,
+                    "base_dir": self._sjconf,
+                    "plugins_path": self._plugins,
+                }
+            )
 
         os.makedirs(self._plugins)
-        open(self._plugin, "w").write(PLUGIN)
+        with open(self._plugin, "w") as f:
+            f.write(PLUGIN)
 
         self.conf = sjconf.SJConf(sjconf_file_path=self._sjconf_conf)
         self.conf.plugin_enable("plugin")
@@ -111,3 +112,7 @@ class TestPlugin(unittest.TestCase):
         dep = self.plugin.Dependency(self.plugin, "test", requirements={"<=": "0.9.1"})
         self.assertRaises(Plugin.Dependency.BadVersionError, dep.verify, "0.9.2")
         self.assertRaises(Plugin.Dependency.BadVersionError, dep.verify, "0.9.1+bpo")
+
+
+if __name__ == "__main__":
+    unittest.main()

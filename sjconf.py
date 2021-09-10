@@ -7,6 +7,7 @@ from sjconfparts.type import *
 from sjconfparts.plugin import *
 from sjconfparts.conf import *
 from sjconfparts.exceptions import *
+from functools import reduce
 
 
 class SJConf:
@@ -72,16 +73,17 @@ class SJConf:
             conf = self.conf()
         # We want a normal dictionary
         conf = dict(conf)
-        for section_name, section in conf.iteritems():
+        for section_name, section in conf.items():
             conf[section_name] = dict(section)
         for plugin in self.plugins_list:
             plugin.set_conf(self.plugin_conf(plugin.name(), conf))
-            for (section_name, section) in plugin.conf.iteritems():
+            for (section_name, section) in plugin.conf.items():
 
                 def section_getitem(*args, **kw):
                     return Conf.ConfSection.__getitem__(section, *args, **kw)
 
                 section.__getitem__ = section_getitem  # Bypass plugin's getitem method because we don't want the plugin to convert the key to its configuration file syntax
+
                 for key in section:
                     type = section.get_type(key)
                     if type:
@@ -148,7 +150,7 @@ class SJConf:
         plugins_hash = dict([(plugin.name(), plugin) for plugin in self.plugins_list])
         if "all" in services_to_restart:
             services_to_restart.remove("all")
-            for plugin_name in plugins_hash.keys():
+            for plugin_name in list(plugins_hash.keys()):
                 if not plugin_name in services_to_restart:
                     services_to_restart.append(plugin_name)
 
@@ -219,7 +221,7 @@ class SJConf:
             and dict(
                 [
                     (key_to_test, value_to_test)
-                    for (key_to_test, value_to_test) in conf[section].iteritems()
+                    for (key_to_test, value_to_test) in conf[section].items()
                     if regexp.match(key_to_test)
                 ]
             )
@@ -229,16 +231,14 @@ class SJConf:
         new_keys = dict(
             [
                 (key_to_test, value_to_test)
-                for (key_to_test, value_to_test) in conf[section].iteritems()
+                for (key_to_test, value_to_test) in conf[section].items()
                 if regexp.match(key_to_test)
             ]
         )
         conf_base = self.conf_base()
         if section in conf_base and key in conf_base[section] and key not in new_keys:
             new_keys[key] = ""
-        for (
-            new_key
-        ) in (
+        for new_key in list(
             new_keys.keys()
         ):  # Do not use iterkeys since we are changing the dictionnary
             if (
@@ -259,7 +259,7 @@ class SJConf:
             and dict(
                 [
                     (key_to_test, value_to_test)
-                    for (key_to_test, value_to_test) in conf[section].iteritems()
+                    for (key_to_test, value_to_test) in conf[section].items()
                     if regexp.match(key_to_test)
                 ]
             )
@@ -269,7 +269,7 @@ class SJConf:
         new_keys = dict(
             [
                 (key_to_test, value_to_test)
-                for (key_to_test, value_to_test) in conf[section].iteritems()
+                for (key_to_test, value_to_test) in conf[section].items()
                 if regexp.match(key_to_test)
             ]
         )
@@ -281,16 +281,15 @@ class SJConf:
     def apply_conf_modifications(self, temp=False, **kw):
         self._load_conf_local()
         conf = self.confs["local"]
-        for (
-            key,
-            value,
-        ) in kw.items():  # We use “items” since we are modifying the dictionary
+        for (key, value,) in list(
+            kw.items()
+        ):  # We use “items” since we are modifying the dictionary
             if len(value) == 0:
                 del kw[key]
         if len(kw) > 0:
             self._logger("########## Scheduled modifications ##############")
 
-            for (key, values) in kw.iteritems():
+            for (key, values) in kw.items():
                 for value in values:
                     getattr(self, re.sub("s$", "", key))(*value)
 
@@ -428,11 +427,15 @@ class SJConf:
 
     def plugins_infos(self, plugins_to_list=None):
         if plugins_to_list == None:
-            plugins_to_list = map(
-                lambda plugin_path: os.path.basename(plugin_path).replace(".py", ""),
-                glob.glob(
-                    self.confs_internal["sjconf"]["conf"]["plugins_path"] + "/*.py"
-                ),
+            plugins_to_list = list(
+                map(
+                    lambda plugin_path: os.path.basename(plugin_path).replace(
+                        ".py", ""
+                    ),
+                    glob.glob(
+                        self.confs_internal["sjconf"]["conf"]["plugins_path"] + "/*.py"
+                    ),
+                )
             )
         plugins = self._plugins_init(plugins_to_list)
         plugins_hash = {}
@@ -445,11 +448,13 @@ class SJConf:
 
     def profiles_infos(self, profiles_to_list=None):
         if profiles_to_list == None:
-            profiles_to_list = map(
-                lambda profile_path: os.path.basename(profile_path).replace(
-                    ".conf", ""
-                ),
-                glob.glob(self.files_path["profile"] + "/*.conf"),
+            profiles_to_list = list(
+                map(
+                    lambda profile_path: os.path.basename(profile_path).replace(
+                        ".conf", ""
+                    ),
+                    glob.glob(self.files_path["profile"] + "/*.conf"),
+                )
             )
         profiles_hash = {}
         for profile in profiles_to_list:
@@ -509,7 +514,7 @@ class SJConf:
             try:
                 self._plugin_dependency_verify(plugin_to_list, dependency, plugins_hash)
                 plugin_info["dependencies"][dependency.name]["state"] = True
-            except Plugin.Dependency.Error, exception:
+            except Plugin.Dependency.Error as exception:
                 plugin_info["dependencies"][dependency.name]["state"] = exception
         return plugin_info
 
@@ -527,7 +532,11 @@ class SJConf:
                 raise Plugin.Dependency.NotInstalledError(
                     plugin.name(), dependency.name
                 )
-        if dependency.name in self.confs_internal["sjconf"]["conf"]["plugins_list"]:
+
+        if (
+            dependency.name in self.confs_internal["sjconf"]["conf"]["plugins_list"]
+            and dependency.name in plugins_hash
+        ):
             dependency.verify(plugins_hash[dependency.name].version())
 
     def _plugin_dependencies(self, plugin, plugins_hash):
@@ -591,7 +600,8 @@ class SJConf:
             os.path.basename(self.backup_dir),
         )
         self._logger("Backup file : %s" % path)
-        tarfile.open(path, "w:gz").add(self.backup_dir)
+        with tarfile.open(path, "w:gz") as tar:
+            tar.add(self.backup_dir)
 
     def _delete_backup_dir(self, dir=None):
         # Once backup has been archived, delete it
@@ -621,7 +631,7 @@ class SJConf:
             if backed_up_file.backed_up:
                 try:
                     shutil.move(backed_up_file.backup_path, backed_up_file.path)
-                except shutil.Error, exception:
+                except shutil.Error as exception:
                     raise RestoreError(exception, self.backup_dir)
 
     def _load_confs(self, force=False):
@@ -753,7 +763,8 @@ class SJConf:
             folder = os.path.dirname(conf_file.path)
             if not os.path.isdir(folder):
                 os.makedirs(folder)
-            open(conf_file.path + ".sjconf", "w").write(conf_file.content)
+            with open(conf_file.path + ".sjconf", "w") as fi:
+                fi.write(conf_file.content)
             os.rename(conf_file.path + ".sjconf", conf_file.path)
             conf_file.written = True
         self._logger("")
@@ -856,7 +867,7 @@ class SJConf:
         getattr(conf[section][key_typed], method)(value)
         if section not in self.confs["local"]:
             self.confs["local"][section] = conf.conf_section_class()
-        for new_key, new_value in conf[section].iteritems():
+        for new_key, new_value in conf[section].items():
             if new_value != old_keys.get(new_key):
                 self.confs["local"][section][new_key] = new_value
         conf_base = self.conf_base().get(section)
@@ -871,6 +882,6 @@ class SJConf:
         for key in old_keys:
             if not key in new_keys:
                 self._logger("delete key     : %s: %s" % (section, key))
-        for (key, value) in new_keys.iteritems():
+        for (key, value) in new_keys.items():
             if not key in old_keys or value != old_keys[key]:
                 self._logger("set            : %s: %s = %s" % (section, key, value))

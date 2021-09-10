@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+#!/usr/bin/python3
 
 """Command line interface for sjconf
 
@@ -16,11 +15,6 @@ import sys
 import pipes
 import argparse
 import subprocess
-
-# The following import is needed (at least in Python 2) to access to the
-# 'print' function (and not to the Python 2 keyword) with the following code:
-#    getattr(__builtin__, 'print')
-import __builtin__
 
 import sjconf
 
@@ -81,7 +75,7 @@ def parse_arguments():
         action="version",
         help="print version and exit",
         version="%(prog)s " + str(__version__) + "\n"
-        "Copyright © 2008-2015 Arkena\n\n"
+        "Copyright © 2008-2021 CJI\n\n"
         "License LGPLv2.1: GNU Lesser GPL version 2.1 \n"
         "<http://www.gnu.org/licenses/old-licenses/lgpl-2"
         ".1.html>.\n"
@@ -464,11 +458,11 @@ def sjconf_error(msg="Unknown error.", return_code=1):
     """Error handler for sjconf with shell return code"""
 
     if not args.quiet:
-        print >>sys.stderr, "sjconf: error: " + msg
+        print("sjconf: error: " + msg, file=sys.stderr)
     sys.exit(return_code)
 
 
-def print_plugin_info(plugin_info, printer=getattr(__builtin__, "print")):
+def print_plugin_info(plugin_info, printer=print):
     """Plugin information 'pretty' printer"""
 
     plugin_instance = plugin_info["plugin"]
@@ -484,13 +478,13 @@ def print_plugin_info(plugin_info, printer=getattr(__builtin__, "print")):
     )
     if plugin_instance.dependencies():
         printer("  Dependencies:")
-        for dep_key, dep in plugin_info["dependencies"].iteritems():
+        for dep_key, dep in plugin_info["dependencies"].items():
             # Formatting the requirement string with the operators
             # according to the plugin versions
             requirements_str = ", ".join(
                 map(
-                    lambda (op, ver): op + " " + ver,
-                    dep["dependency"].requirements.items(),
+                    lambda op_ver: op_ver[0] + " " + op_ver[1],
+                    list(dep["dependency"].requirements.items()),
                 )
             )
             printer(
@@ -522,9 +516,7 @@ def print_plugin_info(plugin_info, printer=getattr(__builtin__, "print")):
             )
 
 
-def print_profile_info(
-    profile_name, profile_level, printer=getattr(__builtin__, "print")
-):
+def print_profile_info(profile_name, profile_level, printer=print):
     """Profile information 'pretty' printer"""
 
     printer("Profile %s:" % profile_name)
@@ -777,7 +769,7 @@ if __name__ == "__main__":
 
         # Hand over to the main function
         main()
-    except sjconf.Error, exception:
+    except sjconf.Error as exception:
         if args.verbose:
             raise
         sjconf_error(str(exception))
