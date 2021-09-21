@@ -1,3 +1,9 @@
+sjconf (2.0.0-2) unstable; urgency=medium
+
+  * Pre-create the template directory
+
+ -- Nicolas Delvaux <nicolas.delvaux@cji.paris>  Tue, 21 Sep 2021 14:38:01 +0200
+
 sjconf (2.0.0-1) unstable; urgency=medium
 
   * New upstream version

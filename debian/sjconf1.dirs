@@ -1,2 +1,2 @@
 var/lib/sjconf/plugins
-etc/templates
+etc/sjconf/templates
