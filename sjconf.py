@@ -139,11 +139,11 @@ class SJConf:
 
     @classmethod
     def restart_service(cls, service):
-        os.system("invoke-rc.d %s restart" % (service))
+        os.system("systemctl restart %s" % service)
 
     @classmethod
     def reload_service(cls, service):
-        os.system("invoke-rc.d %s reload" % (service))
+        os.system("systemctl reload %s" % service)
 
     def restart_services(self, services_to_restart, reload=False):
         self._plugins_load()

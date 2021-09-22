@@ -1,6 +1,6 @@
 Version 2.0.1~dev
 
-	* TODO
+	* Stop using the deprecated 'invoke-rc.d' to manage services
 
 Version 2.0.0 Released on 2021/09/10
 
