@@ -1,4 +1,4 @@
-Version 2.0.1~dev
+Version 2.0.1 Released on 2021/09/22
 
 	* Stop using the deprecated 'invoke-rc.d' to manage services
 	* Some cleanups
