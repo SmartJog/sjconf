@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-import re, os, errno, time, shutil, tarfile, glob
+import re, os, time, shutil, tarfile, glob
 import imp
 import sys
 
@@ -400,7 +399,7 @@ class SJConf:
         self._load_conf_local()
         self._file_path("profile", profile_to_enable)
         enabled_level = self._profile_level(profile_to_enable)
-        if enabled_level != None:
+        if enabled_level is not None:
             raise ProfileAlreadyEnabledError(profile_to_enable, enabled_level)
         key = "profiles-" + str(level)
         self.confs["local"].setdefault("sjconf", Conf.ConfSection())
@@ -415,7 +414,7 @@ class SJConf:
         # ensure the profile in installed
         self._file_path("profile", profile_to_disable)
         level = self._profile_level(profile_to_disable)
-        if level == None:
+        if level is None:
             raise ProfileNotEnabledError(profile_to_disable)
         key = "profiles-" + str(level)
         Type.convert("str", "list", self.confs["local"]["sjconf"], {}, key)[key].remove(
@@ -426,7 +425,7 @@ class SJConf:
         self.confs["local"].save()
 
     def plugins_infos(self, plugins_to_list=None):
-        if plugins_to_list == None:
+        if plugins_to_list is None:
             plugins_to_list = list(
                 map(
                     lambda plugin_path: os.path.basename(plugin_path).replace(
@@ -447,7 +446,7 @@ class SJConf:
         return plugins_list
 
     def profiles_infos(self, profiles_to_list=None):
-        if profiles_to_list == None:
+        if profiles_to_list is None:
             profiles_to_list = list(
                 map(
                     lambda profile_path: os.path.basename(profile_path).replace(
@@ -464,7 +463,7 @@ class SJConf:
 
     def backup_files(self, files_to_backup=None):
         self._load_conf_local()
-        if files_to_backup == None:
+        if files_to_backup is None:
             self._plugins_load()
             files_to_backup = self._files_to_backup(
                 self.plugins_list
@@ -558,7 +557,7 @@ class SJConf:
                 plugin.set_plugins(plugin_dependencies_hash)
 
     def _plugins_init(self, plugins_list=None):
-        if plugins_list == None:
+        if plugins_list is None:
             plugins_list = self.confs_internal["sjconf"]["conf"]["plugins_list"]
 
         # FIXME: Most of the code below can and should be reused for all other
@@ -582,7 +581,7 @@ class SJConf:
         return plugins
 
     def _plugins_load(self):
-        if self.plugins_list == None:
+        if self.plugins_list is None:
             self.plugins_list = self._plugins_init()
             self._plugins_dependencies(self.plugins_list)
 
@@ -605,7 +604,7 @@ class SJConf:
 
     def _delete_backup_dir(self, dir=None):
         # Once backup has been archived, delete it
-        if dir == None:
+        if dir is None:
             dir = self.backup_dir
             self._logger("Deleting folder %s" % dir)
 
@@ -751,7 +750,7 @@ class SJConf:
 
     def _apply_confs(self, conf_files=None):
         # Open and write all configuration files
-        if conf_files == None:
+        if conf_files is None:
             self._plugins_load()
             conf_files = self._conf_files(self.plugins_list)
         for conf_file in conf_files:
@@ -808,7 +807,7 @@ class SJConf:
         """
 
         if (
-            type == "profile" and self.profiles_infos([file])[file] != None
+            type == "profile" and self.profiles_infos([file])[file] is not None
         ):  # Profile file currenly used
             self.profile_disable(file)
         elif (
