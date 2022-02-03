@@ -153,6 +153,9 @@ class Conf:
     def __setitem__(self, key, value):
         self.dict[key] = self._value_to_section(key, value)
 
+    def __delitem__(self, key):
+        del self.dict[key]
+
     def __getitem__(self, key):
         return self.dict[key]
 
